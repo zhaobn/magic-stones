@@ -1,9 +1,11 @@
 
-// Set up stone attributes
-let dragItem;
-let stonePos = stones; // JSON object in js format
-let dragPos = stonePos['stone1']; // default value
+// Tuning configs
+const dragElementKeyword = 'stone';
+let itemPos = stones; // JSON in js format, load as script
 
+// Initialize stone attributes
+let dragItem;
+let dragItemPos = itemPos['stone1']; // default value
 
 // Set up event listeners
 const container = document.querySelector(".box");
@@ -19,42 +21,36 @@ container.addEventListener("mousemove", drag, false);
 // Dragging functions
 // See https://www.kirupa.com/html5/drag.htm
 function dragStart(e) {
-  if (e.target.id.indexOf('stone') > -1) {
+  if (e.target.id.indexOf(dragElementKeyword) > -1) {
     dragItem = e.target;
-    dragPos = stonePos[e.target.id];
-    dragPos.active = true;
+    dragItemPos = itemPos[dragItem.id];
+    dragItemPos.active = true;
   }
-  if (e.type === "touchstart") {
-    dragPos.initialX = e.touches[0].clientX - dragPos.xOffset;
-    dragPos.initialY = e.touches[0].clientY - dragPos.yOffset;
-  } else {
-    dragPos.initialX = e.clientX - dragPos.xOffset;
-    dragPos.initialY = e.clientY - dragPos.yOffset;
+
+  let clientPos = (e.type === "touchstart") ? e.touches[0] : e ;
+  dragItemPos.initialX = clientPos.clientX - dragItemPos.xOffset;
+  dragItemPos.initialY = clientPos.clientY - dragItemPos.yOffset;
+  
+}
+
+function drag(e) {
+  if (dragItemPos.active) {
+    e.preventDefault();
+
+    let clientPos = (e.type === "touchmove") ? e.touches[0] : e ;
+    dragItemPos.currentX = clientPos.clientX - dragItemPos.initialX;
+    dragItemPos.currentY = clientPos.clientY - dragItemPos.initialY;
+    
+    dragItemPos.xOffset = dragItemPos.currentX;
+    dragItemPos.yOffset = dragItemPos.currentY;
+    setTranslate(dragItemPos.currentX, dragItemPos.currentY, dragItem);
   }
 }
 
 function dragEnd(e) {
-  dragPos.initialX = dragPos.currentX;
-  dragPos.initialY = dragPos.currentY;
-  dragPos.active = false;
-}
-
-function drag(e) {
-  if (dragPos.active) {
-    e.preventDefault();
-  
-    if (e.type === "touchmove") {
-      dragPos.currentX = e.touches[0].clientX - dragPos.initialX;
-      dragPos.currentY = e.touches[0].clientY - dragPos.initialY;
-    } else {
-      dragPos.currentX = e.clientX - dragPos.initialX;
-      dragPos.currentY = e.clientY - dragPos.initialY;
-    }
-    
-    dragPos.xOffset = dragPos.currentX;
-    dragPos.yOffset = dragPos.currentY;
-    setTranslate(dragPos.currentX, dragPos.currentY, dragItem);
-  }
+  dragItemPos.initialX = dragItemPos.currentX;
+  dragItemPos.initialY = dragItemPos.currentY;
+  dragItemPos.active = false;
 }
 
 function setTranslate(xPos, yPos, el) {
