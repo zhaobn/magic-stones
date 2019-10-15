@@ -1,5 +1,6 @@
 
 // Tuning configs
+const boxAreaMargin = 30;
 const dragElementKeyword = 'stone';
 let itemPos = stones; // JSON in js format, load as script
 
@@ -17,6 +18,15 @@ container.addEventListener("touchmove", drag, false);
 container.addEventListener("mousedown", dragStart, false);
 container.addEventListener("mouseup", dragEnd, false);
 container.addEventListener("mousemove", drag, false);
+
+// Restrict draggable area
+const containerPos = container.getBoundingClientRect();
+
+const topLimit = Math.round(containerPos.top) + boxAreaMargin;
+const bottomLimit = Math.round(containerPos.bottom) - boxAreaMargin;
+const rightLimit = Math.round(containerPos.right) - boxAreaMargin;
+const leftLimit = Math.round(containerPos.left) + boxAreaMargin;
+
 
 // Dragging functions
 // See https://www.kirupa.com/html5/drag.htm
@@ -38,8 +48,15 @@ function drag(e) {
     e.preventDefault();
 
     let clientPos = (e.type === "touchmove") ? e.touches[0] : e ;
-    dragItemPos.currentX = clientPos.clientX - dragItemPos.initialX;
-    dragItemPos.currentY = clientPos.clientY - dragItemPos.initialY;
+    let isOutside = (clientPos.clientY < topLimit) || (clientPos.clientY > bottomLimit) ||
+                    (clientPos.clientX < leftLimit) || (clientPos.clientX > rightLimit)
+    
+    if (!isOutside) {
+      dragItemPos.currentX = clientPos.clientX - dragItemPos.initialX;
+      dragItemPos.currentY = clientPos.clientY - dragItemPos.initialY;
+    } else {
+      dragEnd(e);
+    }
     
     dragItemPos.xOffset = dragItemPos.currentX;
     dragItemPos.yOffset = dragItemPos.currentY;
