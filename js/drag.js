@@ -27,6 +27,17 @@ const bottomLimit = Math.round(containerPos.bottom) - boxAreaMargin;
 const leftLimit = Math.round(containerPos.left) + boxAreaMargin;
 const rightLimit = Math.round(containerPos.right) - boxAreaMargin;
 
+// Move an element to top
+function moveUp (elementId) {
+  const el = document.getElementById(elementId);
+  const currentTop = Math.max(...Object.keys(stones).map(s => stones[s].zIndex));
+  
+  stones[elementId].zIndex = currentTop + 1;
+  el.style.zIndex = stones[elementId].zIndex;
+}
+
+
+
 // Dragging functions
 // Adapted from https://www.kirupa.com/html5/drag.htm
 function dragStart(e) {
@@ -34,6 +45,7 @@ function dragStart(e) {
     dragItem = e.target;
     dragItemPos = itemPos[dragItem.id];
     dragItemPos.active = true;
+    moveUp(dragItem.id)
   }
 
   // Pick touch-screen friendly action

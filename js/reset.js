@@ -1,11 +1,4 @@
 
-// Helper functions
-function setAttributes(el, attrs) {
-    for(var key in attrs) {
-      el.setAttribute(key, attrs[key]);
-    }
-  }
-
 // Read elements
 const resetButton = document.querySelector('.reset-button');
 const boxArea = document.querySelector('.box');
@@ -36,6 +29,7 @@ function resetStones () {
             "initialY": 0,
             "xOffset": 0,
             "yOffset": 0,
+            "zIndex": 0
         })
     })    
     
