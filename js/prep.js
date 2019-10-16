@@ -5,9 +5,6 @@ const myColors = {
   blue: 'rgb(61, 60, 134)',
   yellow: 'rgb(245, 230, 99)'
 }
-// const red = 'rgb(255, 102, 102)';
-// const blue = 'rgb(61, 60, 134)';
-// const yellow = 'rgb(245, 230, 99)';
 
 // Default stone attributes
 const stones = {
@@ -51,13 +48,14 @@ const stones = {
     }
 }
 
-// Color-changing rules
+// Define color-changing rules
 const humanReadableColorRules = {
   'blue': 'red',
   'red': 'yellow',
   'yellow': 'yellow'
 }
 
+// Prepare color-changing rules for rendering
 let colorRules = {}
 Object.keys(humanReadableColorRules).forEach(key => String(colorRules[myColors[key]] = ''));
 Object.keys(humanReadableColorRules).forEach(key => {

@@ -11,8 +11,6 @@ function simpleMagic (active_id) {
                       activePos.bottom < inactivePos.top || 
                       activePos.top > inactivePos.bottom);
     
-    // Hardcoded for demo purpose.
-    // TODO: read magical property from stones JSON.
     switch(active_id) {
         case 'stone1':
             overlap? changeColor('stone1', 'stone2') : null;
