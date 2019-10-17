@@ -60,6 +60,7 @@ function dragStart(e) {
 function drag(e) {
   if (dragItemPos.active) {
     e.preventDefault();
+    document.getElementById(dragItem.id).style.cursor = 'pointer';
 
     const clientPos = (e.type === "touchmove") ? e.touches[0] : e ;
     
