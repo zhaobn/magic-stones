@@ -20,6 +20,8 @@ function simpleMagic (active_id) {
                       activePos.bottom < inactivePos.top || 
                       activePos.top > inactivePos.bottom);
     
+    document.getElementById(inactive_id).style.transition = overlap? "all 0.8s" : '';
+
     magics.map(magic => (overlap && doMagic(magic, active_id, inactive_id)));
 }
 
