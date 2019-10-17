@@ -43,7 +43,25 @@ const stones = {
         "left" : 0,
         "right": 0
       }
-    }
+    },
+    "stone3": {
+      "id": 'stone3',
+      "defaultColor": myColors.yellow,
+      "active": false,
+      "zIndex": 0,
+      "currentX": 0,
+      "currentY": 0,
+      "initialX": 0,
+      "initialY": 0,
+      "xOffset": 0,
+      "yOffset": 0,
+      "currentRec": {
+        "top": 0,
+        "bottom" : 0,
+        "left" : 0,
+        "right": 0
+      }
+    },
 }
 
 // Define transform rules here
@@ -52,11 +70,11 @@ const humanReadableColorRules = {
   'red': 'yellow',
 }
 const humanReadableColorSizeRules = {
-  'yellow': '60',
+  'yellow': '80',
 }
 
 const humanReadableSizeColorRules = {
-  '60': 'blue',
+  '80': 'blue',
 }
 
 const humanReadableColorShapeRules = {
