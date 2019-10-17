@@ -46,15 +46,15 @@ function dragStart(e) {
     dragItemPos = itemPos[dragItem.id];
     dragItemPos.active = true;
     moveUp(dragItem.id)
+    // Pick touch-screen friendly action
+    const clientPos = (e.type === "touchstart") ? e.touches[0] : e ;
+    dragItemPos.initialX = clientPos.clientX - dragItemPos.xOffset;
+    dragItemPos.initialY = clientPos.clientY - dragItemPos.yOffset;
+  
+    // Update tracking location
+    dragItemPos.rect = getCurrentLocation(dragItem.id);
   }
 
-  // Pick touch-screen friendly action
-  const clientPos = (e.type === "touchstart") ? e.touches[0] : e ;
-  dragItemPos.initialX = clientPos.clientX - dragItemPos.xOffset;
-  dragItemPos.initialY = clientPos.clientY - dragItemPos.yOffset;
-
-  // Update tracking location
-  dragItemPos.rect = getCurrentLocation(dragItem.id);
 }
 
 function drag(e) {
@@ -77,7 +77,7 @@ function drag(e) {
 
     // Trigger effects
     dragItemPos.rect = getCurrentLocation(dragItem.id);
-    simpleMagic(dragItem.id);
+    magicEffects(dragItem.id);
   }
 }
 

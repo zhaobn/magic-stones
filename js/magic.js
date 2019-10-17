@@ -1,5 +1,5 @@
 
-function simpleMagic (active_id) {
+function magicEffects (active_id) {
     // See prep.js for human readable configs
     const magics = [
         colorToColor, 
