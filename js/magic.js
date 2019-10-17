@@ -1,5 +1,14 @@
 
 function simpleMagic (active_id) {
+    // See prep.js for human readable configs
+    const magics = [
+        colorToColor, 
+        colorToSize, 
+        colorToShape, 
+        sizeToColor,
+        shapeToColor,
+    ];
+
     const activePos = stones[active_id].rect;
     // Hardcoded for now because I know there are only two stones.
     // TODO: make a logical looping over items.
@@ -11,19 +20,51 @@ function simpleMagic (active_id) {
                       activePos.bottom < inactivePos.top || 
                       activePos.top > inactivePos.bottom);
     
-    switch(active_id) {
-        case 'stone1':
-            overlap? changeColor('stone1', 'stone2') : null;
-            break;
-        case 'stone2':
-            overlap? changeColor('stone2', 'stone1') : null;
-            break;
-    }
-    
+    magics.map(magic => (overlap && doMagic(magic, active_id, inactive_id)));
 }
 
-function changeColor(sender, receiver) {
+function doMagic (magic, sender, receiver) {
+    switch(sender) {
+        case 'stone1':
+            magic('stone1', 'stone2');
+            break;
+        case 'stone2':
+            magic('stone2', 'stone1');
+            break;
+        default:
+            console.log('No active stones detected.');
+    }
+}
+
+function colorToColor(sender, receiver) {
     const colorFrom = getComputedStyle(document.getElementById(sender))['background-color'];
     const colorTo = colorRules[colorFrom];
-    document.getElementById(receiver).style.background = colorTo;
+    !!colorTo && (document.getElementById(receiver).style.background = colorTo);
+}
+
+function colorToSize(sender, receiver) {
+    const colorFrom = getComputedStyle(document.getElementById(sender))['background-color'];
+    const sizeTo = colorSizeRules[colorFrom];
+    if (!!sizeTo) {
+        document.getElementById(receiver).style.width = (sizeTo + 'px');
+        document.getElementById(receiver).style.height = (sizeTo + 'px');
+    }
+}
+
+function sizeToColor(sender, receiver) {
+    const sizeFrom = document.getElementById(sender).clientHeight;
+    const colorTo = sizeColorRules[sizeFrom];
+    !!colorTo && (document.getElementById(receiver).style.background = colorTo);
+}
+
+function colorToShape(sender, receiver) {
+    const colorFrom = getComputedStyle(document.getElementById(sender))['background-color'];
+    const shapeTo = colorShapeRules[colorFrom];
+    !!shapeTo && (document.getElementById(receiver).style.borderRadius = (shapeTo));
+}
+
+function shapeToColor(sender, receiver) {
+    const shapeFrom = document.getElementById(sender).style.borderRadius;
+    const colorTo = shapeColorRules[shapeFrom];
+    !!colorTo && (document.getElementById(receiver).style.backgroundColor = colorTo);
 }

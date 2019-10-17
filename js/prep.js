@@ -11,7 +11,6 @@ const stones = {
     "stone1": {
       "id": 'stone1',
       "defaultColor": myColors.blue,
-      "color": myColors.blue,
       "active": false,
       "zIndex": 0,
       "currentX": 0,
@@ -30,7 +29,6 @@ const stones = {
     "stone2": {
       "id": 'stone2',
       "defaultColor": myColors.yellow,
-      "color": myColors.yellow,
       "zIndex": 0,
       "currentX": 0,
       "active": false,
@@ -48,21 +46,44 @@ const stones = {
     }
 }
 
-// Define color-changing rules
+// Define transform rules here
 const humanReadableColorRules = {
   'blue': 'red',
   'red': 'yellow',
-  'yellow': 'yellow'
+}
+const humanReadableColorSizeRules = {
+  'yellow': '60',
 }
 
-// Prepare color-changing rules for rendering
-let colorRules = {}
-Object.keys(humanReadableColorRules).forEach(key => String(colorRules[myColors[key]] = ''));
-Object.keys(humanReadableColorRules).forEach(key => {
-  const keyName = myColors[key];
-  colorRules[keyName] = myColors[humanReadableColorRules[key]];
-})
+const humanReadableSizeColorRules = {
+  '60': 'blue',
+}
 
+const humanReadableColorShapeRules = {
+  'blue': '20%',
+  'yellow': '50%',
+}
+
+const humanReadableShapeColorRules = {
+  '20%': 'yellow',
+}
+
+
+// Prepare transform rules for rendering
+let colorRules = {}
+Object.keys(humanReadableColorRules).forEach(key => colorRules[myColors[key]] = myColors[humanReadableColorRules[key]]);
+
+let colorSizeRules = {}
+Object.keys(humanReadableColorSizeRules).forEach(key => colorSizeRules[myColors[key]] = humanReadableColorSizeRules[key]);
+
+let sizeColorRules = {}
+Object.keys(humanReadableSizeColorRules).forEach(key => sizeColorRules[key] = myColors[humanReadableSizeColorRules[key]]);
+
+let colorShapeRules = {}
+Object.keys(humanReadableColorShapeRules).forEach(key => colorShapeRules[myColors[key]] = humanReadableColorShapeRules[key]);
+
+let shapeColorRules = {}
+Object.keys(humanReadableShapeColorRules).forEach(key => shapeColorRules[key] = myColors[humanReadableShapeColorRules[key]]);
 
 // Helper functions
 function setAttributes(el, attrs) {
