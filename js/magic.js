@@ -1,43 +1,32 @@
 
+// See prep.js for human readable configs
+const magics = [
+    colorToColor, 
+    colorToSize, 
+    colorToShape, 
+    sizeToColor,
+    shapeToColor,
+];
+
 function magicEffects (active_id) {
-    // See prep.js for human readable configs
-    const magics = [
-        colorToColor, 
-        colorToSize, 
-        colorToShape, 
-        sizeToColor,
-        shapeToColor,
-    ];
-
-    const activePos = stones[active_id].rect;
-    // Hardcoded for now because I know there are only two stones.
-    // TODO: make a logical looping over items.
-    const inactive_id = (Object.keys(stones).filter(s => !stones[s].active))[0];
-    const inactivePos = stones[inactive_id].rect;
-
-    const overlap = !(activePos.right < inactivePos.left || 
-                      activePos.left > inactivePos.right || 
-                      activePos.bottom < inactivePos.top || 
-                      activePos.top > inactivePos.bottom);
-    
-    document.getElementById(inactive_id).style.transition = overlap? "all 0.8s" : '';
-
-    magics.map(magic => (overlap && doMagic(magic, active_id, inactive_id)));
-}
-
-function doMagic (magic, sender, receiver) {
-    switch(sender) {
-        case 'stone1':
-            magic('stone1', 'stone2');
-            break;
-        case 'stone2':
-            magic('stone2', 'stone1');
-            break;
-        default:
-            console.log('No active stones detected.');
+    // Play magic effect on the overlap inactive stone
+    function doMagic (active_id, inactive_id) {
+        const activePos = stones[active_id].rect;
+        const inactivePos = stones[inactive_id].rect;
+        const overlap = !(activePos.right < inactivePos.left || 
+                          activePos.left > inactivePos.right || 
+                          activePos.bottom < inactivePos.top || 
+                          activePos.top > inactivePos.bottom);
+        // Smooth transition visual effect
+        document.getElementById(inactive_id).style.transition = overlap? "all 0.8s" : '';
+        magics.map(magic => (overlap && magic(active_id, inactive_id)));
     }
+    // Compare with each inactive stones
+    const inactive_ids = (Object.keys(stones).filter(s => !stones[s].active));
+    inactive_ids.map(inactive_id => doMagic(active_id, inactive_id));
 }
 
+// Magic functions
 function colorToColor(sender, receiver) {
     const colorFrom = getComputedStyle(document.getElementById(sender))['background-color'];
     const colorTo = colorRules[colorFrom];
