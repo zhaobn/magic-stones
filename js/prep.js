@@ -1,20 +1,4 @@
 
-// Default stone attributes
-const stones = {
-    "stone1": {
-      "id": 'stone1',
-      "defaultColor": myColors.blue,
-    },
-    "stone2": {
-      "id": 'stone2',
-      "defaultColor": myColors.yellow,
-    },
-    "stone3": {
-      "id": 'stone3',
-      "defaultColor": myColors.yellow,
-    },
-}
-
 // Prepare magic rules for rendering
 let colorRules = {}
 Object.keys(humanReadableColorRules).forEach(key => colorRules[myColors[key]] = myColors[humanReadableColorRules[key]]);

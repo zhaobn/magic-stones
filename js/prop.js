@@ -5,7 +5,23 @@ const myColors = {
     blue: 'rgb(61, 60, 134)',
     yellow: 'rgb(245, 230, 99)'
   }
-  
+
+// Default stone attributes
+const stones = {
+    "stone1": {
+      "id": 'stone1',
+      "defaultColor": myColors.blue,
+    },
+    "stone2": {
+      "id": 'stone2',
+      "defaultColor": myColors.yellow,
+    },
+    "stone3": {
+      "id": 'stone3',
+      "defaultColor": myColors.yellow,
+    },
+}
+
 // Initialize magic rules
 let humanReadableColorRules = {};
 let humanReadableColorShapeRules = {};
@@ -35,4 +51,3 @@ humanReadableColorShapeRules = {
 humanReadableShapeColorRules = {
   '20%': 'yellow',
 }
-
