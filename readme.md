@@ -6,14 +6,14 @@ Proudly powered by [<img src="http://vanilla-js.com/assets/button.png">](http://
 
 ## Notes
 
-1. "Stones" are created as `<div />`s. Changing their color, size or shaped are controled by manipulating relavant CSS style properties of these `<div />`s.
+1. "Stones" are created as `<div />`s. Changing their color, size or shape are controled by manipulating their relavant CSS styles.
 
-    You can **customize stone properties or magic rules in `prop.js`**.
+    You can **customize stone properties or magic rules in `js/prop.js`**.
 
-2. `prep.js` reads configs from `prop.js` to
+2. `js/prep.js` reads configs from `js/prop.js` to
 
-    - Create default stones when loading the page;
+    - create default stones when loading the page;
 
-    - Compile magic rules from the human-readable format to js-friendly objects.
+    - compile magic rules from a human-readable format to js-friendly objects.
 
-3. `drag.js` codes the dragging behavior of stones, `magic.js` define functions that make the magic happen, and `reset.js` works for the "reset" button.
+3. `js/drag.js` codes the dragging behavior of stones, `js/magic.js` define functions that make the magic happen, and `js/reset.js` works for the "reset" button.
