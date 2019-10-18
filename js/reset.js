@@ -31,8 +31,8 @@ function resetStones () {
             "yOffset": 0,
             "zIndex": 0
         })
-    })    
-    
+    })
+
 }
 
 resetButton.addEventListener('click', resetStones);

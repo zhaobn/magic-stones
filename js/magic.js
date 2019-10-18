@@ -1,9 +1,9 @@
 
 // See prep.js for human readable configs
 const magics = [
-    colorToColor, 
-    colorToSize, 
-    colorToShape, 
+    colorToColor,
+    colorToSize,
+    colorToShape,
     sizeToColor,
     shapeToColor,
 ];
@@ -13,9 +13,9 @@ function magicEffects (active_id) {
     function doMagic (active_id, inactive_id) {
         const activePos = stones[active_id].rect;
         const inactivePos = stones[inactive_id].rect;
-        const overlap = !(activePos.right < inactivePos.left || 
-                          activePos.left > inactivePos.right || 
-                          activePos.bottom < inactivePos.top || 
+        const overlap = !(activePos.right < inactivePos.left ||
+                          activePos.left > inactivePos.right ||
+                          activePos.bottom < inactivePos.top ||
                           activePos.top > inactivePos.bottom);
         // Smooth transition visual effect
         document.getElementById(inactive_id).style.transition = overlap? "all 0.8s" : '';

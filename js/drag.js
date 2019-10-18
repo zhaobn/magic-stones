@@ -31,7 +31,7 @@ const rightLimit = Math.round(containerPos.right) - boxAreaMargin;
 function moveUp (elementId) {
   const el = document.getElementById(elementId);
   const currentTop = Math.max(...Object.keys(stones).map(s => (stones[s].zIndex || 0)));
-  
+
   stones[elementId].zIndex = currentTop + 1;
   el.style.zIndex = stones[elementId].zIndex;
 }
@@ -60,7 +60,7 @@ function drag(e) {
     document.getElementById(dragItem.id).style.cursor = 'pointer';
 
     const clientPos = (e.type === "touchmove") ? e.touches[0] : e ;
-    
+
     // Restrict movements in the draggable area
     const isOutside = (clientPos.clientY < topLimit) || (clientPos.clientY > bottomLimit) ||
                       (clientPos.clientX < leftLimit) || (clientPos.clientX > rightLimit)
@@ -68,7 +68,7 @@ function drag(e) {
       dragItemPos.currentX = clientPos.clientX - dragItemPos.initialX;
       dragItemPos.currentY = clientPos.clientY - dragItemPos.initialY;
     }
-    
+
     dragItemPos.xOffset = dragItemPos.currentX;
     dragItemPos.yOffset = dragItemPos.currentY;
     setTranslate(dragItemPos.currentX, dragItemPos.currentY, dragItem);
