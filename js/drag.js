@@ -2,7 +2,7 @@
 // Tuning configs
 const boxAreaMargin = 30;
 const dragElementKeyword = 'stone';
-const itemPos = stones; // JSON in js format, load as script
+const itemPos = stones;
 
 // Initialize stone attributes
 let dragItem;
@@ -30,7 +30,7 @@ const rightLimit = Math.round(containerPos.right) - boxAreaMargin;
 // Move an element to top
 function moveUp (elementId) {
   const el = document.getElementById(elementId);
-  const currentTop = Math.max(...Object.keys(stones).map(s => stones[s].zIndex));
+  const currentTop = Math.max(...Object.keys(stones).map(s => (stones[s].zIndex || 0)));
   
   stones[elementId].zIndex = currentTop + 1;
   el.style.zIndex = stones[elementId].zIndex;
@@ -48,17 +48,14 @@ function dragStart(e) {
     moveUp(dragItem.id)
     // Pick touch-screen friendly action
     const clientPos = (e.type === "touchstart") ? e.touches[0] : e ;
-    dragItemPos.initialX = clientPos.clientX - dragItemPos.xOffset;
-    dragItemPos.initialY = clientPos.clientY - dragItemPos.yOffset;
-  
-    // Update tracking location
-    dragItemPos.rect = getCurrentLocation(dragItem.id);
+    dragItemPos.initialX = clientPos.clientX - (dragItemPos.xOffset || 0);
+    dragItemPos.initialY = clientPos.clientY - (dragItemPos.yOffset || 0);
   }
 
 }
 
 function drag(e) {
-  if (dragItemPos.active) {
+  if (!!dragItemPos.active) {
     e.preventDefault();
     document.getElementById(dragItem.id).style.cursor = 'pointer';
 

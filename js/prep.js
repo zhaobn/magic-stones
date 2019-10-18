@@ -4,56 +4,14 @@ const stones = {
     "stone1": {
       "id": 'stone1',
       "defaultColor": myColors.blue,
-      "active": false,
-      "zIndex": 0,
-      "currentX": 0,
-      "currentY": 0,
-      "initialX": 0,
-      "initialY": 0,
-      "xOffset": 0,
-      "yOffset": 0,
-      "currentRec": {
-        "top": 0,
-        "bottom" : 0,
-        "left" : 0,
-        "right": 0
-      }
     },
     "stone2": {
       "id": 'stone2',
       "defaultColor": myColors.yellow,
-      "zIndex": 0,
-      "currentX": 0,
-      "active": false,
-      "currentY": 0,
-      "initialX": 0,
-      "initialY": 0,
-      "xOffset": 0,
-      "yOffset": 0,
-      "currentRec": {
-        "top": 0,
-        "bottom" : 0,
-        "left" : 0,
-        "right": 0
-      }
     },
     "stone3": {
       "id": 'stone3',
       "defaultColor": myColors.yellow,
-      "active": false,
-      "zIndex": 0,
-      "currentX": 0,
-      "currentY": 0,
-      "initialX": 0,
-      "initialY": 0,
-      "xOffset": 0,
-      "yOffset": 0,
-      "currentRec": {
-        "top": 0,
-        "bottom" : 0,
-        "left" : 0,
-        "right": 0
-      }
     },
 }
 
@@ -97,7 +55,6 @@ Object.keys(stones).map(s => {
     'class': 'stone',
     'id': stones[s].id,
     'background-color': stones[s].defaultColor,
-    'z-index': stones[s].zIndex,
   })
   document.querySelector('.box').append(stone);
 })
