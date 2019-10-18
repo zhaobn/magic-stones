@@ -1,11 +1,4 @@
 
-// Helper definitions
-const myColors = {
-  red: 'rgb(255, 102, 102)',
-  blue: 'rgb(61, 60, 134)',
-  yellow: 'rgb(245, 230, 99)'
-}
-
 // Default stone attributes
 const stones = {
     "stone1": {
@@ -64,30 +57,7 @@ const stones = {
     },
 }
 
-// Define transform rules here
-const humanReadableColorRules = {
-  'blue': 'red',
-  'red': 'yellow',
-}
-const humanReadableColorSizeRules = {
-  'yellow': '80',
-}
-
-const humanReadableSizeColorRules = {
-  '80': 'blue',
-}
-
-const humanReadableColorShapeRules = {
-  'blue': '20%',
-  'yellow': '50%',
-}
-
-const humanReadableShapeColorRules = {
-  '20%': 'yellow',
-}
-
-
-// Prepare transform rules for rendering
+// Prepare magic rules for rendering
 let colorRules = {}
 Object.keys(humanReadableColorRules).forEach(key => colorRules[myColors[key]] = myColors[humanReadableColorRules[key]]);
 
