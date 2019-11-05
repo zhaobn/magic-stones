@@ -36,7 +36,7 @@ function getCurrentLocation(id) {
 Object.keys(stones).map(s => {
   let stone = document.createElement('div');
   setAttributes(stone, {
-    'class': 'stone',
+    'class': (stones[s].type === 'magic')? 'magic-stone': 'normal-stone',
     'id': stones[s].id,
     'background-color': stones[s].defaultColor,
   })

@@ -6,15 +6,16 @@ const boxArea = document.querySelector('.box');
 // Reset stones: position, properties
 function resetStones () {
     // Clear all existing stones
-    const stonesToClear = document.getElementsByClassName('stone');
-    while(stonesToClear.length > 0){
-        stonesToClear[0].parentNode.removeChild(stonesToClear[0]);
-    }
+    const stonesToClear = document.querySelectorAll('[id^="stone"]');
+    stonesToClear.forEach(s => {
+        let el = document.getElementById(s.id);
+        el.parentNode.removeChild(el);
+    });
     // Create default stones
     Object.keys(stones).map(s => {
         const newStone = document.createElement('div');
         setAttributes(newStone, {
-            'class': 'stone',
+            'class': (stones[s].type === 'magic')? 'magic-stone': 'normal-stone',
             'id': stones[s].id,
             'background-color': stones[s].color
         })

@@ -10,16 +10,14 @@ const myColors = {
 const stones = {
     "stone1": {
       "id": 'stone1',
+      "type": 'magic',
       "defaultColor": myColors.blue,
     },
     "stone2": {
       "id": 'stone2',
+      "type": 'normal',
       "defaultColor": myColors.yellow,
-    },
-    "stone3": {
-      "id": 'stone3',
-      "defaultColor": myColors.yellow,
-    },
+    }
 }
 
 // Initialize magic rules
@@ -32,22 +30,22 @@ let humanReadableSizeColorRules = {}
 // Define transform rules here
 humanReadableColorRules = {
     'blue': 'red',
-    'red': 'yellow',
+    'yellow': 'red',
 }
 
-humanReadableColorSizeRules = {
-  'yellow': '80',
-}
+// humanReadableColorSizeRules = {
+//   'yellow': '80',
+// }
 
-humanReadableSizeColorRules = {
-  '80': 'blue',
-}
+// humanReadableSizeColorRules = {
+//   '80': 'blue',
+// }
 
-humanReadableColorShapeRules = {
-  'blue': '20%',
-  'yellow': '50%',
-}
+// humanReadableColorShapeRules = {
+//   'blue': '20%',
+//   'yellow': '50%',
+// }
 
-humanReadableShapeColorRules = {
-  '20%': 'yellow',
-}
+// humanReadableShapeColorRules = {
+//   '20%': 'yellow',
+// }

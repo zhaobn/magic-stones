@@ -10,16 +10,19 @@ const magics = [
 
 function magicEffects (active_id) {
     // Play magic effect on the overlap inactive stone
+    // Only if the active one is a magic stone
     function doMagic (active_id, inactive_id) {
         const activePos = stones[active_id].rect;
         const inactivePos = stones[inactive_id].rect;
+        const activeType = stones[active_id].type;
         const overlap = !(activePos.right < inactivePos.left ||
                           activePos.left > inactivePos.right ||
                           activePos.bottom < inactivePos.top ||
                           activePos.top > inactivePos.bottom);
+        const isMagic = (activeType === 'magic') && overlap;
         // Smooth transition visual effect
-        document.getElementById(inactive_id).style.transition = overlap? "all 0.8s" : '';
-        magics.map(magic => (overlap && magic(active_id, inactive_id)));
+        document.getElementById(inactive_id).style.transition = isMagic? "all 0.8s" : '';
+        magics.map(magic => (isMagic && magic(active_id, inactive_id)));
     }
     // Compare with each inactive stones
     const inactive_ids = (Object.keys(stones).filter(s => !stones[s].active));
