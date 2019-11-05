@@ -17,6 +17,21 @@ ul {
     list-style-type: none;
 }
 
+button {
+    background-color: #1A1A1D;
+    border: 1px solid white;
+    color: white;
+    font-size: 15px;
+    text-align: center;
+    margin:  1px;
+}
+
+button:hover {
+    background-color: white;
+    border: none;
+    color: #1A1A1D;
+}
+
 .button-group {
     display: flex;
     justify-content: space-between;
@@ -48,14 +63,50 @@ ul {
     color: #4E4E50
 }
 
+
 .box {
     margin: 30px 0 20px 0;
-    height: 400px;
+    height: 300px;
     background-color: #0B0C10;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
+}
+
+.box-gt {
+    margin: 30px 0 20px 0;
+    height: 300px;
+    background-color: #0B0C10;
+}
+
+.proceed {
+    margin-top: 20px;
+}
+
+.proceed-button-group {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+}
+
+.proceed hr {
+    border: 1px solid #4E4E50;
+}
+
+.proceed-button {
+    display: inline-block;
+    background-color: #1A1A1D;
+    border: none;
+    color: #4E4E50;
+    margin-top: 20px;
+    padding: 5px 15px;
+    font-size: 20px;
+    text-align: center;
+}
+
+.proceed-button:hover {
+    border: 1px solid #fff;
 }
 
 .stone {
@@ -67,12 +118,41 @@ ul {
     touch-action: none;
     user-select: none;
     margin: 10%;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 50px;
 }
 
 #stone1 {
     background-color: rgb(61, 60, 134);
 }
 
+.learning {
+    margin-top: 50px;
+}
+
+.generalization {
+    display: none;
+    margin-top: 100px;
+}
+
+.learning h2 {
+    color: white;
+}
+
+.learning p {
+    color: #747474;
+    font-size: 20px;
+}
+
+.generalization h2 {
+    color: white;
+}
+
+.generalization p {
+    color: #747474;
+    font-size: 20px;
+}
 
 /* .stone:active{
     background-color: rgba(168, 218, 220, 1.00);
@@ -82,4 +162,3 @@ ul {
     cursor: pointer;
     border-width: 20px;
 } */
-

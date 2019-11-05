@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <link rel='stylesheet' type="text/css" href='../css/style.css'>
+    <title>Magic Stones</title>
+</head>
+
+<body class='demo'>
+    <h1>Play with magic stones</h1>
+
+    <!-- Learning task -->
+    <div class='learning' id='learning1'>
+        <h2>Drag the magic stone to the normal stone to see the effect.</h2>
+        <p>
+            Press the 'Reset' button to start over.
+            When you are ready, press the 'Next' button to start the challenge.
+        </p>
+        <div class='box'>
+            <!-- Default stones are created by stones.js -->
+        </div>
+        <div class='button-group'>
+            <button class='reset-button'>Reset</button>
+            <button class='next-button' onclick="showTask('generalization1-1')">Next</button>
+        </div>
+    </div>
+
+    <!-- Generalization task -->
+    <div class='generalization' id='generalization1-1'>
+        <h2>Dragging the magic stone to this normal stone, what will the normal stone turn into?</h2>
+        <p>
+            Select your answer in the panel on the right
+            Press the 'Check' button to play with the stones again if you are uncertain.
+            Press the 'Next' button to start the next challenge.
+        </p>
+
+        <div class='box-gt'>
+        </div>
+        <div class='button-group'>
+            <button class='check-button' onclick="check('learning1')">Check</button>
+            <button class='next-button' onclick="showTask('generalization1-2')">Next</button>
+        </div>
+    </div>
+
+    <!-- Learning task -->
+    <div class='generalization' id='generalization1-2'>
+        <h2>Dragging the magic stone to this normal stone, what will the normal stone turn into?</h2>
+        <p>
+            Select your answer in the panel on the right
+            Press the 'Check' button to play with the stones again if you are uncertain.
+            Press the 'Submit' button to submit your answers.
+        </p>
+        <div class='box-gt'>
+        </div>
+        <div class='button-group'>
+            <button class='check-button' onclick="check('learning1')">Check</button>
+            <button class='submit-button'>Submit</button>
+        </div>
+    </div>
+
+    <!-- Proceed to next page -->
+    <div class='proceed'>
+        <hr>
+        <div class='proceed-button-group'>
+            <button class='proceed-button' id='proceed-button-1'>>></button>
+        </div>
+    </div>
+</body>
+
+<script type='text/javascript' src='../js/prop.js'></script>
+<script type='text/javascript' src='../js/prep.js'></script>
+<script type='text/javascript' src='../js/magic.js'></script>
+<script type='text/javascript' src='../js/drag.js'></script>
+<script type='text/javascript' src='../js/reset.js'></script>
+<script type='text/javascript' src='../js/helpers.js'></script>
+
+<footer>
+    &copy; Copyright Bramleylab 2019
+</footer>
+
+</html>
