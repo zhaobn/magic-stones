@@ -114,13 +114,9 @@ button:hover {
     height: 50px;
     background-color: rgb(245, 230, 99);
     border: 10px solid rgba(136, 136, 136, .5);
-    border-radius: 50%;
-    touch-action: none;
-    user-select: none;
+    border-radius: 10%;
     margin: 10%;
-    text-align: center;
-    vertical-align: middle;
-    line-height: 50px;
+    /* transform: rotate(45deg); */
 }
 
 .normal-stone {
@@ -128,12 +124,7 @@ button:hover {
     height: 60px;
     background-color: rgb(245, 230, 99);
     border-radius: 50%;
-    touch-action: none;
-    user-select: none;
     margin: 10%;
-    text-align: center;
-    vertical-align: middle;
-    line-height: 50px;
 }
 
 #stone1 {

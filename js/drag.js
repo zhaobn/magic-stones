@@ -41,6 +41,7 @@ function moveUp (elementId) {
 // Dragging functions
 // Adapted from https://www.kirupa.com/html5/drag.htm
 function dragStart(e) {
+  keepRotation(e.target);
   if (e.target.id.indexOf(dragElementKeyword) > -1) {
     dragItem = e.target;
     dragItemPos = itemPos[dragItem.id];
@@ -86,5 +87,12 @@ function dragEnd(e) {
 }
 
 function setTranslate(xPos, yPos, el) {
-  el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+  el.style.transform = ("translate3d(" + xPos + "px, " + yPos + "px, 0)" + keepRotation(el));
+}
+
+// Hack: if an element is rotated, keep its rotation while dragging
+// See https://css-tricks.com/get-value-of-css-rotation-through-javascript/
+function keepRotation(el) {
+  const st = (window.getComputedStyle(el, null).getPropertyValue("transform"));
+  return (st.indexOf('matrix(0.') > -1)? ' rotate(45deg)' : '';
 }
