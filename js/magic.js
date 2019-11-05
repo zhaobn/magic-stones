@@ -54,7 +54,22 @@ function sizeToColor(sender, receiver) {
 function colorToShape(sender, receiver) {
     const colorFrom = getComputedStyle(document.getElementById(sender))['background-color'];
     const shapeTo = colorShapeRules[colorFrom];
-    !!shapeTo && (document.getElementById(receiver).style.borderRadius = (shapeTo));
+    if (!!shapeTo) {
+        switch (shapeTo) {
+            case 'diamond':
+                document.getElementById(receiver).style.borderRadius = '10%';
+                document.getElementById(receiver).style.transform = 'rotate(45deg) scale(.8)';
+                break;
+            case 'circle':
+                document.getElementById(receiver).style.borderRadius = '50%';
+                break;
+            case 'square':
+                document.getElementById(receiver).style.borderRadius = '10%';
+                break;
+            default:
+                console.log('Nothing to change');
+        }
+    }
 }
 
 function shapeToColor(sender, receiver) {

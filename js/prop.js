@@ -41,10 +41,9 @@ humanReadableColorRules = {
 //   '80': 'blue',
 // }
 
-// humanReadableColorShapeRules = {
-//   'blue': '20%',
-//   'yellow': '50%',
-// }
+humanReadableColorShapeRules = {
+  'blue': 'diamond',
+}
 
 // humanReadableShapeColorRules = {
 //   '20%': 'yellow',
