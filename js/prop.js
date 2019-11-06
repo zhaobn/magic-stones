@@ -5,6 +5,7 @@ const myColors = {
     blue: 'rgb(61, 60, 134)',
     yellow: 'rgb(245, 230, 99)'
   }
+const magicStoneBorderStyle = '10px solid rgba(136, 136, 136, .5)';
 
 // Default stone attributes
 const stones = {

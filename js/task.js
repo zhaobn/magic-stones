@@ -18,7 +18,6 @@ let data = {
 }
 
 // Helper definitions
-const magicStoneBorderStyle = '10px solid rgba(136, 136, 136, .5)';
 let tbs = {};
 Object.keys(data).forEach(d => tbs[d] = []);
 

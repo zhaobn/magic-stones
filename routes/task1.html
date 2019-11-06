@@ -11,18 +11,19 @@
     <h1>Play with magic stones</h1>
 
     <!-- Learning task -->
-    <div class='learning' id='learning1'>
+    <div class='learning'>
         <h2>Drag the magic stone to the normal stone to see the effect.</h2>
         <p>
-            Press the 'Reset' button to start over.
-            When you are ready, press the 'Next' button to start the challenge.
+            Press the 'Play' button to watch the effects.
+            Press the 'Next' button to start your challenge.
         </p>
-        <div class='box'>
+        <div class='box-lt' id='learning1'>
             <!-- Default stones are created by stones.js -->
         </div>
         <div class='button-group'>
-            <button class='reset-button'>Reset</button>
             <button class='next-button' onclick="showTask('generalization1-1')">Next</button>
+            <button class='reset-button' id='reset1'>Reset</button>
+            <button class='play-button' id='play1'>Play</button>
         </div>
     </div>
 
@@ -38,7 +39,6 @@
             <!-- Create task and answer-panel by task.js -->
         </div>
         <div class='button-group'>
-            <button class='check-button' onclick="check('learning1')">Check</button>
             <button class='next-button' onclick="showTask('generalization1-2')">Next</button>
         </div>
     </div>
@@ -55,7 +55,6 @@
             <!-- Create task and answer-panel by task.js -->
         </div>
         <div class='button-group'>
-            <button class='check-button' onclick="check('learning1')">Check</button>
             <button class='submit-button'>Submit</button>
         </div>
     </div>
@@ -71,9 +70,10 @@
 
 <script type='text/javascript' src='../js/prop.js'></script>
 <script type='text/javascript' src='../js/prep.js'></script>
-<script type='text/javascript' src='../js/magic.js'></script>
+<!-- <script type='text/javascript' src='../js/magic.js'></script>
 <script type='text/javascript' src='../js/drag.js'></script>
-<script type='text/javascript' src='../js/reset.js'></script>
+<script type='text/javascript' src='../js/reset.js'></script> -->
+<script type='text/javascript' src='../js/play.js'></script>
 <script type='text/javascript' src='../js/task.js'></script>
 <script type='text/javascript' src='../js/helpers.js'></script>
 
