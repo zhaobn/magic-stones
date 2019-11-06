@@ -63,7 +63,6 @@ button:hover {
     color: #4E4E50
 }
 
-
 .box {
     margin: 30px 0 20px 0;
     height: 300px;
@@ -78,6 +77,43 @@ button:hover {
     margin: 30px 0 20px 0;
     height: 300px;
     background-color: #0B0C10;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+}
+
+.box-task {
+    position: absolute;
+    height: 90%;
+    width: 60%;
+    background-color: #0B0C10;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.box-panel {
+    position: absolute;
+    left: 63%;
+    height: 90%;
+    width: 35%;
+    background-color: #0B0C10;
+    border-left: 3px dashed #1A1A1D;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.selection-panel {
+    border: 3px dashed #1A1A1D;
+    background-color: #0B0C10;
+    padding: 5px;
+}
+
+.selection-panel td:hover {
+    border: 1px dotted #fff;
 }
 
 .proceed {
@@ -127,6 +163,156 @@ button:hover {
     margin: 10%;
 }
 
+.stone-rc {
+    width: 60px;
+    height: 60px;
+    background-color: rgb(255, 102, 102);
+    border-radius: 50%;
+    margin: 5px;
+}
+
+.stone-yc {
+    width: 60px;
+    height: 60px;
+    background-color: rgb(245, 230, 99);
+    border-radius: 50%;
+    margin: 5px;
+}
+
+.stone-bc {
+    width: 60px;
+    height: 60px;
+    background-color: rgb(61, 60, 134);
+    border-radius: 50%;
+    margin: 5px;
+}
+
+.stone-rs {
+    width: 60px;
+    height: 60px;
+    background-color: rgb(255, 102, 102);
+    border-radius: 10%;
+    margin: 5px;
+}
+
+.stone-ys {
+    width: 60px;
+    height: 60px;
+    background-color: rgb(245, 230, 99);
+    border-radius: 10%;
+    margin: 5px;
+}
+
+.stone-bs {
+    width: 60px;
+    height: 60px;
+    background-color: rgb(61, 60, 134);
+    border-radius: 10%;
+    margin: 5px;
+}
+
+.stone-rd {
+    width: 60px;
+    height: 60px;
+    background-color: rgb(255, 102, 102);
+    border-radius: 10%;
+    transform: rotate(45deg) scale(0.8);
+    margin: 5px;
+}
+
+.stone-yd {
+    width: 60px;
+    height: 60px;
+    background-color: rgb(245, 230, 99);
+    border-radius: 10%;
+    transform: rotate(45deg) scale(0.8);
+    margin: 5px;
+}
+
+.stone-bd {
+    width: 60px;
+    height: 60px;
+    background-color: rgb(61, 60, 134);
+    border-radius: 10%;
+    transform: rotate(45deg) scale(0.8);
+    margin: 5px;
+}
+
+.panel-stone-0-0 {
+    width: 30px;
+    height: 30px;
+    background-color: rgb(255, 102, 102);
+    border-radius: 50%;
+    margin: 5px;
+}
+
+.panel-stone-0-1 {
+    width: 30px;
+    height: 30px;
+    background-color: rgb(245, 230, 99);
+    border-radius: 50%;
+    margin: 5px;
+}
+
+.panel-stone-0-2 {
+    width: 30px;
+    height: 30px;
+    background-color: rgb(61, 60, 134);
+    border-radius: 50%;
+    margin: 5px;
+}
+
+.panel-stone-1-0 {
+    width: 30px;
+    height: 30px;
+    background-color: rgb(255, 102, 102);
+    border-radius: 10%;
+    margin: 5px;
+}
+
+.panel-stone-1-1 {
+    width: 30px;
+    height: 30px;
+    background-color: rgb(245, 230, 99);
+    border-radius: 10%;
+    margin: 5px;
+}
+
+.panel-stone-1-2 {
+    width: 30px;
+    height: 30px;
+    background-color: rgb(61, 60, 134);
+    border-radius: 10%;
+    margin: 5px;
+}
+
+.panel-stone-2-0 {
+    width: 30px;
+    height: 30px;
+    background-color: rgb(255, 102, 102);
+    border-radius: 10%;
+    transform: rotate(45deg) scale(0.8);
+    margin: 5px;
+}
+
+.panel-stone-2-1 {
+    width: 30px;
+    height: 30px;
+    background-color: rgb(245, 230, 99);
+    border-radius: 10%;
+    transform: rotate(45deg) scale(0.8);
+    margin: 5px;
+}
+
+.panel-stone-2-2 {
+    width: 30px;
+    height: 30px;
+    background-color: rgb(61, 60, 134);
+    border-radius: 10%;
+    transform: rotate(45deg) scale(0.8);
+    margin: 5px;
+}
+
 #stone1 {
     background-color: rgb(61, 60, 134);
 }
@@ -157,7 +343,6 @@ button:hover {
     color: #747474;
     font-size: 20px;
 }
-
 /* .stone:active{
     background-color: rgba(168, 218, 220, 1.00);
 } */
