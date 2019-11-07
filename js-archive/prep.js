@@ -32,18 +32,18 @@ function getCurrentLocation(id) {
   return rect;
 }
 
-// // Create default stones
-// Object.keys(stones).map(s => {
-//   let stone = document.createElement('div');
-//   setAttributes(stone, {
-//     'class': (stones[s].type === 'magic')? 'magic-stone': 'normal-stone',
-//     'id': stones[s].id,
-//     'background-color': stones[s].defaultColor,
-//   })
-//   document.querySelector('.box').append(stone);
-// })
+// Create default stones
+Object.keys(stones).map(s => {
+  let stone = document.createElement('div');
+  setAttributes(stone, {
+    'class': (stones[s].type === 'magic')? 'magic-stone': 'normal-stone',
+    'id': stones[s].id,
+    'background-color': stones[s].defaultColor,
+  })
+  document.querySelector('.box').append(stone);
+})
 
-// // Populate initial locations
-// Object.keys(stones).forEach(s => {
-//   stones[s].rect = getCurrentLocation(s);
-// })
+// Populate initial locations
+Object.keys(stones).forEach(s => {
+  stones[s].rect = getCurrentLocation(s);
+})

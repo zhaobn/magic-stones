@@ -1,51 +1,33 @@
-
-// Define custom colors
 const myColors = {
     red: 'rgb(255, 102, 102)',
     blue: 'rgb(61, 60, 134)',
     yellow: 'rgb(245, 230, 99)'
   }
+
 const magicStoneBorderStyle = '10px solid rgba(136, 136, 136, .5)';
 
-// Default stone attributes
-const stones = {
-    "stone1": {
-      "id": 'stone1',
-      "type": 'magic',
-      "defaultColor": myColors.blue,
+// Task config object
+const learningTaskConfig = {
+    taskId: 'learning1',
+    magicStone: 'rc',
+    normalStone: 'ys',
+    rules: [ 'r2r', 'y2c' ],
+};
+
+// Data to send
+let data = {
+    'gt1-1': {
+        taskId: 'gt1-1',
+        magicStone: 'yc',
+        normalStone: 'bd',
+        selection : {},
+        clicks: [],
     },
-    "stone2": {
-      "id": 'stone2',
-      "type": 'normal',
-      "defaultColor": myColors.yellow,
+    'gt1-2': {
+        taskId: 'gt1-2',
+        magicStone: 'rs',
+        normalStone: 'rd',
+        selection : {},
+        clicks: [],
     }
 }
-
-// Initialize magic rules
-let humanReadableColorRules = {};
-let humanReadableColorShapeRules = {};
-let humanReadableColorSizeRules = {};
-let humanReadableShapeColorRules = {};
-let humanReadableSizeColorRules = {}
-
-// Define transform rules here
-humanReadableColorRules = {
-    'blue': 'red',
-    'yellow': 'red',
-}
-
-// humanReadableColorSizeRules = {
-//   'yellow': '80',
-// }
-
-// humanReadableSizeColorRules = {
-//   '80': 'blue',
-// }
-
-humanReadableColorShapeRules = {
-  'blue': 'diamond',
-}
-
-// humanReadableShapeColorRules = {
-//   '20%': 'yellow',
-// }

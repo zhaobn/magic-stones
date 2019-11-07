@@ -1,22 +1,4 @@
 
-// Data to send
-let data = {
-    'gt1-1': {
-        taskId: 'gt1-1',
-        magicStone: 'yc',
-        normalStone: 'bd',
-        selection : {},
-        clicks: [],
-    },
-    'gt1-2': {
-        taskId: 'gt1-2',
-        magicStone: 'rs',
-        normalStone: 'rd',
-        selection : {},
-        clicks: [],
-    }
-}
-
 // Helper definitions
 let tbs = {};
 Object.keys(data).forEach(d => tbs[d] = []);

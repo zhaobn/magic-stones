@@ -1,12 +1,4 @@
 
-// Task config object
-const learningTaskConfig = {
-    taskId: 'learning1',
-    magicStone: 'rc',
-    normalStone: 'ys',
-    rules: [ 'r2r', 'y2c' ],
-};
-
 // Create stones
 function createStones () {
     let magicStone = document.createElement('div');
