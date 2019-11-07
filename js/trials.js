@@ -7,3 +7,5 @@ createTask(currentTask);
 
 /** Create proceed button functionality */
 document.getElementById('proceed-btn').onclick = () => updateTask(currentTask);
+
+console.log('played: ' + played);

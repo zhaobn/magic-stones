@@ -1,4 +1,7 @@
 
+/** Global variable controlling the 'play' status */
+let played = 0;
+
 /** Color changing effects */
 const changeColor = (id, color) =>
     document.getElementById(id).style.background = myColors[color];
@@ -140,6 +143,9 @@ function createTask (taskId) {
 
     createLearningTask(currentTrial.learn);
     createGeneralizationTask(currentTrial.gen, currentTask);
+
+    /** Reset play status */
+    played = 0;
 }
 
 /** Helper function that reads clientPos of an element */
@@ -182,6 +188,8 @@ function moveStone (task) {
 const playEffects = (task) => {
     moveStone(task);
     changeStone(task);
+
+    played = 1;
 }
 
 /** For the `reset` button of the learning task */
@@ -236,10 +244,14 @@ function setEffect (task, id, rule) {
 
 /** Toggle generaliztion task display */
 function showTask (taskId) {
-    document.getElementById(taskId).style.display = "block";
-    document.getElementById(taskId).scrollIntoView({
-        behavior: 'smooth'
-    });
+    if (played > 0) {
+        document.getElementById(taskId).style.display = "block";
+        document.getElementById(taskId).scrollIntoView({
+            behavior: 'smooth'
+        });
+    } else {
+        window.alert('Please play the effects first!');
+    }
 }
 
 /** For the `proceed` button on task page */
