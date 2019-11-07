@@ -1,9 +1,10 @@
 
-function changeColor(id, color) {
+/** Color changing effects */
+const changeColor = (id, color) =>
     document.getElementById(id).style.background = myColors[color];
-}
 
-function changeShape(id, shape) {
+/** Shape changing effects */
+function changeShape (id, shape) {
     const el = document.getElementById(id);
     switch (shape) {
         case 'diamond':
@@ -19,6 +20,7 @@ function changeShape(id, shape) {
     }
 }
 
+/** Animation effect for changing the normal stone */
 function changeStone (task) {
     const normalStoneId = `${task.taskId}-normal-stone`;
     const normalStone = document.getElementById(normalStoneId);
@@ -26,20 +28,39 @@ function changeStone (task) {
     task.rules.forEach(rule => setEffect(task, normalStoneId, rule));
 }
 
+/** In order to show a new task, clear current page */
+function clearTaskElements (taskId) {
+    const trial = trails[taskData[taskId].trialId];
+    const elementsToClear = [
+        `${trial.learn.taskId}-magic-stone`,
+        `${trial.learn.taskId}-normal-stone`,
+        `${trial.gen.taskId}-magic-stone`,
+        `${trial.gen.taskId}-normal-stone`,
+        `${taskId}-panel`,
+    ];
+    elementsToClear.forEach (el => {
+        let clear = document.getElementById(el);
+        clear.parentNode.removeChild(clear);
+    })
+}
+
+/** Create the generaliztion task */
 function createGeneralizationTask (task, currentTask) {
     createStones(task, '.box-task');
     const panel = createPanel(task, currentTask);
     document.querySelector('.box-panel').append(panel);
 }
 
-const createLearningTask = (task) => {
-    // Create stones
+/** Create the learning task */
+function createLearningTask (task) {
+    /** Create stones */
     createStones(task);
-    // Trigger animations
+    /** Trigger animations */
     document.getElementById('play-btn').onclick = () => playEffects(task);
     document.getElementById('reset-btn').onclick = () => resetStones(task);
 }
 
+/** Create selection panel */
 function createPanel(gtask, taskId) {
     const dataEntry = taskId;
     let data = gtask;
@@ -48,7 +69,7 @@ function createPanel(gtask, taskId) {
     tbs = [];
 
     let tbl = document.createElement('table');
-    setAttributes(tbl, { 'class': 'selection-panel' })
+    setAttributes(tbl, { 'class': 'selection-panel', 'id': `${taskId}-panel` })
 
     const styleClicked = (id) => {
         const selectedTb = id.replace(/cell/g, 'tb');
@@ -94,6 +115,7 @@ function createPanel(gtask, taskId) {
     return tbl;
 }
 
+/** Create a pair of magic and normal stones */
 function createStones (task, box = '.box-lt') {
     let magicStone = document.createElement('div');
     setAttributes(magicStone, {
@@ -106,12 +128,21 @@ function createStones (task, box = '.box-lt') {
         'class': `stone-${task.normalStone}`,
         'id': `${task.taskId}-normal-stone`,
     });
-
     const taskBox = document.querySelector(box);
     taskBox.append(magicStone);
     taskBox.append(normalStone);
 }
 
+/** Main trial creation function */
+function createTask (taskId) {
+    const trial = taskData[taskId].trialId
+    const currentTrial = trails[trial];
+
+    createLearningTask(currentTrial.learn);
+    createGeneralizationTask(currentTrial.gen, currentTask);
+}
+
+/** Helper function that reads clientPos of an element */
 function getCurrentLocation(id) {
     let rect = {top: 0, bottom: 0, left: 0, right: 0};
     const pos = document.getElementById(id).getBoundingClientRect();
@@ -122,6 +153,7 @@ function getCurrentLocation(id) {
     return rect;
 }
 
+/** Psedo hover effects */
 function hover (tbid, selected) {
     const tb = document.getElementById(tbid);
     tb.onmouseover = function() {
@@ -132,6 +164,7 @@ function hover (tbid, selected) {
     };
 }
 
+/** Animation effect for moving magic stone to the normal stone */
 function moveStone (task) {
     const magicStoneId = `${task.taskId}-magic-stone`;
     const normalStoneId = `${task.taskId}-normal-stone`;
@@ -145,11 +178,13 @@ function moveStone (task) {
     (delta > 0) && (magicStone.style.left = `${delta}px`);
 }
 
+/** For the `play` button of the learning task */
 const playEffects = (task) => {
     moveStone(task);
     changeStone(task);
 }
 
+/** For the `reset` button of the learning task */
 function resetStones (task) {
     const magicStoneId = `${task.taskId}-magic-stone`;
     const normalStoneId = `${task.taskId}-normal-stone`;
@@ -163,12 +198,14 @@ function resetStones (task) {
     createStones(task);
 }
 
+/** Useful shorthand */
 function setAttributes(el, attrs) {
     for(var key in attrs) {
       el.setAttribute(key, attrs[key]);
     }
 }
 
+/** Where magic happends */
 function setEffect (task, id, rule) {
     const keyword = rule[2];
     // Check if effects takes place
@@ -197,9 +234,35 @@ function setEffect (task, id, rule) {
     }
 }
 
+/** Toggle generaliztion task display */
 function showTask (taskId) {
     document.getElementById(taskId).style.display = "block";
     document.getElementById(taskId).scrollIntoView({
         behavior: 'smooth'
     });
+}
+
+/** For the `proceed` button on task page */
+function updateTask (current) {
+    /** Check: need to complete current task in order to proceed */
+    const selection = taskData[current].clientData.selection;
+
+    if (!!selection) {
+        /** Clear current task */
+        clearTaskElements(current);
+        /** Get next task */
+        tasks = tasks.filter(t => t !== current);
+        /** If no more tasks, go to the debriefing page */
+        if (tasks.length < 1) {
+            location.href='debrief.html'
+        } else {
+            /** Create new task */
+            currentTask = tasks[0];
+            createTask(currentTask);
+            document.querySelector('.generalization').style.display = "none";
+            // window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+    } else {
+        window.alert('Please complete the task first!')
+    }
 }

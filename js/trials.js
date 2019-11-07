@@ -1,7 +1,9 @@
 
-const currentTask = 'task01';
-const trial = taskData[currentTask].trialId
-const currentTrial = trails[trial];
+let tasks = Object.keys(taskData);
+let currentTask = tasks[0];
 
-createLearningTask(currentTrial.learn);
-createGeneralizationTask(currentTrial.gen, currentTask);
+/** Create first task */
+createTask(currentTask);
+
+/** Create proceed button functionality */
+document.getElementById('proceed-btn').onclick = () => updateTask(currentTask);

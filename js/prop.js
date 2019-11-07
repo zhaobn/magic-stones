@@ -41,11 +41,26 @@ const trails = {
     'trial12': {'learn': learn02, 'gen': gen12},
 }
 
-// Data to send
+/** Task setup */
 let taskData = {
     task01: {
         taskId: 'task01',
         trialId: 'trial01',
+        clientData: {},
+    },
+    task02: {
+        taskId: 'task02',
+        trialId: 'trial04',
+        clientData: {},
+    },
+    task03: {
+        taskId: 'task03',
+        trialId: 'trial03',
+        clientData: {},
+    },
+    task04: {
+        taskId: 'task04',
+        trialId: 'trial11',
         clientData: {},
     }
 };
