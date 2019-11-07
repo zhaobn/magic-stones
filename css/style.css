@@ -182,6 +182,9 @@ button:hover {
     background-color: rgb(245, 230, 99);
     border-radius: 50%;
     margin: 5px;
+    transition: all 1s cubic-bezier(0, 0, 1, 1);
+    position: relative;
+    left: 0;
 }
 
 .stone-bc {
@@ -190,6 +193,9 @@ button:hover {
     background-color: rgb(61, 60, 134);
     border-radius: 50%;
     margin: 5px;
+    transition: all 1s cubic-bezier(0, 0, 1, 1);
+    position: relative;
+    left: 0;
 }
 
 .stone-rs {
@@ -198,6 +204,9 @@ button:hover {
     background-color: rgb(255, 102, 102);
     border-radius: 10%;
     margin: 5px;
+    transition: all 1s cubic-bezier(0, 0, 1, 1);
+    position: relative;
+    left: 0;
 }
 
 .stone-ys {
@@ -208,6 +217,9 @@ button:hover {
     margin: 5px;
     transition: all 1s;
     position: relative;
+    transition: all 1s cubic-bezier(0, 0, 1, 1);
+    position: relative;
+    left: 0;
 }
 
 .stone-bs {
@@ -216,6 +228,9 @@ button:hover {
     background-color: rgb(61, 60, 134);
     border-radius: 10%;
     margin: 5px;
+    transition: all 1s cubic-bezier(0, 0, 1, 1);
+    position: relative;
+    left: 0;
 }
 
 .stone-rd {
@@ -225,6 +240,9 @@ button:hover {
     border-radius: 10%;
     transform: rotate(45deg) scale(0.8);
     margin: 5px;
+    transition: all 1s cubic-bezier(0, 0, 1, 1);
+    position: relative;
+    left: 0;
 }
 
 .stone-yd {
@@ -234,6 +252,9 @@ button:hover {
     border-radius: 10%;
     transform: rotate(45deg) scale(0.8);
     margin: 5px;
+    transition: all 1s cubic-bezier(0, 0, 1, 1);
+    position: relative;
+    left: 0;
 }
 
 .stone-bd {
@@ -243,6 +264,9 @@ button:hover {
     border-radius: 10%;
     transform: rotate(45deg) scale(0.8);
     margin: 5px;
+    transition: all 1s cubic-bezier(0, 0, 1, 1);
+    position: relative;
+    left: 0;
 }
 
 .panel-stone-0-0 {

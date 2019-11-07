@@ -4,7 +4,7 @@ const learningTaskConfig = {
     taskId: 'learning1',
     magicStone: 'rc',
     normalStone: 'ys',
-    rules: ['r2d'],
+    rules: [ 'r2r', 'y2c' ],
 };
 
 // Create stones
@@ -42,34 +42,72 @@ function moveStone () {
     (delta > 0) && (magicStone.style.left = `${delta}px`);
 };
 
+function setEffects (id) {
+    const rules = learningTaskConfig.rules;
+    rules.forEach(rule => getEffect(id, rule));
+}
+
+function getEffect (id, rule) {
+    const keyword = rule[2];
+
+    // Check if effects takes place
+    if (learningTaskConfig.magicStone[0] === rule[0]) {
+        // Apply effects
+        switch (keyword) {
+            case 'r':
+                changeColor(id, 'red');
+                break;
+            case 'y':
+                changeColor(id, 'yellow');
+                break;
+            case 'b':
+                changeColor(id, 'blue');
+                break;
+            case 'c':
+                changeShape(id, 'circle');
+                break;
+            case 's':
+                changeShape(id, 'square');
+                break;
+            case 'd':
+                changeShape(id, 'diamond');
+                break;
+        }
+    }
+
+}
+
 function changeStone () {
     const normalStoneId = `${learningTaskConfig.taskId}-normal-stone`;
     const normalStone = document.getElementById(normalStoneId);
     normalStone.style.transitionDelay = '1s';
-    normalStone.style.background = 'white';
+    setEffects(normalStoneId);
 }
 
 function resetStones () {
     const magicStoneId = `${learningTaskConfig.taskId}-magic-stone`;
     const normalStoneId = `${learningTaskConfig.taskId}-normal-stone`;
     const stones = [ magicStoneId, normalStoneId ];
-
-    // Clear stones
+    // Clear existing stones
     stones.forEach(stone => {
         let el = document.getElementById(stone);
         el.parentNode.removeChild(el);
     });
-    // Create stones
+    // Create new stones
     createStones();
 }
 
 // Add play button function
 const playBtn = document.getElementById('play1');
 playBtn.onclick = () => {
+    window.scrollTo({top: 0, behavior: 'smooth'});
     moveStone();
     changeStone();
 };
 
 // Add reset button function
 const resetBtn = document.getElementById('reset1');
-resetBtn.onclick = resetStones;
+resetBtn.onclick = () => {
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    resetStones();
+};
