@@ -1,61 +1,52 @@
 <!DOCTYPE html>
-
 <html>
-
-<head>
-    <link rel='stylesheet' type="text/css" href='../css/style.css'>
-    <title>Magic Stones</title>
-</head>
-
-<body class='demo'>
-    <h1>Play with magic stones</h1>
-
-    <!-- Learning task -->
-    <div class='learning'>
-        <h2>Drag the magic stone to the normal stone to see the effect.</h2>
-        <p>
-            Press the 'Play' button to watch the effects.
-            Press the 'Next' button to start your challenge.
-        </p>
-        <div class='box-lt'>
-            <!-- Default stones are created by learn.js -->
+    <head>
+        <link rel='stylesheet' type="text/css" href='../css/style.css'>
+        <title>Magic Stones</title>
+    </head>
+    <body class='demo'>
+        <h1>Play with magic stones</h1>
+        <!-- Learning task -->
+        <div class='learning'>
+            <h2>Drag the magic stone to the normal stone to see the effect.</h2>
+            <p>
+                Press the 'Play' button to watch the effects.
+                Press the 'Next' button to start your challenge.
+            </p>
+            <div class='box-lt'>
+                <!-- Default stones are created by learn.js -->
+            </div>
+            <div class='button-group'>
+                <button class='next-button' onclick="showTask('generalization-task')">Quest</button>
+                <button class='reset-button' id='reset-btn'>Reset</button>
+                <button class='play-button' id='play-btn'>Play</button>
+            </div>
         </div>
-        <div class='button-group'>
-            <button class='next-button' onclick="showTask('generalization-task')">Quest</button>
-            <button class='reset-button' id='reset-btn'>Reset</button>
-            <button class='play-button' id='play-btn'>Play</button>
+        <!-- Generalization task -->
+        <div class='generalization' id='generalization-task'>
+            <h2>Dragging the magic stone to this normal stone, what will the normal stone turn into?</h2>
+            <p>
+                Select your answer in the panel on the right
+                Press the 'Check' button to play with the stones again if you are uncertain.
+                Press the 'Next' button to start the next challenge.
+            </p>
+            <div class='box-gt'>
+                <div class='box-task'></div>
+                <div class='box-panel'></div>
+            </div>
         </div>
-    </div>
-
-    <!-- Generalization task -->
-    <div class='generalization' id='generalization-task'>
-        <h2>Dragging the magic stone to this normal stone, what will the normal stone turn into?</h2>
-        <p>
-            Select your answer in the panel on the right
-            Press the 'Check' button to play with the stones again if you are uncertain.
-            Press the 'Next' button to start the next challenge.
-        </p>
-        <div class='box-gt'>
-            <div class='box-task'></div>
-            <div class='box-panel'></div>
+        <!-- Proceed to next page -->
+        <div class='proceed'>
+            <hr>
+            <div class='proceed-button-group'>
+                <button class='proceed-button' id='proceed-btn'>>></button>
+            </div>
         </div>
-    </div>
-
-    <!-- Proceed to next page -->
-    <div class='proceed'>
-        <hr>
-        <div class='proceed-button-group'>
-            <button class='proceed-button' id='proceed-button-1'>>></button>
-        </div>
-    </div>
-</body>
-
-<script type='text/javascript' src='../js/props.js'></script>
-<script type='text/javascript' src='../js/helpers.js'></script>
-<script type='text/javascript' src='../js/trials.js'></script>
-
-<footer>
-    &copy; Copyright Bramleylab 2019
-</footer>
-
+    </body>
+    <script type='text/javascript' src='../js/prop.js'></script>
+    <script type='text/javascript' src='../js/lib.js'></script>
+    <script type='text/javascript' src='../js/trials.js'></script>
+    <footer>
+        &copy; Copyright Bramleylab 2019
+    </footer>
 </html>
