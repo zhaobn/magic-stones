@@ -94,6 +94,8 @@ function createPanel(gtask, taskId) {
         data.clicks.push(clicked);
 
         taskData[dataEntry].clientData = data;
+        sessionStorage.setItem('data', JSON.stringify(taskData));
+
         styleClicked(tbId);
     }
 
@@ -266,7 +268,7 @@ function updateTask (current) {
         tasks = tasks.filter(t => t !== current);
         /** If no more tasks, go to the debriefing page */
         if (tasks.length < 1) {
-            location.href='debrief.html'
+            location.href='feedback.html'
         } else {
             /** Create new task */
             currentTask = tasks[0];
