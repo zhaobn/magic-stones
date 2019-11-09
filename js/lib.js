@@ -165,7 +165,7 @@ function getCurrentLocation(id) {
 function hover (tbid, selected) {
     const tb = document.getElementById(tbid);
     tb.onmouseover = function() {
-        (tbid !== selected)? this.style.border = '4px solid #1A1A1D' : null;
+        (tbid !== selected)? this.style.border = '4px solid #4c4c4c' : null;
     };
     tb.onmouseleave = function() {
         (tbid !== selected)? this.style.border = '0px' : null;
@@ -251,9 +251,18 @@ function showTask (taskId) {
         document.getElementById(taskId).scrollIntoView({
             behavior: 'smooth'
         });
+        /** Replace to the proceed button */
+        switchBtn('show-task', 'proceed');
     } else {
         window.alert('Please play the effects first!');
     }
+}
+
+function switchBtn (from, to) {
+    const currentBtn = document.getElementById(from);
+    const newBtn = document.getElementById(to);
+    currentBtn.style.display = 'none';
+    newBtn.style.display = 'flex';
 }
 
 /** For the `proceed` button on task page */
@@ -273,6 +282,7 @@ function updateTask (current) {
             /** Create new task */
             currentTask = tasks[0];
             createTask(currentTask);
+            switchBtn('proceed', 'show-task');
             document.querySelector('.generalization').style.display = "none";
             // window.scrollTo({top: 0, behavior: 'smooth'});
         }

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel='stylesheet' type="text/css" href='../css/style.css'>
+        <title>Magic Stones</title>
+    </head>
+    <body class='light-page'>
+        <div id='comprehension'>
+            <h1>Comprehension questions</h1>
+            <div class="instruction">
+                <ol>
+                    <li>A stone with border is a magic stone.</li>
+                    <p>
+                        <input type="radio" name="check1">Correct
+                        <input type="radio" name="check1">False
+                    </p>
+                    <li>Magic comes from magic stone itself.</li>
+                    <p>
+                        <input type="radio" name="check2">Correct
+                        <input type="radio" name="check2">False
+                    </p>
+                    <li>You earn X bonus if you get the magic right.</li>
+                    <p>
+                        <input type="radio" name="check3">Correct
+                        <input type="radio" name="check3">False
+                    </p>
+                </ol>
+            </div>
+            <div class='button-group'>
+                <button class='big-button' id='check-btn'>Check</button>
+            </div>
+        </div>
+        <div id='pass' style="display: none">
+            <h2>Congratulations! Let's go checkout some magic stones!</h2>
+            <br>
+            <div class='button-group'>
+                <button class='big-button' id='pass-btn'>>></button>
+            </div>
+        </div>
+        <div id='retry' style="display: none">
+            <h2>Oooops, please read the instructions carefully and try again.</h2>
+            <br>
+            <div class='button-group'>
+                <button class='big-button' id='retry-btn'><< Instructions</button>
+            </div>
+        </div>
+    </body>
+    <script type='text/javascript' src='../js/comprehension.js'></script>
+</html>

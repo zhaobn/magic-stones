@@ -3,56 +3,89 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-footer {
-    color: #4E4E50;
-    font-size: 12px;
-    position: fixed;
-    bottom: 0;
-    padding-top: 20px;
+ul li{
+    margin-bottom:10px;
 }
 
-ul {
-    color: #fff;
-    padding: 0;
-    list-style-type: none;
-}
-
-button {
-    background-color: #1A1A1D;
-    border: 1px solid white;
-    color: white;
-    font-size: 15px;
-    text-align: center;
-    margin:  1px;
-}
-
-button:hover {
-    background-color: white;
-    border: none;
-    color: #1A1A1D;
+input[type="radio"] {
+    margin: 0 10px;
 }
 
 .button-group {
+    margin: 20px;
     display: flex;
-    flex-direction: row-reverse;
-    justify-content: space-between;
-
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
 
-.welcome {
+.big-button {
+    background-color: #45a29e;
+    font-size: 20px;
+    padding: 10px 20px;
+	color: #fff;
+    border-radius: 10px;
+    border: 1px solid #75a860;
+}
+
+.big-button:hover {
+    background-color: #116466;
+    color: #fff;
+}
+
+.pass-text, .retry-text {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+    font-size: 50px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.task-button-group {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+}
+
+.task-button {
+    background-color: #f4976c;
+    font-size: 25px;
+    padding: 10px 50px;
+	color: #fff;
+    border-radius: 10px;
+    margin: 0px 5px;
+    border: 1px solid #75a860;
+}
+
+.task-button:hover {
+    background-color: #bf7654;
+    color: #fff;
+}
+
+.light-page {
     margin: 0;
     padding: 4em 15%;
     background-color: #f4f4f4;
     color: #4c4c4c;
 }
 
-.welcome h1 {
+.light-page h1 {
     color: #000
 }
 
-.welcome p {
+.frame {
     border: solid 1px black;
-    padding: 20px
+    padding: 5px 20px;
+    border-radius: 5px;
+    background-color: #fff;
+    margin-top: 20px;
+    font-size: 18px;
+    min-height: 300px;
 }
 
 .demo {
@@ -65,22 +98,23 @@ button:hover {
     color: #4E4E50
 }
 
-.box-lt {
+.box-gt, .box-lt, .box-task, .box-panel, .selection-panel {
+    background-color: #1A1A1D;
+}
+
+.box-lt, .box-gt {
     margin: 30px 0 20px 0;
-    height: 300px;
-    background-color: #0B0C10;
+    height: 400px;
     display: flex;
     flex-direction: row;
-    justify-content: space-evenly;
     align-items: center;
+    border-radius: 5px;
+}
+.box-lt {
+    justify-content: space-evenly;
 }
 
 .box-gt {
-    margin: 30px 0 20px 0;
-    height: 300px;
-    background-color: #0B0C10;
-    display: flex;
-    flex-direction: row;
     align-items: center;
     position: relative;
 }
@@ -89,7 +123,6 @@ button:hover {
     position: absolute;
     height: 90%;
     width: 60%;
-    background-color: #0B0C10;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -101,50 +134,19 @@ button:hover {
     left: 63%;
     height: 90%;
     width: 35%;
-    background-color: #0B0C10;
-    border-left: 3px dashed #1A1A1D;
+    border-left: 3px dashed #4c4c4c;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .selection-panel {
-    border: 3px dashed #1A1A1D;
-    background-color: #0B0C10;
+    border: 3px dashed #4c4c4c;
     padding: 5px;
 }
 
 .selection-panel td:hover {
-    border: 4px solid #1A1A1D;
-}
-
-.proceed {
-    margin-top: 20px;
-}
-
-.proceed-button-group {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-start;
-}
-
-.proceed hr {
-    border: 1px solid #4E4E50;
-}
-
-.proceed-button {
-    display: inline-block;
-    background-color: #1A1A1D;
-    border: none;
-    color: #4E4E50;
-    margin-top: 20px;
-    padding: 5px 15px;
-    font-size: 20px;
-    text-align: center;
-}
-
-.proceed-button:hover {
-    border: 1px solid #fff;
+    border: 4px solid #4c4c4c;
 }
 
 .magic-stone {
@@ -377,9 +379,10 @@ button:hover {
 
 .text-input {
     width: 100%;
-    height: 150px;
-    margin: 5px 0 20px 0;
+    height: 200px;
+    margin: 5px 0 5px 0;
     padding: 5px 8px;
+    font-size: 20px;
     box-sizing: border-box;
     text-align: top;
 }
