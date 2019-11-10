@@ -2,24 +2,35 @@
 /** Global variable controlling the 'play' status */
 let played = 0;
 
+/** Task setup */
+let taskData = {};
+Object.keys(trails).forEach((trial, index) => {
+    taskIndex = (index + 1).toString().padStart(2, '0');
+    taskData[trial] = {};
+    taskData[trial]['taskId'] = 'task' + taskIndex;
+    taskData[trial]['trialId'] = trial;
+    taskData[trial]['clientData'] = {};
+});
+
 /** Color changing effects */
-const changeColor = (id, color) =>
+const changeColor = (id, color) => {
     document.getElementById(id).style.background = myColors[color];
+}
 
 /** Shape changing effects */
 function changeShape (id, shape) {
     const el = document.getElementById(id);
     switch (shape) {
         case 'diamond':
-                el.style.borderRadius = '10%';
-                el.style.transform = 'rotate(45deg) scale(.8)';
-                break;
+            el.style.borderRadius = '10%';
+            el.style.transform = 'rotate(45deg) scale(.8)';
+            break;
         case 'circle':
-                el.style.borderRadius = '50%';
-                break;
+            el.style.borderRadius = '50%';
+            break;
         case 'square':
-                el.style.borderRadius = '10%';
-                break;
+            el.style.borderRadius = '10%';
+            break;
     }
 }
 
@@ -28,7 +39,7 @@ function changeStone (task) {
     const normalStoneId = `${task.taskId}-normal-stone`;
     const normalStone = document.getElementById(normalStoneId);
     normalStone.style.transitionDelay = '1s';
-    task.rules.forEach(rule => setEffect(task, normalStoneId, rule));
+    task.rules.forEach(rule => setEffect(normalStoneId, rule));
 }
 
 /** In order to show a new task, clear current page */
@@ -216,31 +227,27 @@ function setAttributes(el, attrs) {
 }
 
 /** Where magic happends */
-function setEffect (task, id, rule) {
+function setEffect (id, rule) {
     const keyword = rule[2];
-    // Check if effects takes place
-    if (task.magicStone[0] === rule[0]) {
-        // Apply effects
-        switch (keyword) {
-            case 'r':
-                changeColor(id, 'red');
-                break;
-            case 'y':
-                changeColor(id, 'yellow');
-                break;
-            case 'b':
-                changeColor(id, 'blue');
-                break;
-            case 'c':
-                changeShape(id, 'circle');
-                break;
-            case 's':
-                changeShape(id, 'square');
-                break;
-            case 'd':
-                changeShape(id, 'diamond');
-                break;
-        }
+    switch (keyword) {
+        case 'r':
+            changeColor(id, 'red');
+            break;
+        case 'y':
+            changeColor(id, 'yellow');
+            break;
+        case 'b':
+            changeColor(id, 'blue');
+            break;
+        case 'c':
+            changeShape(id, 'circle');
+            break;
+        case 's':
+            changeShape(id, 'square');
+            break;
+        case 'd':
+            changeShape(id, 'diamond');
+            break;
     }
 }
 
@@ -265,6 +272,10 @@ function switchBtn (from, to) {
     newBtn.style.display = 'flex';
 }
 
+function getRandomIndex (ceil) {
+    return Math.floor(Math.random() * ceil);
+}
+
 /** For the `proceed` button on task page */
 function updateTask (current) {
     /** Check: need to complete current task in order to proceed */
@@ -280,7 +291,7 @@ function updateTask (current) {
             location.href='feedback.html'
         } else {
             /** Create new task */
-            currentTask = tasks[0];
+            currentTask = tasks[getRandomIndex(tasks.length)];
             createTask(currentTask);
             switchBtn('proceed', 'show-task');
             document.querySelector('.generalization').style.display = "none";

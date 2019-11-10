@@ -20,16 +20,16 @@ input[type="radio"] {
 }
 
 .big-button {
-    background-color: #45a29e;
+    background-color: #116466;
     font-size: 20px;
     padding: 10px 20px;
 	color: #fff;
     border-radius: 10px;
-    border: 1px solid #75a860;
+    border: 0px;
 }
 
 .big-button:hover {
-    background-color: #116466;
+    background-color: #45a29e;
     color: #fff;
 }
 
@@ -88,14 +88,40 @@ input[type="radio"] {
     min-height: 300px;
 }
 
-.demo {
-    margin: 0;
-    padding: 4em 15%;
-    background-color: #1A1A1D;
+.dark-page {
+    padding: 2em 15%;
+    background-color: #0b0c10;
+    color: #c5c6c7;
 }
 
-.demo h1 {
-    color: #4E4E50
+.instruction {
+    background-color: #747474;
+    border-radius: 5px;
+    border: 1px solid black;
+    margin-top: 20px;
+    padding: 5px 20px;
+    font-size: 18px;
+    color: #000;
+}
+
+.task-frame {
+    background-color: #000;
+    border-radius: 5px;
+    padding: 1px 20px;
+    font-size: 18px;
+}
+
+.learning {
+    margin-top: 50px;
+}
+
+.generalization {
+    display: none;
+    margin-top: 50px;
+}
+
+.learning h2, .generalization h2 {
+    color: #747474;
 }
 
 .box-gt, .box-lt, .box-task, .box-panel, .selection-panel {
@@ -104,7 +130,7 @@ input[type="radio"] {
 
 .box-lt, .box-gt {
     margin: 30px 0 20px 0;
-    height: 400px;
+    height: 200px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -348,33 +374,6 @@ input[type="radio"] {
 
 #stone1 {
     background-color: rgb(61, 60, 134);
-}
-
-.learning {
-    margin-top: 50px;
-}
-
-.generalization {
-    display: none;
-    margin-top: 100px;
-}
-
-.learning h2 {
-    color: white;
-}
-
-.learning p {
-    color: #747474;
-    font-size: 20px;
-}
-
-.generalization h2 {
-    color: white;
-}
-
-.generalization p {
-    color: #747474;
-    font-size: 20px;
 }
 
 .text-input {
