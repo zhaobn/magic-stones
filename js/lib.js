@@ -291,7 +291,6 @@ function updateTask (current) {
             location.href='feedback.html'
         } else {
             /** Create new task */
-            currentTask = tasks[getRandomIndex(tasks.length)];
             taskIndex = isRandom? getRandomIndex(tasks.length): 0;
             currentTask = tasks[taskIndex];
             createTask(currentTask);
