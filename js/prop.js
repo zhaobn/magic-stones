@@ -1,4 +1,7 @@
 
+/** Dev control */
+const isRandom = false;
+
 /** Custom styling definitions */
 const myColors = {
     red: 'rgb(255, 102, 102)',

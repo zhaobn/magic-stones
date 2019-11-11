@@ -292,6 +292,8 @@ function updateTask (current) {
         } else {
             /** Create new task */
             currentTask = tasks[getRandomIndex(tasks.length)];
+            taskIndex = isRandom? getRandomIndex(tasks.length): 0;
+            currentTask = tasks[taskIndex];
             createTask(currentTask);
             switchBtn('proceed', 'show-task');
             document.querySelector('.generalization').style.display = "none";

@@ -1,6 +1,7 @@
 
 let tasks = Object.keys(taskData);
-let currentTask = tasks[getRandomIndex(12)];
+let taskIndex = isRandom? getRandomIndex(12): 0;
+let currentTask = tasks[taskIndex];
 
 /** Create first task */
 createTask(currentTask);
