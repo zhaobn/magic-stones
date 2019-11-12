@@ -97,6 +97,7 @@ function createPanel(gtask, taskId) {
     const recordClick = (e) => {
         const tbId = e.target.id;
         let clicked = {};
+        console.log(tbId);
 
         clicked.stone = tbId;
         clicked.timestamp = Date.now();
@@ -151,6 +152,7 @@ function createStones (task, box = '.box-lt') {
 
 /** Main trial creation function */
 function createTask (taskId) {
+    console.log(taskId);
     const trial = taskData[taskId].trialId
     const currentTrial = trails[trial];
 
