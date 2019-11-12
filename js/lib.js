@@ -97,7 +97,6 @@ function createPanel(gtask, taskId) {
     const recordClick = (e) => {
         const tbId = e.target.id;
         let clicked = {};
-        console.log(tbId);
 
         clicked.stone = tbId;
         clicked.timestamp = Date.now();
@@ -152,7 +151,6 @@ function createStones (task, box = '.box-lt') {
 
 /** Main trial creation function */
 function createTask (taskId) {
-    console.log(taskId);
     const trial = taskData[taskId].trialId
     const currentTrial = trails[trial];
 
@@ -172,6 +170,10 @@ function getCurrentLocation(id) {
     rect.left = pos.left;
     rect.right = pos.right;
     return rect;
+}
+
+function getRandomIndex (ceil) {
+    return Math.floor(Math.random() * ceil);
 }
 
 /** Psedo hover effects */
@@ -205,6 +207,17 @@ const playEffects = (task) => {
     changeStone(task);
 
     played = 1;
+}
+
+/** Compose the changed stone */
+function readEffect (stone, rule) {
+    let changed = '';
+    if(rule[2] === 'r' || rule[2] === 'b' || rule[2] === 'y') {
+        changed = rule[2] + stone[1];
+    } else {
+        changed = stone[0] + rule[2];
+    }
+    return changed;
 }
 
 /** For the `reset` button of the learning task */
@@ -272,10 +285,6 @@ function switchBtn (from, to) {
     const newBtn = document.getElementById(to);
     currentBtn.style.display = 'none';
     newBtn.style.display = 'flex';
-}
-
-function getRandomIndex (ceil) {
-    return Math.floor(Math.random() * ceil);
 }
 
 /** For the `proceed` button on task page */

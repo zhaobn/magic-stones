@@ -109,6 +109,8 @@ input[type="radio"] {
     border-radius: 5px;
     padding: 1px 20px;
     font-size: 18px;
+    /* display: flex; */
+    /* flex-direction: row; */
 }
 
 .learning {
@@ -139,12 +141,29 @@ input[type="radio"] {
 .box-lt {
     justify-content: space-evenly;
 }
-
+.box-mem {
+    height: 90%;
+    width: 45%;
+    border: 1px dashed #747474;
+    border-radius: 5px;
+    padding: 0 12px;
+}
+#membox-before {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+}
+#membox-after {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
 .box-gt {
     align-items: center;
     position: relative;
 }
-
 .box-task {
     position: absolute;
     height: 90%;
