@@ -1,16 +1,5 @@
 
-/** Global variable controlling the 'play' status */
-let played = 0;
-
-/** Task setup */
 let taskData = {};
-Object.keys(trails).forEach((trial, index) => {
-    taskIndex = (index + 1).toString().padStart(2, '0');
-    taskData[trial] = {};
-    taskData[trial]['taskId'] = 'task' + taskIndex;
-    taskData[trial]['trialId'] = trial;
-    taskData[trial]['clientData'] = {};
-});
 
 /** Color changing effects */
 const changeColor = (id, color) => {
@@ -44,12 +33,9 @@ function changeStone (task) {
 
 /** In order to show a new task, clear current page */
 function clearTaskElements (taskId) {
-    const trial = trails[taskData[taskId].trialId];
     const elementsToClear = [
-        `${trial.learn.taskId}-magic-stone`,
-        `${trial.learn.taskId}-normal-stone`,
-        `${trial.gen.taskId}-magic-stone`,
-        `${trial.gen.taskId}-normal-stone`,
+        `${taskId}-magic-stone`,
+        `${taskId}-normal-stone`,
         `${taskId}-panel`,
     ];
     elementsToClear.forEach (el => {
@@ -59,9 +45,10 @@ function clearTaskElements (taskId) {
 }
 
 /** Create the generaliztion task */
-function createGeneralizationTask (task, currentTask) {
+function createGeneralizationTask (task) {
+    !!task.taskId ? null: task.taskId = task.trialId; // hacky fix for inconsistent task types
     createStones(task, '.box-task');
-    const panel = createPanel(task, currentTask);
+    const panel = createPanel(task);
     document.querySelector('.box-panel').append(panel);
 }
 
@@ -71,15 +58,12 @@ function createLearningTask (task) {
     createStones(task);
     /** Trigger animations */
     document.getElementById('play-btn').onclick = () => playEffects(task);
-    document.getElementById('reset-btn').onclick = () => resetStones(task);
+    // document.getElementById('reset-btn').onclick = () => resetStones(task);
 }
 
 /** Create selection panel */
-function createPanel(gtask, taskId) {
-    const dataEntry = taskId;
-    let data = gtask;
-    data.selection = {};
-    data.clicks = [];
+function createPanel(trial) {
+    const taskId = trial.trialId;
     tbs = [];
 
     let tbl = document.createElement('table');
@@ -101,13 +85,13 @@ function createPanel(gtask, taskId) {
         clicked.stone = tbId;
         clicked.timestamp = Date.now();
 
-        data.selection = clicked;
-        data.clicks.push(clicked);
+        taskData[taskId].selection = clicked;
+        taskData[taskId].clicks.push(clicked);
 
-        taskData[dataEntry].clientData = data;
-        sessionStorage.setItem('data', JSON.stringify(taskData));
+        sessionStorage.setItem('taskData', JSON.stringify(taskData));
 
         styleClicked(tbId);
+        document.getElementById('next-one-btn').disabled = false;
     }
 
     for(let i = 0; i < 3; i++){
@@ -149,17 +133,35 @@ function createStones (task, box = '.box-lt') {
     taskBox.append(normalStone);
 }
 
-/** Main trial creation function */
-function createTask (taskId) {
-    const trial = taskData[taskId].trialId
-    const currentTrial = trails[trial];
+// /** Main trial creation function */
+// function createTask (taskId) {
+//     const trial = taskData[taskId].trialId
+//     const currentTrial = trails[trial];
 
-    createLearningTask(currentTrial.learn);
-    createGeneralizationTask(currentTrial.gen, currentTask);
+//     createLearningTask(currentTrial.learn);
+//     createGeneralizationTask(currentTrial.gen, currentTask);
+// }
 
-    /** Reset play status */
-    played = 0;
+/** Create magic effect history display */
+function effectsHistory (learningTask) {
+    let effectBefore = {};
+    let effectAfter = {};
+
+    effectBefore.taskId = learningTask.taskId + '-before';
+    effectBefore.magicStone = learningTask.magicStone;
+    effectBefore.normalStone = learningTask.normalStone;
+
+    effectAfter.taskId = learningTask.taskId + '-before';
+    effectAfter.magicStone = learningTask.magicStone;
+    effectAfter.normalStone = learningTask.normalStone;
+    learningTask.rules.forEach (r => {
+        effectAfter.normalStone = readEffect(effectAfter.normalStone, r)
+    });
+
+    createStones(effectBefore, '#membox-before');
+    createStones(effectAfter, '#membox-after');
 }
+
 
 /** Helper function that reads clientPos of an element */
 function getCurrentLocation(id) {
@@ -202,11 +204,15 @@ function moveStone (task) {
 }
 
 /** For the `play` button of the learning task */
-const playEffects = (task) => {
+function playEffects (task) {
     moveStone(task);
     changeStone(task);
+}
 
-    played = 1;
+/** Show history */
+function displayHistory () {
+    document.getElementById('watch').style.display = 'none';
+    document.getElementById('history').style.display = 'inline';
 }
 
 /** Compose the changed stone */
@@ -266,19 +272,19 @@ function setEffect (id, rule) {
     }
 }
 
-/** Toggle generaliztion task display */
-function showTask (taskId) {
-    if (played > 0) {
-        document.getElementById(taskId).style.display = "block";
-        document.getElementById(taskId).scrollIntoView({
-            behavior: 'smooth'
-        });
-        /** Replace to the proceed button */
-        switchBtn('show-task', 'proceed');
-    } else {
-        window.alert('Please play the effects first!');
-    }
-}
+// /** Toggle generaliztion task display */
+// function showTask (taskId) {
+//     if (played > 0) {
+//         document.getElementById(taskId).style.display = "block";
+//         document.getElementById(taskId).scrollIntoView({
+//             behavior: 'smooth'
+//         });
+//         /** Replace to the proceed button */
+//         switchBtn('show-task', 'proceed');
+//     } else {
+//         window.alert('Please play the effects first!');
+//     }
+// }
 
 function switchBtn (from, to) {
     const currentBtn = document.getElementById(from);
@@ -289,27 +295,101 @@ function switchBtn (from, to) {
 
 /** For the `proceed` button on task page */
 function updateTask (current) {
-    /** Check: need to complete current task in order to proceed */
-    const selection = taskData[current].clientData.selection;
+    let rest = [];
+    const trials = Object.keys(taskData).filter(t => t.indexOf('trial') > -1);
+    trials.forEach (t => (Object.keys(taskData[t].selection) < 1) ? rest.push(t) : null);
 
-    if (!!selection) {
-        /** Clear current task */
+    if (rest.length > 0) {
+        const nextIdx = getRandomIndex(rest.length);
+        trial = rest[nextIdx];
+
+        /** Clear existing trials */
         clearTaskElements(current);
-        /** Get next task */
-        tasks = tasks.filter(t => t !== current);
-        /** If no more tasks, go to the debriefing page */
-        if (tasks.length < 1) {
-            location.href='feedback.html'
-        } else {
-            /** Create new task */
-            taskIndex = isRandom? getRandomIndex(tasks.length): 0;
-            currentTask = tasks[taskIndex];
-            createTask(currentTask);
-            switchBtn('proceed', 'show-task');
-            document.querySelector('.generalization').style.display = "none";
-            // window.scrollTo({top: 0, behavior: 'smooth'});
-        }
+        createGeneralizationTask(taskData[trial]);
     } else {
-        window.alert('Please complete the task first!')
+        location.href='feedback.html';
+    }
+
+    // /** Check: need to complete current task in order to proceed */
+    // const selection = taskData[current].clientData.selection;
+
+    // if (!!selection) {
+    //     /** Clear current task */
+    //     clearTaskElements(current);
+    //     /** Get next task */
+    //     tasks = tasks.filter(t => t !== current);
+    //     /** If no more tasks, go to the debriefing page */
+    //     if (tasks.length < 1) {
+    //         location.href='feedback.html'
+    //     } else {
+    //         /** Create new task */
+    //         taskIndex = isRandom? getRandomIndex(tasks.length): 0;
+    //         currentTask = tasks[taskIndex];
+    //         createTask(currentTask);
+    //         switchBtn('proceed', 'show-task');
+    //         document.querySelector('.generalization').style.display = "none";
+    //         // window.scrollTo({top: 0, behavior: 'smooth'});
+    //     }
+    // } else {
+    //     window.alert('Please complete the task first!')
+    // }
+}
+
+/** Create data object */
+function createDataObj (learningTask) {
+    taskData.userId = '';
+    taskData.learningTaskId = learningTask.taskId;
+
+    for (let i = 1; i < 16; i++) {
+        trialId = 'trial' + i.toString().padStart(2, '0');
+        taskData[trialId] = {};
+        taskData[trialId]['trialId'] = trialId;
+        taskData[trialId]['magicStone'] = '';
+        taskData[trialId]['normalStone'] = '';
+        taskData[trialId]['selection'] = {};
+        taskData[trialId]['clicks'] = [];
+        createTrials(learningTask, taskData[trialId]);
+    }
+}
+
+/** Create trial stones */
+function createTrials (learningTask, trial) {
+    const colors = [ 'r', 'y', 'b' ];
+    const shapes = [ 'c', 'd', 's' ];
+
+    const agentColor = learningTask.magicStone[0];
+    const agentShape = learningTask.magicStone[1];
+    const recipientColor = learningTask.normalStone[0];
+    const recipientShape = learningTask.normalStone[1];
+
+    const diffColor = (colors.filter(c => (c !== agentColor && c !== recipientColor)))[0];
+    const diffShape = (shapes.filter(c => (c !== agentShape && c !== recipientShape)))[0];
+
+    const trialIndex = parseInt(trial.trialId.slice(5,));
+    // Set recipient properties
+    if (trialIndex < 4) {
+        trial.normalStone = learningTask.normalStone;
+    } else {
+        switch(trialIndex % 3) {
+            case 0:
+                trial.normalStone = diffColor + diffShape;
+                break;
+            case 1:
+                trial.normalStone = diffColor + recipientShape;
+                break;
+            case 2:
+                trial.normalStone = recipientColor + diffShape;
+                break;
+        }
+    }
+    // Set agent properties
+    if (trialIndex === 1 || (trialIndex > 6 && trialIndex < 10)) {
+        trial.magicStone = diffColor + agentShape;
+    } else if (trialIndex === 2 || (trialIndex > 9 && trialIndex < 13)) {
+        trial.magicStone = agentColor + diffShape;
+    } else if (trialIndex === 3 || (trialIndex > 12)) {
+        trial.magicStone = diffColor + diffShape;
+    } else {
+        trial.magicStone = learningTask.magicStone;
     }
 }

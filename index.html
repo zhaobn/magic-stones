@@ -13,12 +13,10 @@
         <br>
         <p>Having problem? Contact <a href="mailto:b.zhao@ed.ac.uk">b.zhao@ed.ac.uk</a></p>
     </body>
-    <script type='text/javascript' src='js/hash.js'></script>
     <script>
-        const code = -1543981028;
         document.getElementById('access-btn').onclick = () => {
             let input = document.getElementById('code').value;
-            (hashCode(input) === code)? location.href='routes/landing.html' : alert('Wrong access code');
+            (input === 'halo')? location.href='routes/landing.html' : alert('Wrong access code');
         }
     </script>
 </html>

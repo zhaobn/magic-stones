@@ -20,5 +20,5 @@ function showPostCheckPage (isPass) {
 }
 
 document.getElementById('check-btn').onclick = () => checkComprehension();
-document.getElementById('pass-btn').onclick = () => location.href='task.html';
+document.getElementById('pass-btn').onclick = () => location.href='learning.html';
 document.getElementById('retry-btn').onclick = () => location.href='description.html';

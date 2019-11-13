@@ -1,30 +1,10 @@
 
-let tasks = Object.keys(taskData);
-let taskIndex = isRandom? getRandomIndex(12): 0;
-let currentTask = tasks[taskIndex];
+const idx = getRandomIndex(6) + 1;
+effectsHistory(trainings[`learn0${idx}`]);
+createDataObj(trainings[`learn0${idx}`]);
 
-/** Create first task */
-createTask(currentTask);
+let tIdx = getRandomIndex(15) + 1;
+let trial = 'trial' + tIdx.toString().padStart(2, '0');
+createGeneralizationTask(taskData[trial]);
 
-/** Create button functionality */
-document.getElementById('task-btn').onclick = () => showTask('generalization-task');
-document.getElementById('proceed-btn').onclick = () => updateTask(currentTask);
-
-/** Create after-effect box */
-let effectBefore = {};
-let effectAfter = {};
-const learningTask = trails[currentTask].learn;
-
-effectBefore.taskId = learningTask.taskId + '-before';
-effectBefore.magicStone = learningTask.magicStone;
-effectBefore.normalStone = learningTask.normalStone;
-
-effectAfter.taskId = learningTask.taskId + '-before';
-effectAfter.magicStone = learningTask.magicStone;
-effectAfter.normalStone = learningTask.normalStone;
-learningTask.rules.forEach (r => {
-    effectAfter.normalStone = readEffect(effectAfter.normalStone, r)
-});
-
-createStones(effectBefore, '#membox-before');
-createStones(effectAfter, '#membox-after');
+document.getElementById('next-one-btn').onclick = () => updateTask(trial);

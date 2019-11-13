@@ -5,18 +5,9 @@
         <title>Magic Stones</title>
     </head>
     <body class='dark-page'>
-        <div class='task-frame' id='game'>
-            <div class='learning'>
+        <div id='task'>
+            <div class='task-frame'>
                 <h2>Please watch the effects carefully</h2>
-                <div class='box-lt'></div>
-                <div class='button-group'>
-                    <!-- <button class='task-button' onclick="showTask('generalization-task')">Task</button> -->
-                    <button class='task-button' id='reset-btn'>Reset</button>
-                    <button class='task-button' id='play-btn'>Play</button>
-                </div>
-            </div>
-            <div class='learning'>
-                <h2>Test</h2>
                 <div class='box-lt'>
                     <div class='box-mem'>
                         <p>Before</p>
@@ -28,20 +19,17 @@
                     </div>
                 </div>
             </div>
-            <div class='generalization' id='generalization-task'>
-                <h2>What will the normal stone turn into?</h2>
-                <div class='box-gt'>
+            <div class='task-frame'>
+                <h2>This magic stone will turn this normal stone into ... ?</h2>
+                <p>Please select from the panel on the right.</p>
+                <div class='box-gt' style="height: 300px">
                     <div class='box-task'></div>
                     <div class='box-panel'></div>
                 </div>
-                <br>
             </div>
-        </div>
-        <div class='button-group' id='show-task'>
-            <button class='big-button' id='task-btn'>Next</button>
-        </div>
-        <div class='button-group' id='proceed' style="display: none">
-            <button class='big-button' id='proceed-btn'>Next</button>
+            <div class='button-group'>
+                <button class='big-button' id='next-one-btn' disabled>Next One</button>
+            </div>
         </div>
     </body>
     <script type='text/javascript' src='../js/prop.js'></script>

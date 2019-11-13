@@ -19,19 +19,24 @@ input[type="radio"] {
     align-items: center;
 }
 
-.big-button {
+.big-button, .big-button:disabled, .big-button:disabled:hover {
     background-color: #116466;
     font-size: 20px;
-    padding: 10px 20px;
+    padding: 10px 30px;
 	color: #fff;
     border-radius: 10px;
     border: 0px;
+    margin: 10px;
 }
-
+.big-button:disabled, .big-button:disabled:hover {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 .big-button:hover {
     background-color: #45a29e;
     color: #fff;
 }
+
 
 .pass-text, .retry-text {
     display: flex;
@@ -67,11 +72,17 @@ input[type="radio"] {
     color: #fff;
 }
 
-.light-page {
+.light-page, .dark-page {
     margin: 0;
     padding: 4em 15%;
+}
+.light-page {
     background-color: #f4f4f4;
     color: #4c4c4c;
+}
+.dark-page {
+    background-color: #0b0c10;
+    color: #c5c6c7;
 }
 
 .light-page h1 {
@@ -86,12 +97,6 @@ input[type="radio"] {
     margin-top: 20px;
     font-size: 18px;
     min-height: 300px;
-}
-
-.dark-page {
-    padding: 2em 15%;
-    background-color: #0b0c10;
-    color: #c5c6c7;
 }
 
 .instruction {
@@ -113,7 +118,7 @@ input[type="radio"] {
     /* flex-direction: row; */
 }
 
-.learning {
+/* .learning {
     margin-top: 50px;
 }
 
@@ -124,7 +129,7 @@ input[type="radio"] {
 
 .learning h2, .generalization h2 {
     color: #747474;
-}
+} */
 
 .box-gt, .box-lt, .box-task, .box-panel, .selection-panel {
     background-color: #1A1A1D;
