@@ -5,21 +5,20 @@
         <title>Magic Stones</title>
     </head>
     <body class='light-page'>
-        <h1>The University of Edinburgh, Psychology</h1>
-        <div class='frame' id='consent-div'>
-            <p>You are participating in a study performed by cognitive scientists at the University of Edinburgh. For any questions about this research, please contact <a href="mailto:Neil.Bramley@ed.ac.uk">Neil.Bramley@ed.ac.uk</a>.</p>
-            <p>By selecting the "I Agree" button below, you acknowledge that:</p>
-            <ul>
-                <li>You are at least 18 years old.</li>
-                <li>Your participation in this research is voluntary.</li>
-                <li>You may decline to answer any or all of the following questions by closing this window in your browser.</li>
-                <li>You may decline further participation, at any time, without adverse consequences.</li>
-                <li>Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</li>
-            </ul>
-            <p>If you agree to the above and would like to participate in the experiment, please click <b>I Agree</b>  to proceed with the instructions. Otherwise you may close the window.</p>
+        <div>
+            <label for="code" style="font-weight: bold">Code to access experiment:</label>
+            <input type="text" id="code" name="code" required>
+            <button id='access-btn'>Unlock</button>
         </div>
-        <div class='button-group'>
-            <button class='big-button' onclick="location.href='routes/reminder.html'"> ✔ I Agree</button>
-        </div>
+        <br>
+        <p>Having problem? Contact <a href="mailto:b.zhao@ed.ac.uk">b.zhao@ed.ac.uk</a></p>
     </body>
+    <script type='text/javascript' src='js/hash.js'></script>
+    <script>
+        const code = -1543981028;
+        document.getElementById('access-btn').onclick = () => {
+            let input = document.getElementById('code').value;
+            (hashCode(input) === code)? location.href='routes/landing.html' : alert('Wrong access code');
+        }
+    </script>
 </html>
