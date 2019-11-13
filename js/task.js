@@ -1,10 +1,8 @@
 
-const idx = getRandomIndex(6) + 1;
-effectsHistory(trainings[`learn0${idx}`]);
-createDataObj(trainings[`learn0${idx}`]);
+effectsHistory(learningTask);
+createDataObj(learningTask);
 
-let tIdx = getRandomIndex(15) + 1;
-let trial = 'trial' + tIdx.toString().padStart(2, '0');
+let trial = 'trial01';
 createGeneralizationTask(taskData[trial]);
 
 document.getElementById('next-one-btn').onclick = () => updateTask(trial);

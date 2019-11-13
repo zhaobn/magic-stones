@@ -295,44 +295,15 @@ function switchBtn (from, to) {
 
 /** For the `proceed` button on task page */
 function updateTask (current) {
-    let rest = [];
-    const trials = Object.keys(taskData).filter(t => t.indexOf('trial') > -1);
-    trials.forEach (t => (Object.keys(taskData[t].selection) < 1) ? rest.push(t) : null);
+    let tidx = parseInt(current.slice(5,));
 
-    if (rest.length > 0) {
-        const nextIdx = getRandomIndex(rest.length);
-        trial = rest[nextIdx];
-
-        /** Clear existing trials */
+    if (tidx < 16) {
+        trial = 'trial' + (tidx + 1).toString().padStart(2, '0');
         clearTaskElements(current);
         createGeneralizationTask(taskData[trial]);
     } else {
         location.href='feedback.html';
     }
-
-    // /** Check: need to complete current task in order to proceed */
-    // const selection = taskData[current].clientData.selection;
-
-    // if (!!selection) {
-    //     /** Clear current task */
-    //     clearTaskElements(current);
-    //     /** Get next task */
-    //     tasks = tasks.filter(t => t !== current);
-    //     /** If no more tasks, go to the debriefing page */
-    //     if (tasks.length < 1) {
-    //         location.href='feedback.html'
-    //     } else {
-    //         /** Create new task */
-    //         taskIndex = isRandom? getRandomIndex(tasks.length): 0;
-    //         currentTask = tasks[taskIndex];
-    //         createTask(currentTask);
-    //         switchBtn('proceed', 'show-task');
-    //         document.querySelector('.generalization').style.display = "none";
-    //         // window.scrollTo({top: 0, behavior: 'smooth'});
-    //     }
-    // } else {
-    //     window.alert('Please complete the task first!')
-    // }
 }
 
 /** Create data object */
@@ -367,29 +338,28 @@ function createTrials (learningTask, trial) {
 
     const trialIndex = parseInt(trial.trialId.slice(5,));
     // Set recipient properties
-    if (trialIndex < 4) {
-        trial.normalStone = learningTask.normalStone;
-    } else {
-        switch(trialIndex % 3) {
-            case 0:
-                trial.normalStone = diffColor + diffShape;
-                break;
-            case 1:
-                trial.normalStone = diffColor + recipientShape;
-                break;
-            case 2:
-                trial.normalStone = recipientColor + diffShape;
-                break;
-        }
+    switch(trialIndex % 4) {
+        case 1:
+            trial.normalStone = diffColor + recipientShape;
+            break;
+        case 2:
+            trial.normalStone = recipientColor + diffShape;
+            break;
+        case 3:
+            trial.normalStone = diffColor + diffShape;
+            break;
+        default:
+            trial.normalStone = learningTask.normalStone;
+            break;
     }
     // Set agent properties
-    if (trialIndex === 1 || (trialIndex > 6 && trialIndex < 10)) {
-        trial.magicStone = diffColor + agentShape;
-    } else if (trialIndex === 2 || (trialIndex > 9 && trialIndex < 13)) {
-        trial.magicStone = agentColor + diffShape;
-    } else if (trialIndex === 3 || (trialIndex > 12)) {
-        trial.magicStone = diffColor + diffShape;
-    } else {
+    if (trialIndex > 0 && trialIndex < 4) {
         trial.magicStone = learningTask.magicStone;
+    } else if (trialIndex > 3 && trialIndex < 8) {
+        trial.magicStone = diffColor + agentShape;
+    } else if (trialIndex > 7 && trialIndex < 12) {
+        trial.magicStone = agentColor + diffShape;
+    } else {
+        trial.magicStone = diffColor + diffShape;
     }
 }

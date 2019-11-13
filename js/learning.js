@@ -1,7 +1,6 @@
 
 
 /** Create stones */
-const learningTask = learn04;
 createStones(learningTask);
 
 /** Set button functions */

@@ -20,3 +20,5 @@ const trainings = {
   learn05: { taskId: 'learn05', magicStone: 'yd', normalStone: 'bs', rules: [ '-2y', '-2d' ] },
   learn06: { taskId: 'learn06', magicStone: 'bs', normalStone: 'yd', rules: [ '-2r', '-2c' ] },
 }
+
+const learningTask = trainings.learn04;
