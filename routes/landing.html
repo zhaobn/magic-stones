@@ -5,22 +5,110 @@
         <title>Magic Stones</title>
     </head>
     <body class='light-page'>
-        <h1>The University of Edinburgh, Psychology</h1>
-        <div class='frame' id='consent-div'>
-            <p>You are participating in a study performed by cognitive scientists at the University of Edinburgh. For any questions about this research, please contact <a href="mailto:Neil.Bramley@ed.ac.uk">Neil.Bramley@ed.ac.uk</a>.</p>
-            <p>By selecting the "I Agree" button below, you acknowledge that:</p>
-            <ul>
-                <li>You are at least 18 years old.</li>
-                <li>Your participation in this research is voluntary.</li>
-                <li>You may decline to answer any or all of the following questions by closing this window in your browser.</li>
-                <li>You may decline further participation, at any time, without adverse consequences.</li>
-                <li>Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</li>
-            </ul>
-            <p>If you agree to the above and would like to participate in the experiment, please click <b>I Agree</b>  to proceed with the instructions. Otherwise you may close the window.</p>
+        <div id='landing'>
+            <h1>The University of Edinburgh, Psychology</h1>
+            <div class='frame' id='consent-div'>
+                <p>You are participating in a study performed by cognitive scientists at the University of Edinburgh. For any questions about this research, please contact <a href="mailto:bramleylab@ed.ac.uk">bramleylab@ed.ac.uk</a>.</p>
+                <p>By selecting the "I Agree" button below, you acknowledge that:</p>
+                <ul>
+                    <li>You are at least 18 years old.</li>
+                    <li>Your participation in this research is voluntary.</li>
+                    <li>You may decline to answer any or all of the following questions by closing this window in your browser.</li>
+                    <li>You may decline further participation, at any time, without adverse consequences.</li>
+                    <li>Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</li>
+                </ul>
+                <p>If you agree to the above and would like to participate in the experiment, please click <b>I Agree</b>  to proceed with the instructions. Otherwise you may close the window.</p>
+            </div>
+            <div class='button-group'>
+                <button class='big-button' id='consent-btn'> ✔ I Agree</button>
+            </div>
         </div>
-        <div class='button-group'>
-            <button class='big-button' onclick="location.href='reminder.html'"> ✔ I Agree</button>
+        <div id='reminder' style="display: none">
+            <h1>Thank you for participating in this study (•‿•)</h1>
+            <div class="frame">
+                <p>Please note that:</p>
+                <ul>
+                    <li>You will have to pass a test on your understanding before you can start the experiment.</li>
+                    <li>Please minimize the chances of possible distractions (switch off messengers, email, music,...)</li>
+                    <li>Please make this window as large as possible (full screen best).</li>
+                    <li>Do not refresh this page during the experiment.</li>
+                </ul>
+            </div>
+            <div class='button-group'>
+                <button class='big-button' id='reminder-btn'>Sure</button>
+            </div>
+        </div>
+        <div id='description' style="display: none">
+            <h1>Once upon a time in the magic world ...</h1>
+            <div class="instruction" id="box-desc">
+                <p>Some stones are magic stones, and some are normal stones.</p>
+                <p>A magic stone is indicated by having a border, like this:</p>
+                <div class="magic-stone"></div>
+                <p>And a normal stone does not have borders, like this:</p>
+                <div class="normal-stone"></div>
+                <br>
+                <p>For all the magic stones and normal stones:</p>
+                <ul>
+                    <li>their color can be red, yellow, or blue;</li>
+                    <li>their shape can be circle, square, or diamond;</li>
+                    <li>all stones are of the same size; and</li>
+                    <li style="font-weight: bold">magic stones can change the color and/or shape of normal stones.</li>
+                </ul>
+                <br>
+                <p>As a newcomer to the magic world, you have the chance to watch how one specific magic stone changes a normal stone.</p>
+                <p>After that, you will be facing some other magic stones and normal stones. Give your best prediction at how the given magic stone changes the given normal stone.</p>
+                <p>You can consult the effects you saw by scolling up to the top of the page.</p>
+                <p>Hint: All the stones are in the same magic world and share the same magic rule.</p>
+                <p>Think carefully. Whenever you make a correct prediction, you earn a 10 cent bonus.</p>
+            </div>
+            <div class='button-group'>
+                <button class='big-button' id='desc-btn'>>> Comprehension questions</button>
+            </div>
+        </div>
+        <div id='comprehension' style="display: none">
+            <h1>Comprehension questions</h1>
+            <div class="frame">
+                <form id='form'>
+                    <ol>
+                        <li>Magic stones have borders around them</li>
+                        <p>
+                            <input type="radio" name="check1">Correct
+                            <input type="radio" name="check1">False
+                        </p>
+                        <li>Stones differ in size and color</li>
+                        <p>
+                            <input type="radio" name="check2">Correct
+                            <input type="radio" name="check2">False
+                        </p>
+                        <li>You have access to the magic effects while making predictions.</li>
+                        <p>
+                            <input type="radio" name="check3">Correct
+                            <input type="radio" name="check3">False
+                        </p>
+                        <li>You earn a 10 cent bonus for each prediction you get right</li>
+                        <p>
+                            <input type="radio" name="check4">Correct
+                            <input type="radio" name="check4">False
+                        </p>
+                    </ol>
+                </form>
+            </div>
+            <div class='button-group'>
+                <button class='big-button' id='check-btn'>Check</button>
+            </div>
+        </div>
+        <div id='pass' style="display: none">
+            <h2>Congratulations! Let's go check out some magic stones!</h2>
+            <div class='button-group'>
+                <button class='big-button' id='pass-btn'>>></button>
+            </div>
+        </div>
+        <div id='retry' style="display: none">
+            <h2>Oooops, please read the instructions carefully and try again.</h2>
+            <div class='button-group'>
+                <button class='big-button' id='retry-btn'><< Instructions</button>
+            </div>
         </div>
     </body>
-
+    <script type='text/javascript' src='../js/landing.js'></script>
 </html>
