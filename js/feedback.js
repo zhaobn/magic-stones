@@ -2,9 +2,7 @@
 /** Sumit button: save data */
 document.getElementById('submit-btn').onclick = () => saveData();
 
-/** Auto-download data file for off-line use
- * Thanks to Tia https://www.bramleylab.ppls.ed.ac.uk/member/tianwei/
- */
+/** Auto-download data file for off-line use */
 function download(content, fileName, contentType) {
     var a = document.createElement("a");
     var file = new Blob([content], {type: contentType});
