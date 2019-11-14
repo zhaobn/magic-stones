@@ -17,7 +17,7 @@ function saveData () {
     /** Get data */
     let dataFile = {};
     const feedbackData = document.getElementById('feedback').value;
-    const taskData = sessionStorage.data;
+    const taskData = sessionStorage.taskData;
 
     dataFile.task = taskData;
     dataFile.feedback = feedbackData;
