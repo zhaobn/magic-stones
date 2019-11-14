@@ -87,7 +87,6 @@ function createPanel(trial) {
 
         taskData[taskId].selection = clicked;
         taskData[taskId].clicks.push(clicked);
-
         sessionStorage.setItem('taskData', JSON.stringify(taskData));
 
         styleClicked(tbId);
@@ -297,7 +296,7 @@ function switchBtn (from, to) {
 function updateTask (current) {
     let tidx = parseInt(current.slice(5,));
 
-    if (tidx < 16) {
+    if (tidx < 15) {
         trial = 'trial' + (tidx + 1).toString().padStart(2, '0');
         clearTaskElements(current);
         createGeneralizationTask(taskData[trial]);
