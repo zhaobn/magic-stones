@@ -5,9 +5,20 @@
         <title>Magic Stones</title>
     </head>
     <body class='dark-page'>
-        <div id='task'>
+        <div id='learning'>
             <div class='task-frame'>
                 <h2>Please watch the effects carefully</h2>
+                <div class='box-lt' style="height: 400px"></div>
+            </div>
+            <div class='button-group'>
+                <button class='big-button' id='reset-btn' disabled>Reset</button>
+                <button class='big-button' id='play-btn'>Play</button>
+                <button class='big-button' id='next-btn' disabled>Next</button>
+            </div>
+        </div>
+        <div id='task' style="display: none">
+            <div class='task-frame'>
+                <h2>Effects</h2>
                 <div class='box-lt'>
                     <div class='box-mem'>
                         <p>Before</p>
@@ -19,9 +30,8 @@
                     </div>
                 </div>
             </div>
-            <div class='task-frame'>
-                <h2>This magic stone will turn this normal stone into ... ?</h2>
-                <p>Please select from the panel on the right.</p>
+            <div class='task-frame' id='trial'>
+                <p id='trial-p'>Please select from the panel on the right.</p>
                 <div class='box-gt' style="height: 300px">
                     <div class='box-task'></div>
                     <div class='box-panel'></div>
