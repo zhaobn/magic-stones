@@ -38,6 +38,7 @@ createDataObj(learningTask);
 
 let trial = 'trial01';
 createGeneralizationTask(taskData[trial]);
+createTrialCounter(trial);
 
 const nextOneButton = document.getElementById('next-one-btn');
 
@@ -45,8 +46,25 @@ nextOneButton.onclick = () => {
     document.getElementById('learning').style.display = 'inline';
     document.getElementById('task').style.display = 'none';
     updateTask(trial);
+    clearTrialCounter();
+    createTrialCounter(trial);
     nextOneButton.disabled = true;
 }
 
+/** Set trial count indicator */
+function createTrialCounter (trial) {
+    const text = `[${trial.slice(5,)}/15] ` + ' This magic stone will turn this normal stone into ... ?'
+    const h = document.createElement('h2');
+    const t = document.createTextNode(text);
+    h.append(t);
+    setAttributes(h, { 'id': 'trial-h2' });
 
-document.getElementById('next-one-btn').onclick = () => updateTask(trial);
+    const h2Node = document.getElementById('trial-p');
+    const parentDiv = h2Node.parentNode;
+    parentDiv.insertBefore(h, h2Node);
+}
+
+function clearTrialCounter () {
+    let clear = document.getElementById('trial-h2');
+    clear.parentNode.removeChild(clear);
+}
