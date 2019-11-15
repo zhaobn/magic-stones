@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel='stylesheet' type="text/css" href='../css/style.css'>
+        <title>Magic Stones</title>
+    </head>
+    <body class='light-page'>
+        <h1>Thank you for your contributions to science ☆彡</h1>
+        <p>You will be eligible for full payment once you answer the following questions.</p>
+        <p><b>Note</b>: To continue, please answer <span style="color:red">all questions</span>.</p>
+        <form id="postquiz"  class='de-form' action="debrief" method="post">
+            <p>Do you have any comments regarding the experiment?</p>
+            <textarea name="feedback" id="feedback" placeholder="Please type here"></textarea>
+            <br>
+            <p>
+                <b>1. </b>How old are you?:
+                <input
+                    id="age" name="age" class="posttestQ" type="number"
+                    maxlength = "3" min="18" max="100"step = "1"
+                > years
+            </p>
+            <p>
+                <b>2. </b>What is your gender?
+                <select id="sex" name="sex" class="posttestQ">
+                    <option value="noresp" SELECTED></option>
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                    <option value="other">Other</option>
+                    <option value="noresponse">I’d prefer not to respond</option>
+                </select>
+            </p>
+            <br/>
+            <p>
+                <b>3. </b>On a scale of 1-10 (where 10 is the most engaged), please rate how <b>ENGAGING</b> you found the learning task:
+                <select id="engagement" name="engagement" class="posttestQ">
+                    <option value="--" SELECTED>
+                    <option value="10">10 - Very engaging</option>
+                    <option value="9">9</option>
+                    <option value="8">8</option>
+                    <option value="7">7</option>
+                    <option value="6">6</option>
+                    <option value="5">5 - Moderately</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                    <option value="0">0 - Not engaged</option>
+                </select>
+            </p>
+            <p>
+                <b>4. </b>On a scale of 1-10 (where 10 is the most difficult), please rate how <b>DIFFICULT</b> you found the learning task:
+                <select id="difficulty" name="difficulty" class="posttestQ">
+                    <option value="--" SELECTED>
+                    <option value="10">10 - Very difficult</option>
+                    <option value="9">9</option>
+                    <option value="8">8</option>
+                    <option value="7">7</option>
+                    <option value="6">6</option>
+                    <option value="5">5 - Moderately difficult</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                    <option value="0">0 - Not difficult at all</option>
+                </select>
+            </p>
+        </form>
+        <div class='button-group'>
+            <button class='big-button' id='submit-btn'>Done</button>
+        </div>
+    </body>
+    <script type='text/javascript' src='../js/debrief.js'></script>
+</html>

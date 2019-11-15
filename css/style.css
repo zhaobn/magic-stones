@@ -11,6 +11,28 @@ input[type="radio"] {
     margin: 0 10px;
 }
 
+form {
+    background: #fff;
+    padding: 0.5em 1em 2.5em 2em;
+    border-radius: 5px;
+}
+
+textarea {
+    background: #f4f4f4;
+    width: 98%;
+    height: 100px;
+    font-size: 15px;
+    border-radius: 5px;
+    border: 1px solid #c5c6c7;
+}
+
+.posttestQ {
+    background: #f4f4f4;
+    border-radius: 5px;
+    border: 1px solid #c5c6c7;
+    margin: 0 0 0 5px;
+}
+
 .button-group {
     margin: 20px;
     display: flex;
@@ -90,12 +112,12 @@ input[type="radio"] {
 }
 
 .frame {
-    border: solid 1px black;
+    border: solid 1px #747474;
     padding: 5px 20px;
     border-radius: 5px;
-    background-color: #fff;
     margin-top: 20px;
     font-size: 18px;
+    background-color: #fff;
     min-height: 300px;
 }
 
@@ -117,19 +139,6 @@ input[type="radio"] {
     /* display: flex; */
     /* flex-direction: row; */
 }
-
-/* .learning {
-    margin-top: 50px;
-}
-
-.generalization {
-    display: none;
-    margin-top: 50px;
-}
-
-.learning h2, .generalization h2 {
-    color: #747474;
-} */
 
 .box-gt, .box-lt, .box-task, .box-panel, .selection-panel {
     background-color: #1A1A1D;
