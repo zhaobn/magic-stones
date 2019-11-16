@@ -37,6 +37,8 @@ retryBtn.onclick = () => {
     document.body.className = 'dark-page';
 };
 
+document.getElementById('prequiz').onchange = () => isFilled() ? checkBtn.disabled = false : null;
+
 function checkComprehension() {
     let inputs = [];
     checks.map(check => {
@@ -51,4 +53,13 @@ function showPostCheckPage (isPass) {
     const pageDiv = isPass? 'pass' : 'retry';
     document.getElementById('check-btn').style.display = 'none';
     document.getElementById(pageDiv).style.display = 'block';
+}
+
+function isFilled () {
+    let radios = document.getElementsByTagName('input');
+    let checked = 0;
+    for (let i = 0; i < radios.length; i++) {
+        checked += radios[i].checked;
+    }
+    return (checked > 3)
 }
