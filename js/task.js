@@ -3,10 +3,10 @@ const myColors = {
     red: 'rgb(255, 102, 102)',
     blue: 'rgb(61, 60, 134)',
     yellow: 'rgb(245, 230, 99)'
-  }
+}
 const magicStoneBorderStyle = '10px solid rgba(136, 136, 136, .5)';
 
-/** Trask setups */
+/** Declare setups */
 const trainings = {
   learn01: { taskId: 'learn01', magicStone: 'rd', normalStone: 'yc', rules: [ '-2d' ] },
   learn02: { taskId: 'learn02', magicStone: 'yc', normalStone: 'rd', rules: [ '-2s' ] },
@@ -16,24 +16,30 @@ const trainings = {
   learn06: { taskId: 'learn06', magicStone: 'bs', normalStone: 'yd', rules: [ '-2r', '-2c' ] },
 }
 const learningTask = trainings.learn04;
-let taskData = {};
+const trials = createTrialDataObj(learningTask);
 
-/** Create learning task stones */
+let feedbackData = {};
+let taskData = {};
+taskData.trial = new Array(15).fill(0);
+taskData.selection = new Array(15).fill('');
+taskData.ts = new Array(15).fill(0);
+taskData.clicks = new Array(15).fill([]);
+
+
+/** Create tasks */
+document.body.className = 'dark-page';
 createStones(learningTask);
-/** Create history stones */
 effectsHistory(learningTask);
-/** Create generalization tasks */
-createDataObj(learningTask);
 
 let trial = 'trial01';
-createGeneralizationTask(taskData[trial]);
+createGeneralizationTask(trials[trial]);
 createTrialCounter(trial);
 
 /** Set learning task button functions */
 const playBtn = document.getElementById('play-btn');
 const resetBtn = document.getElementById('reset-btn');
 const nextBtn = document.getElementById('next-btn');
-const nextOneButton = document.getElementById('next-one-btn');
+const nextOneBtn = document.getElementById('next-one-btn');
 
 resetBtn.onclick = () => resetStones(learningTask);
 playBtn.onclick = () => {
@@ -45,7 +51,7 @@ playBtn.onclick = () => {
 };
 nextBtn.onclick = () => {
     document.getElementById('learning').style.display = 'none';
-    document.getElementById('task').style.display = 'inline';
+    document.getElementById('task').style.display = 'block';
     document.getElementById('trial').scrollIntoView({
         behavior: 'smooth'
     });
@@ -53,17 +59,23 @@ nextBtn.onclick = () => {
     nextBtn.disabled = true;
     resetBtn.disabled = true;
 };
-nextOneButton.onclick = () => {
-    document.getElementById('learning').style.display = 'inline';
+nextOneBtn.onclick = () => {
+    document.getElementById('learning').style.display = 'block';
     document.getElementById('task').style.display = 'none';
     updateTask(trial);
     clearTrialCounter();
     createTrialCounter(trial);
-    nextOneButton.disabled = true;
+    nextOneBtn.disabled = true;
+}
+
+function showCompletion(code) {
+    document.getElementById('feedback').style.display = 'none';
+    document.getElementById('completed').style.display = 'block';
+    let t = document.createTextNode(code);
+    document.getElementById('completion-code').append(t);
 }
 
 /** Helper functions */
-
 /** Color changing effects */
 const changeColor = (id, color) => {
     document.getElementById(id).style.background = myColors[color];
@@ -95,13 +107,8 @@ function changeStone (task) {
 }
 
 /** In order to show a new task, clear current page */
-function clearTaskElements (taskId) {
-    const elementsToClear = [
-        `${taskId}-magic-stone`,
-        `${taskId}-normal-stone`,
-        `${taskId}-panel`,
-    ];
-    elementsToClear.forEach (el => {
+function clearElements (els) {
+    els.forEach (el => {
         let clear = document.getElementById(el);
         clear.parentNode.removeChild(clear);
     })
@@ -112,9 +119,22 @@ function clearTrialCounter () {
     clear.parentNode.removeChild(clear);
 }
 
+/** Create data object */
+function createTrialDataObj (learningTask) {
+    let trials = {};
+    for (let i = 1; i < 16; i++) {
+        trialId = 'trial' + i.toString().padStart(2, '0');
+        trials[trialId] = {};
+        trials[trialId]['taskId'] = trialId;
+        trials[trialId]['magicStone'] = '';
+        trials[trialId]['normalStone'] = '';
+        createTrials(learningTask, trials[trialId]);
+    }
+    return trials;
+}
+
 /** Create the generaliztion task */
 function createGeneralizationTask (task) {
-    !!task.taskId ? null: task.taskId = task.trialId; // hacky fix for inconsistent task types
     createStones(task, '.box-task');
     const panel = createPanel(task);
     document.querySelector('.box-panel').append(panel);
@@ -128,9 +148,17 @@ function createLearningTask (task) {
     document.getElementById('play-btn').onclick = () => playEffects(task);
 }
 
+function readStone (cell) {
+    const colorIndex = cell.slice(6, 8);
+    const shapeIndex = cell.slice(4, 6);
+    let color = (colorIndex === '00')? 'r' : ((colorIndex === '01')? 'y' : 'b');
+    let shape = (shapeIndex === '00')? 'c' : ((shapeIndex === '01')? 's' : 'd');
+    return (color + shape);
+}
 /** Create selection panel */
 function createPanel(trial) {
-    const taskId = trial.trialId;
+    const taskId = trial.taskId;
+    let clicks = [];
     tbs = [];
 
     let tbl = document.createElement('table');
@@ -148,13 +176,21 @@ function createPanel(trial) {
     const recordClick = (e) => {
         const tbId = e.target.id;
         let clicked = {};
-
         clicked.stone = tbId;
         clicked.timestamp = Date.now();
+        clicks.push(clicked);
 
-        taskData[taskId].selection = clicked;
-        taskData[taskId].clicks.push(clicked);
-        sessionStorage.setItem('taskData', JSON.stringify(taskData));
+        let idx = parseInt(trial.taskId.slice(5,)) - 1;
+        taskData.trial[idx] = idx + 1;
+        taskData.selection[idx] = readStone(tbId);
+        taskData.ts[idx] = Date.now();
+        taskData.clicks[idx] = clicks;
+
+        console.log(taskData);
+
+        // trialData[taskId].selection = clicked;
+        // trialData[taskId].clicks.push(clicked);
+        // sessionStorage.setItem('taskData', JSON.stringify(taskData));
 
         styleClicked(tbId);
         document.getElementById('next-one-btn').disabled = false;
@@ -197,6 +233,47 @@ function createStones (task, box = '.box-lt') {
     const taskBox = document.querySelector(box);
     taskBox.append(magicStone);
     taskBox.append(normalStone);
+}
+
+/** Create trial stones */
+function createTrials (learningTask, trial) {
+    const colors = [ 'r', 'y', 'b' ];
+    const shapes = [ 'c', 'd', 's' ];
+
+    const agentColor = learningTask.magicStone[0];
+    const agentShape = learningTask.magicStone[1];
+    const recipientColor = learningTask.normalStone[0];
+    const recipientShape = learningTask.normalStone[1];
+
+    const diffColor = (colors.filter(c => (c !== agentColor && c !== recipientColor)))[0];
+    const diffShape = (shapes.filter(c => (c !== agentShape && c !== recipientShape)))[0];
+
+    const trialIndex = parseInt(trial.taskId.slice(5,));
+    // Set recipient properties
+    switch(trialIndex % 4) {
+        case 1:
+            trial.normalStone = diffColor + recipientShape;
+            break;
+        case 2:
+            trial.normalStone = recipientColor + diffShape;
+            break;
+        case 3:
+            trial.normalStone = diffColor + diffShape;
+            break;
+        default:
+            trial.normalStone = learningTask.normalStone;
+            break;
+    }
+    // Set agent properties
+    if (trialIndex > 0 && trialIndex < 4) {
+        trial.magicStone = learningTask.magicStone;
+    } else if (trialIndex > 3 && trialIndex < 8) {
+        trial.magicStone = diffColor + agentShape;
+    } else if (trialIndex > 7 && trialIndex < 12) {
+        trial.magicStone = agentColor + diffShape;
+    } else {
+        trial.magicStone = diffColor + diffShape;
+    }
 }
 
 /** Set trial count indicator */
@@ -255,6 +332,21 @@ function hover (tbid, selected) {
     };
 }
 
+/** Check if form is filled */
+/** Return TRUE if form is fully filled */
+function isFilled (formID) {
+    let notFilled = false;
+    const nulls = [ '', '', 'noresp', '--', '--' ];
+    const form = document.getElementById(formID);
+    const inputs = form.elements;
+    (Object.keys(inputs)).forEach((input, idx) => {
+      let field = inputs[input];
+      notFilled = (notFilled || (field.value === nulls[idx]));
+      saveFormData(field, feedbackData);
+    });
+    return (!notFilled)
+}
+
 /** Animation effect for moving magic stone to the normal stone */
 function moveStone (task) {
     const magicStoneId = `${task.taskId}-magic-stone`;
@@ -297,13 +389,15 @@ function resetStones (task) {
     const magicStoneId = `${task.taskId}-magic-stone`;
     const normalStoneId = `${task.taskId}-normal-stone`;
     const stones = [ magicStoneId, normalStoneId ];
-    // Clear existing stones
-    stones.forEach(stone => {
-        let el = document.getElementById(stone);
-        el.parentNode.removeChild(el);
-    });
+    clearElements(stones);
     // Create new stones
     createStones(task);
+}
+
+function saveFormData (input, dataObj) {
+    let fieldName = input.name;
+    dataObj[fieldName] = input.value;
+    return dataObj;
 }
 
 /** Useful shorthand */
@@ -338,72 +432,14 @@ function setEffect (id, rule) {
     }
 }
 
+
 function updateTask (current) {
     let tidx = parseInt(current.slice(5,));
-
     if (tidx < 15) {
+        clearElements([`${current}-magic-stone`, `${current}-normal-stone`, `${current}-panel`]);
         trial = 'trial' + (tidx + 1).toString().padStart(2, '0');
-        clearTaskElements(current);
-        createGeneralizationTask(taskData[trial]);
+        createGeneralizationTask(trials[trial]);
     } else {
-        location.href='feedback.html';
-    }
-}
-
-/** Create data object */
-function createDataObj (learningTask) {
-    taskData.userId = '';
-    taskData.learningTaskId = learningTask.taskId;
-
-    for (let i = 1; i < 16; i++) {
-        trialId = 'trial' + i.toString().padStart(2, '0');
-        taskData[trialId] = {};
-        taskData[trialId]['trialId'] = trialId;
-        taskData[trialId]['magicStone'] = '';
-        taskData[trialId]['normalStone'] = '';
-        taskData[trialId]['selection'] = {};
-        taskData[trialId]['clicks'] = [];
-        createTrials(learningTask, taskData[trialId]);
-    }
-}
-
-/** Create trial stones */
-function createTrials (learningTask, trial) {
-    const colors = [ 'r', 'y', 'b' ];
-    const shapes = [ 'c', 'd', 's' ];
-
-    const agentColor = learningTask.magicStone[0];
-    const agentShape = learningTask.magicStone[1];
-    const recipientColor = learningTask.normalStone[0];
-    const recipientShape = learningTask.normalStone[1];
-
-    const diffColor = (colors.filter(c => (c !== agentColor && c !== recipientColor)))[0];
-    const diffShape = (shapes.filter(c => (c !== agentShape && c !== recipientShape)))[0];
-
-    const trialIndex = parseInt(trial.trialId.slice(5,));
-    // Set recipient properties
-    switch(trialIndex % 4) {
-        case 1:
-            trial.normalStone = diffColor + recipientShape;
-            break;
-        case 2:
-            trial.normalStone = recipientColor + diffShape;
-            break;
-        case 3:
-            trial.normalStone = diffColor + diffShape;
-            break;
-        default:
-            trial.normalStone = learningTask.normalStone;
-            break;
-    }
-    // Set agent properties
-    if (trialIndex > 0 && trialIndex < 4) {
-        trial.magicStone = learningTask.magicStone;
-    } else if (trialIndex > 3 && trialIndex < 8) {
-        trial.magicStone = diffColor + agentShape;
-    } else if (trialIndex > 7 && trialIndex < 12) {
-        trial.magicStone = agentColor + diffShape;
-    } else {
-        trial.magicStone = diffColor + diffShape;
+        location.href = 'debrief.html'
     }
 }
