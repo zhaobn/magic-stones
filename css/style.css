@@ -1,6 +1,11 @@
 
+
 body {
     font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+    text-decoration: none;
 }
 
 ul li{
@@ -112,12 +117,12 @@ textarea {
 }
 
 .frame {
-    /* border: solid 1px #747474; */
-    padding: 5px 20px 30px 20px;
+    border: solid 1px black;
+    padding: 5px 20px;
     border-radius: 5px;
+    background-color: #fff;
     margin-top: 20px;
     font-size: 18px;
-    background-color: #fff;
     min-height: 300px;
 }
 
@@ -139,6 +144,19 @@ textarea {
     /* display: flex; */
     /* flex-direction: row; */
 }
+
+/* .learning {
+    margin-top: 50px;
+}
+
+.generalization {
+    display: none;
+    margin-top: 50px;
+}
+
+.learning h2, .generalization h2 {
+    color: #747474;
+} */
 
 .box-gt, .box-lt, .box-task, .box-panel, .selection-panel {
     background-color: #1A1A1D;

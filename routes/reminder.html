@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <title>Magic Stones</title>
+  </head>
+  <body class="light-page">
+    <div id="reminder">
+      <h1>Thank you for participating in this study (•‿•)</h1>
+      <div class="frame">
+        <p>Please note that:</p>
+        <ul>
+          <li>You will have to pass a test on your understanding before you can start the experiment.</li>
+          <li>Please minimize the chances of possible distractions (switch off messengers, email, music,...)</li>
+          <li>Please make this window as large as possible (full screen best).</li>
+          <li>Do not refresh this page during the experiment.</li>
+        </ul>
+      </div>
+      <div class="button-group">
+          <button class="big-button" id="reminder-btn">Sure</button>
+      </div>
+    </div>
+  </body>
+  <script>
+    const reminderBtn = document.getElementById("reminder-btn");
+    reminderBtn.onclick = () => location.href = "instruction.html"
+  </script>
+</html>

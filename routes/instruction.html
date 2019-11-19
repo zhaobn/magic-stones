@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' type="text/css" href='../css/style.css'>
+    <title>Magic Stones</title>
+  </head>
+  <body class='dark-page'>
+    <div id='description'>
+      <h1>Once upon a time in a magic world ...</h1>
+      <div class="instruction" id="box-desc">
+        <p>Some stones are magic stones, and some are normal stones.</p>
+        <p>A magic stone is indicated by having a border, like this:</p>
+        <div class="magic-stone"></div>
+        <p>And a normal stone does not have borders, like this:</p>
+        <div class="normal-stone"></div>
+        <br>
+        <p>For all the magic stones and normal stones:</p>
+        <ul>
+          <li>their shape can be
+            circle <div class="stone-yc" style="display: inline-block; height: 20px; width: 20px; margin: 0;"></div> ,
+            square <div class="stone-ys" style="display: inline-block; height: 20px; width: 20px; margin: 0;"></div> , or
+            diamond <div class="stone-yd" style="display: inline-block; height: 20px; width: 20px; margin: 0;"></div> ;
+          </li>
+          <li>their color can be
+            <span style="color: rgb(255, 102, 102); font-weight: bold;">red</span>,
+            <span style="color: rgb(245, 230, 99); font-weight: bold;">yellow</span>, or
+            <span style="color: rgb(61, 60, 134); font-weight: bold;">blue</span>;
+          </li>
+          <li>stones differ <b>only</b> in their magic power, color, and shape;</li>
+          <li style="font-weight: bold">magic stones can set the color and/or shape of normal stones into specific states.</li>
+        </ul>
+        <br>
+        <p>As a newcomer to the magic world, you have the chance to watch one specific magic stone's effects on a normal stone.</p>
+        <p>After that, you will be facing some other magic stones and normal stones. Give your best prediction at the given magic stone's effects on the given normal stone.</p>
+        <p>You will make predictions for 15 pairs of magic stones and normal stones. Between each prediction case, you watch the original effects again as a reminder.</p>
+        <p>To help you make accurate predictions, a summary of the original effects you saw will be displayed at the top of the page.</p>
+        <p>Hint: All the stones are in the same magic world and share the same magic rule.</p>
+        <p>Think carefully. You earn a 10 cent bonus whenever you make a correct prediction.</p>
+      </div>
+      <div class='button-group'>
+          <button class='big-button' id='desc-btn'>>> Comprehension questions</button>
+      </div>
+    </div>
+  </body>
+  <script>
+    const descBtn = document.getElementById('desc-btn');
+    descBtn.onclick = () => location.href = 'comprehension.html'
+  </script>
+</html>
