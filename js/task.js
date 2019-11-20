@@ -106,6 +106,10 @@ function changeStone (task) {
     task.rules.forEach(rule => setEffect(normalStoneId, rule));
 }
 
+function checkScrollHeight(text, btn){
+    ((text.scrollTop + text.offsetHeight) >= text.scrollHeight) ? btn.disabled = false : null;
+}
+
 /** In order to show a new task, clear current page */
 function clearElements (els) {
     els.forEach (el => {
@@ -148,13 +152,6 @@ function createLearningTask (task) {
     document.getElementById('play-btn').onclick = () => playEffects(task);
 }
 
-function readStone (cell) {
-    const colorIndex = cell.slice(6, 8);
-    const shapeIndex = cell.slice(4, 6);
-    let color = (colorIndex === '00')? 'r' : ((colorIndex === '01')? 'y' : 'b');
-    let shape = (shapeIndex === '00')? 'c' : ((shapeIndex === '01')? 's' : 'd');
-    return (color + shape);
-}
 /** Create selection panel */
 function createPanel(trial) {
     const taskId = trial.taskId;
@@ -382,6 +379,14 @@ function readEffect (stone, rule) {
         changed = stone[0] + rule[2];
     }
     return changed;
+}
+
+function readStone (cell) {
+    const colorIndex = cell.slice(6, 8);
+    const shapeIndex = cell.slice(4, 6);
+    let color = (colorIndex === '00')? 'r' : ((colorIndex === '01')? 'y' : 'b');
+    let shape = (shapeIndex === '00')? 'c' : ((shapeIndex === '01')? 's' : 'd');
+    return (color + shape);
 }
 
 /** For the `reset` button of the learning task */
