@@ -60,6 +60,7 @@ nextBtn.onclick = () => {
     resetBtn.disabled = true;
 };
 nextOneBtn.onclick = () => {
+    document.getElementById('learning-h2').innerText = 'Here is a reminder of the magic effects you saw in the beginning'
     document.getElementById('learning').style.display = 'block';
     document.getElementById('task').style.display = 'none';
     updateTask(trial);
@@ -84,6 +85,7 @@ const changeColor = (id, color) => {
 /** Shape changing effects */
 function changeShape (id, shape) {
     const el = document.getElementById(id);
+    const wasDiamond = (window.getComputedStyle(el).transform) !== 'none';
     switch (shape) {
         case 'diamond':
             el.style.borderRadius = '10%';
@@ -91,9 +93,11 @@ function changeShape (id, shape) {
             break;
         case 'circle':
             el.style.borderRadius = '50%';
+            wasDiamond? el.style.transform = 'rotate(45deg) scale(1)' : null;
             break;
         case 'square':
             el.style.borderRadius = '10%';
+            wasDiamond? el.style.transform = 'rotate(0deg) scale(1)' : null;
             break;
     }
 }
@@ -126,14 +130,16 @@ function clearTrialCounter () {
 /** Create data object */
 function createTrialDataObj (learningTask) {
     let trials = {};
+    control = Math.round(Math.random());
     for (let i = 1; i < 16; i++) {
         trialId = 'trial' + i.toString().padStart(2, '0');
         trials[trialId] = {};
         trials[trialId]['taskId'] = trialId;
         trials[trialId]['magicStone'] = '';
         trials[trialId]['normalStone'] = '';
-        createTrials(learningTask, trials[trialId]);
+        createTrials(learningTask, trials[trialId], control);
     }
+    console.log(trials);
     return trials;
 }
 
@@ -183,8 +189,6 @@ function createPanel(trial) {
         taskData.ts[idx] = Date.now();
         taskData.clicks[idx] = clicks;
 
-        console.log(taskData);
-
         // trialData[taskId].selection = clicked;
         // trialData[taskId].clicks.push(clicked);
         // sessionStorage.setItem('taskData', JSON.stringify(taskData));
@@ -233,7 +237,8 @@ function createStones (task, box = '.box-lt') {
 }
 
 /** Create trial stones */
-function createTrials (learningTask, trial) {
+function createTrials (learningTask, trial, idx) {
+    console.log(idx);
     const colors = [ 'r', 'y', 'b' ];
     const shapes = [ 'c', 'd', 's' ];
 
@@ -242,6 +247,8 @@ function createTrials (learningTask, trial) {
     const recipientColor = learningTask.normalStone[0];
     const recipientShape = learningTask.normalStone[1];
 
+    // By current design, there is only one diff color/shape
+    // Because agent and recipient always take different colors and shapes
     const diffColor = (colors.filter(c => (c !== agentColor && c !== recipientColor)))[0];
     const diffShape = (shapes.filter(c => (c !== agentShape && c !== recipientShape)))[0];
 
@@ -249,10 +256,11 @@ function createTrials (learningTask, trial) {
     // Set recipient properties
     switch(trialIndex % 4) {
         case 1:
-            trial.normalStone = diffColor + recipientShape;
+            // Counterbalance color and shape differences
+            trial.normalStone = idx? diffColor + recipientShape : recipientColor + diffShape;
             break;
         case 2:
-            trial.normalStone = recipientColor + diffShape;
+            trial.normalStone = idx? recipientColor + diffShape : diffColor + recipientShape;
             break;
         case 3:
             trial.normalStone = diffColor + diffShape;
@@ -265,9 +273,9 @@ function createTrials (learningTask, trial) {
     if (trialIndex > 0 && trialIndex < 4) {
         trial.magicStone = learningTask.magicStone;
     } else if (trialIndex > 3 && trialIndex < 8) {
-        trial.magicStone = diffColor + agentShape;
+        trial.magicStone = idx? diffColor + agentShape : agentColor + diffShape;
     } else if (trialIndex > 7 && trialIndex < 12) {
-        trial.magicStone = agentColor + diffShape;
+        trial.magicStone = idx? agentColor + diffShape : diffColor + agentShape;
     } else {
         trial.magicStone = diffColor + diffShape;
     }
