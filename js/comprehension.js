@@ -1,7 +1,7 @@
 
 const checkBtn = document.getElementById('check-btn');
 const checks = [ 'check1', 'check2', 'check3', 'check4' ];
-const answers = [ true, false, true, true ];
+const answers = [ true, false, true, false ];
 
 const passBtn = document.getElementById('pass-btn');
 const retryBtn = document.getElementById('retry-btn');
