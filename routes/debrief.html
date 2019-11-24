@@ -9,18 +9,17 @@
         <p>You will be eligible for full payment once you answer the following questions.</p>
         <p><b>Note</b>: To continue, please answer <span style="color:red">all questions</span>.</p>
         <form id="postquiz"  class='de-form' action="debrief" method="post">
-            <p>Do you have any comments regarding the experiment?</p>
-            <textarea name="feedback" id="feedback" placeholder="Please type here"></textarea>
-            <br>
+            <p><b>1.&nbsp;</b>What do you think the magic rule(s) is(are)?</p>
+            <textarea name="guess" id="guess" placeholder="Please type here"></textarea>
             <p>
-                <b>1. </b>How old are you?:
+                <b>2.&nbsp;</b>How old are you?:
                 <input
                     id="age" name="age" class="posttestQ" type="number"
                     maxlength = "3" min="18" max="100"step = "1"
                 > years
             </p>
             <p>
-                <b>2. </b>What is your gender?
+                <b>3.&nbsp;</b>What is your gender?
                 <select id="sex" name="sex" class="posttestQ">
                     <option value="noresp" SELECTED></option>
                     <option value="female">Female</option>
@@ -29,9 +28,8 @@
                     <option value="noresponse">I’d prefer not to respond</option>
                 </select>
             </p>
-            <br/>
             <p>
-                <b>3. </b>On a scale of 1-10 (where 10 is the most engaged), please rate how <b>ENGAGING</b> you found the learning task:
+                <b>4.&nbsp;</b>On a scale of 1-10 (where 10 is the most engaged), please rate how <b>ENGAGING</b> you found the learning task:
                 <select id="engagement" name="engagement" class="posttestQ">
                     <option value="--" SELECTED>
                     <option value="10">10 - Very engaging</option>
@@ -48,7 +46,7 @@
                 </select>
             </p>
             <p>
-                <b>4. </b>On a scale of 1-10 (where 10 is the most difficult), please rate how <b>DIFFICULT</b> you found the learning task:
+                <b>5.&nbsp;</b>On a scale of 1-10 (where 10 is the most difficult), please rate how <b>DIFFICULT</b> you found the learning task:
                 <select id="difficulty" name="difficulty" class="posttestQ">
                     <option value="--" SELECTED>
                     <option value="10">10 - Very difficult</option>
@@ -64,6 +62,8 @@
                     <option value="0">0 - Not difficult at all</option>
                 </select>
             </p>
+            <p><b>6.&nbsp;</b>Do you have any comments regarding the experiment?</p>
+            <textarea name="feedback" id="feedback" placeholder="Please type here"></textarea>
         </form>
         <div class='button-group'>
             <button class='big-button' id='done-btn' disabled>Done</button>
