@@ -64,6 +64,17 @@ textarea {
     color: #fff;
 }
 
+.inline-button {
+    display: inline-block;
+    pointer-events: none;
+    background-color: #116466;
+    font-size: 15px;
+    padding: 5px 15px;
+	color: #fff;
+    border-radius: 10px;
+    border: 0px;
+    margin: 0px 3px;
+}
 
 .pass-text, .retry-text {
     display: flex;
