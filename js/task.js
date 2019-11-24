@@ -8,14 +8,14 @@ const magicStoneBorderStyle = '10px solid rgba(136, 136, 136, .5)';
 
 /** Declare setups */
 const trainings = {
-  learn01: { taskId: 'learn01', magicStone: 'rd', normalStone: 'yc', rules: [ '-2d' ] },
-  learn02: { taskId: 'learn02', magicStone: 'yc', normalStone: 'rd', rules: [ '-2s' ] },
-  learn03: { taskId: 'learn02', magicStone: 'bs', normalStone: 'rc', rules: [ '-2b' ] },
+  learn01: { taskId: 'learn01', magicStone: 'rs', normalStone: 'yc', rules: [ '-2s' ] },
+  learn02: { taskId: 'learn02', magicStone: 'yd', normalStone: 'rs', rules: [ '-2c' ] },
+  learn03: { taskId: 'learn02', magicStone: 'bs', normalStone: 'rd', rules: [ '-2b' ] },
   learn04: { taskId: 'learn04', magicStone: 'rc', normalStone: 'bs', rules: [ '-2y' ] },
-  learn05: { taskId: 'learn05', magicStone: 'yd', normalStone: 'bs', rules: [ '-2y', '-2d' ] },
-  learn06: { taskId: 'learn06', magicStone: 'bs', normalStone: 'yd', rules: [ '-2r', '-2c' ] },
+  learn05: { taskId: 'learn05', magicStone: 'yd', normalStone: 'bs', rules: [ '-2y', '-2c' ] },
+  learn06: { taskId: 'learn06', magicStone: 'bs', normalStone: 'yc', rules: [ '-2b', '-2s' ] },
 }
-const learningTask = trainings.learn04;
+const learningTask = trainings.learn05;
 const trials = createTrialDataObj(learningTask);
 
 let feedbackData = {};
