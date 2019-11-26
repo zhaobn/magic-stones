@@ -60,7 +60,7 @@ nextBtn.onclick = () => {
     resetBtn.disabled = true;
 };
 nextOneBtn.onclick = () => {
-    document.getElementById('learning-h2').innerText = 'Here is a reminder of the magic effects you saw in the beginning'
+    document.getElementById('learning-h2').innerText = 'Here is a reminder of the magic effect you saw in the beginning'
     document.getElementById('learning').style.display = 'block';
     document.getElementById('task').style.display = 'none';
     updateTask(trial);
