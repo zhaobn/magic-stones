@@ -1,4 +1,6 @@
 setwd('bramleylab/magic_stones/analysis')
+options("scipen" = 10)
+options()$scipen
 
 library(RPostgreSQL)
 library(rjson)
