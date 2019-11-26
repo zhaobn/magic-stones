@@ -1,4 +1,8 @@
-
+/** IMPORTANT NOTES
+ *  THIS SCRIPT IS NOT LONGER COMPATIBLE WITH CURRENT REPO
+ *  BECAUSE DATA HAS BEEN MOVED TO OTHER PLACES
+ *  PLEASE RE-USE CAREFULLY
+ */
 const path = require('path');
 const fs = require('fs');
 
@@ -22,7 +26,9 @@ function readData (filename, index) {
     const taskData = (require(`../data/pilot/${filename}`)).task
 
     let data = {};
-    let trials = [];
+    let trial = [];
+    let agent = [];
+    let recipient = [];
     let selected = [];
     let ts = [];
 
@@ -31,13 +37,17 @@ function readData (filename, index) {
         let selection = taskData[d].clientData.selection.stone;
         let timestamp = taskData[d].clientData.selection.timestamp;
 
-        trials.push(parseInt(trailId));
+        trial.push(parseInt(trailId));
+        agent.push(taskData[d].clientData.magicStone);
+        recipient.push(taskData[d].clientData.normalStone);
         selected.push(readCell(selection));
         ts.push(timestamp.toString());
 
         data.pid = Array(12).fill(pid);
-        data.trials = trials;
-        data.selections = selected;
+        data.trial = trial;
+        data.agent = agent;
+        data.recipient = recipient;
+        data.selected = selected;
         data.ts = ts;
     });
 
