@@ -14,10 +14,9 @@ Proudly powered by [<img src="http://vanilla-js.com/assets/button.png">](http://
 
 ## Resources
 
+- `experiment/` folder holds the source code for the web experiment. See the [Development](#Development) section for more details.
 
-- Web-experiment code is in `routes/`, `js/` and `css/` folders. See the [Development](##Development) section for more details.
-
-- Pilot data and preliminary analysis scripts are in the `data/` and `analysis` folders, all prefixed with dates that data was collected.
+- Pilot data and preliminary analysis scripts are in the `data/` and `analysis/` folders, all prefixed with dates that data was collected.
 
 - `notes/` folder has some initial modeling ideas.
 
