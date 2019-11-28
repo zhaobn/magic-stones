@@ -3,13 +3,12 @@ options("scipen" = 10)
 options()$scipen
 
 library(RPostgreSQL)
-#library(RJSONIO)
 library(rjson)
 rm(list=ls())
 
 exp = 'bn_magic_stones'
 pilot_start = 1
-pilot_end = 8
+pilot_end = 17
 
 taskTableName = paste0(exp, '_', "task")
 participantTableName = paste0(exp, '_', "participant")
@@ -32,15 +31,30 @@ dbExistsTable(con, participantTableName)
 ## Then you can pull the task data from postgreSQL 
 td <- dbGetQuery(con, paste("SELECT * from ", taskTableName))
 
-subject<-td$subject[c(pilot_start:pilot_end)]
-trials<-td$trials[c(pilot_start:pilot_end)]
+subject <- td$subject[c(pilot_start:pilot_end)]
+trials <- td$trials[c(pilot_start:pilot_end)]
+
+
+## Treat quotation marks separately
+prep_JSON <- function(str) {
+  str = gsub("\\{'", '\\{"', str)
+  str = gsub("':", '\":', str)
+  str = gsub(": '", ': \"', str)
+  str = gsub(", '", ', \"', str)
+  str = gsub("',", '\",', str)
+  return(str)
+}
 
 ## Un-jsonify data
-inv_fromJSON<-function(js)
-{
-  js <- chartr("\'\"","\"\'",js)
+inv_fromJSON <- function(js, opt) {
+  if (opt == TRUE) {
+    js <- prep_JSON(js)
+  } else {
+    js <- chartr("\'\"","\"\'",js)
+  }
   return(fromJSON(js))
 }
+
 
 ## Drop clicks data for now because I don't know how to process them
 ## TODO: analyze clicks data
@@ -57,20 +71,22 @@ drop_clicks <- function(text) {
 ## Therefore use below looping instead of sapply()
 
 ## Create dataframes
-df.sw.aux = as.data.frame(inv_fromJSON(subject[1]))
-df.tw.aux = as.data.frame(inv_fromJSON(drop_clicks(trials[1])))
+df.sw.aux = as.data.frame(inv_fromJSON(subject[1], TRUE))
+df.tw.aux = as.data.frame(inv_fromJSON(drop_clicks(trials[1]), FALSE))
 for (i in 2:pilot_end) {
-  sj = as.data.frame(inv_fromJSON(subject[i]))
-  tj = as.data.frame(inv_fromJSON(drop_clicks(trials[i])))
+  sj = as.data.frame(inv_fromJSON(subject[i], TRUE))
+  tj = as.data.frame(inv_fromJSON(drop_clicks(trials[i]), FALSE))
   df.sw.aux = rbind(df.sw.aux, sj)
   df.tw.aux = rbind(df.tw.aux, tj)
 }
 
+N = max(df.tw.aux[[1]]) # 15 trials
+
 ## And append them to the id and upis
-df.sw<-data.frame(ix=td$id,
-                  id=td$participant)
-df.sw<-cbind(df.sw, df.sw.aux)
-df.tw<-cbind(ix=rep(df.sw$ix, each=N), id=rep(df.sw$id, each=N), df.tw.aux)
+df.sw <- data.frame(ix=td$id,
+                    id=td$participant)
+df.sw <- cbind(df.sw, df.sw.aux)
+df.tw <- cbind(ix=rep(df.sw$ix, each=N), id=rep(df.sw$id, each=N), df.tw.aux)
 
 ## Save data
-save(file='../data/mturk_20191126_p1.Rdata', df.sw, df.tw)
+save(file='../data/mturk_20191127_p12.Rdata', df.sw, df.tw)
