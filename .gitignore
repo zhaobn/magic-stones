@@ -8,7 +8,6 @@
 # LaTeX temp files
 *.aux
 *.log
-*.pdf
 *.toc
 *.fdb_latexmk
 *.synctex.gz
