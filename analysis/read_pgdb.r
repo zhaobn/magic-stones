@@ -4,11 +4,12 @@ options()$scipen
 
 library(RPostgreSQL)
 library(rjson)
+library(dplyr)
 rm(list=ls())
 
 exp = 'bn_magic_stones'
 pilot_start = 1
-pilot_end = 17
+pilot_end = 34
 
 taskTableName = paste0(exp, '_', "task")
 participantTableName = paste0(exp, '_', "participant")
@@ -88,5 +89,12 @@ df.sw <- data.frame(ix=td$id,
 df.sw <- cbind(df.sw, df.sw.aux)
 df.tw <- cbind(ix=rep(df.sw$ix, each=N), id=rep(df.sw$id, each=N), df.tw.aux)
 
+## Look a bit nicer
+df.sw <- df.sw %>% 
+  select(ix, id, learningTaskId, date, time, instructions_duration, task_duration,
+         age, sex, engagement, difficulty, guess, feedback, token) %>% 
+  arrange(ix)
+df.tw <- df.tw %>% arrange(ix)
+
 ## Save data
-save(file='../data/mturk_20191127_p12.Rdata', df.sw, df.tw)
+save(file='../data/mturk_20191128.Rdata', df.sw, df.tw)
