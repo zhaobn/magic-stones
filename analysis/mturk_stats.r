@@ -97,3 +97,16 @@ report_col(lg_diff$task_duration) # min: 132781 | max: 2322982 | mean: 362207 | 
 report_col(lg_same$difficulty) # min: 0 | max: 9 | mean: 3.75 | sd: 3.1053 
 report_col(lg_diff$difficulty) # min: 0 | max: 10 | mean: 5.1923 | sd: 2.5926 
 
+
+# Take a look per learning task
+check_task <- function(taskId) {
+  ids <- df.sw %>% filter(learningTaskId == taskId) %>% select(id)
+  trials <- df.tw %>% filter(id %in% ids[[1]])
+  return(trials)
+}
+learn_1 <- check_task('learn01')
+
+
+
+
+
