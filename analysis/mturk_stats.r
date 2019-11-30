@@ -69,9 +69,9 @@ report_col(df.sw$difficulty) # min: 0 | max: 10 | mean: 4.8529 | sd: 2.7428
 report_col(df.sw$engagement) # min: 2 | max: 10 | mean: 8.4706 | sd: 1.9577
 
 # Take a peek of stats per learning condition groups
-lg_shape <- df.sw %>% filter(learningTaskId=='learn01'|learningTaskId=='learn02') # groups with a shape-changing rule
-lg_color <- df.sw %>% filter(learningTaskId=='learn03'|learningTaskId=='learn04') # groups with a color-changing rule
-lg_object <- df.sw %>% filter(learningTaskId=='learn05'|learningTaskId=='learn06') # groups with color & shape changing rules
+lg_shape <- df.sw %>% filter(learningTaskId %in% c('learn01', 'learn02')) # groups with a shape-changing rule
+lg_color <- df.sw %>% filter(learningTaskId %in% c('learn03', 'learn04')) # groups with a color-changing rule
+lg_object <- df.sw %>% filter(learningTaskId %in% c('learn05', 'learn06')) # groups with color & shape changing rules
 
 nrow(lg_shape) # 15
 nrow(lg_color) # 6
@@ -85,8 +85,8 @@ report_col(lg_shape$difficulty)  # min: 0 | max: 10 | mean: 4.5333 | sd: 2.9488
 report_col(lg_color$difficulty)  # min: 3 | max: 10 | mean: 6.1667 | sd: 2.4833 
 report_col(lg_object$difficulty) # min: 0 | max: 9 | mean: 4.6154 | sd: 2.6312
 
-lg_same <- df.sw %>% filter(learningTaskId=='learn01'|learningTaskId=='learn03'|learningTaskId=='learn06') # change to the same feature
-lg_diff <- df.sw %>% filter(learningTaskId=='learn02'|learningTaskId=='learn04'|learningTaskId=='learn05') # change to a different feature
+lg_same <- df.sw %>% filter(learningTaskId %in% c('learn01', 'learn03', 'learn06')) # change to the same feature
+lg_diff <- df.sw %>% filter(learningTaskId %in% c('learn02', 'learn04','learn05')) # change to a different feature
 
 nrow(lg_same) # 8
 nrow(lg_diff) # 26
