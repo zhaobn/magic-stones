@@ -95,5 +95,29 @@ df.sw <- df.sw %>%
   arrange(ix)
 df.tw <- df.tw %>% arrange(ix)
 
+## Append learning info to trials
+df.tw <- cbind(df.tw, task=rep(df.sw$learningTaskId, each=N))
+df.tw <- df.tw %>% 
+  mutate(learn_agent = case_when(task == 'learn01' ~ 'rs', 
+                                 task == 'learn02' ~ 'yd', 
+                                 task == 'learn02' ~ 'bs', 
+                                 task == 'learn04' ~ 'rc', 
+                                 task == 'learn05' ~ 'yd', 
+                                 task == 'learn06' ~ 'bs')) %>%
+  mutate(learn_recipient = case_when(task == 'learn01' ~ 'yc',
+                                     task == 'learn02' ~ 'rs',
+                                     task == 'learn02' ~ 'rd',
+                                     task == 'learn04' ~ 'bs',
+                                     task == 'learn05' ~ 'bs',
+                                     task == 'learn06' ~ 'yc',)) %>%
+  mutate(learn_rule = case_when(task == 'learn01' ~ '-2s',
+                                task == 'learn02' ~ '-2c',
+                                task == 'learn02' ~ '-2b',
+                                task == 'learn04' ~ '-2y',
+                                task == 'learn05' ~ '-2y, -2c',
+                                task == 'learn06' ~ '-2b, -2s',)) %>%
+  select(ix, task, learn_agent, learn_recipient, learn_rule, 
+         trial, agent, recipient, selection, ts, id)
+
 ## Save data
 save(file='../data/mturk_20191128.Rdata', df.sw, df.tw)
