@@ -7,15 +7,17 @@ const myColors = {
 const magicStoneBorderStyle = '10px solid rgba(136, 136, 136, .5)';
 
 /** Declare setups */
-const trainings = {
-  learn01: { taskId: 'learn01', magicStone: 'rs', normalStone: 'yc', rules: [ '-2s' ] },
-  learn02: { taskId: 'learn02', magicStone: 'yd', normalStone: 'rs', rules: [ '-2c' ] },
-  learn03: { taskId: 'learn02', magicStone: 'bs', normalStone: 'rd', rules: [ '-2b' ] },
-  learn04: { taskId: 'learn04', magicStone: 'rc', normalStone: 'bs', rules: [ '-2y' ] },
-  learn05: { taskId: 'learn05', magicStone: 'yd', normalStone: 'bs', rules: [ '-2y', '-2c' ] },
-  learn06: { taskId: 'learn06', magicStone: 'bs', normalStone: 'yc', rules: [ '-2b', '-2s' ] },
+let trainings = {
+  learn01: { magicStone: 'rs', normalStone: 'yc', rules: [ '-2s' ] },
+  learn02: { magicStone: 'yd', normalStone: 'rs', rules: [ '-2c' ] },
+  learn03: { magicStone: 'bs', normalStone: 'rd', rules: [ '-2b' ] },
+  learn04: { magicStone: 'rc', normalStone: 'bs', rules: [ '-2y' ] },
+  learn05: { magicStone: 'yd', normalStone: 'bs', rules: [ '-2y', '-2c' ] },
+  learn06: { magicStone: 'bs', normalStone: 'yc', rules: [ '-2b', '-2s' ] },
 }
-const learningTask = trainings.learn05;
+Object.keys(trainings).forEach (t => trainings[t].taskId = t);
+
+const learningTask = trainings.learn01;
 const trials = createTrialDataObj(learningTask);
 
 let feedbackData = {};
@@ -139,7 +141,6 @@ function createTrialDataObj (learningTask) {
         trials[trialId]['normalStone'] = '';
         createTrials(learningTask, trials[trialId], control);
     }
-    console.log(trials);
     return trials;
 }
 
@@ -238,7 +239,6 @@ function createStones (task, box = '.box-lt') {
 
 /** Create trial stones */
 function createTrials (learningTask, trial, idx) {
-    console.log(idx);
     const colors = [ 'r', 'y', 'b' ];
     const shapes = [ 'c', 'd', 's' ];
 
