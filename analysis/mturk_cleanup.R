@@ -5,7 +5,7 @@ library(dplyr)
 rm(list=ls())
 
 ## Load data
-load('../data/mturk_20191128.Rdata')
+load('../assets/rawdata/mturk_20191128.Rdata')
 
 ## Fix learningTaskId bug
 learning_tasks <- df.sw[,c(1,9)]
@@ -15,16 +15,28 @@ miss_labeled <- df.tw %>%
   filter(learningTaskId=='learn02' & agent=='bs') %>%
   select(ix) %>% distinct()
 
-batch_fixed <- df.sw %>%
-  filter(ix %in% miss_labeled[[1]]) %>%
-  mutate(learningTaskId='learn03') %>%
-  top_n(6) # Drop some learn03 groups to keep balance
+fix_data <- function(df) {
+  batch_fixed <- df %>%
+    filter(ix %in% miss_labeled[[1]]) %>%
+    mutate(learningTaskId='learn03') 
+  
+  batch_orig <- df %>% filter(!(ix %in% miss_labeled[[1]]))
+  
+  return(rbind(batch_fixed, batch_orig) %>% arrange(ix))
+}
 
-batch_orig <- df.sw %>% filter(!(ix %in% miss_labeled[[1]]))
-df.sw <- rbind(batch_fixed, batch_orig) %>% arrange(ix)
+df.sw <- fix_data(df.sw)
+df.tw <- fix_data(df.tw)
 
-kept_ix <- df.sw %>% select(ix) %>% distinct()
-df.tw <- df.tw %>% filter(ix %in% kept_ix[[1]])
+# Drop some learn03 to keep balance
+to_drop <- df.sw %>%
+  filter(learningTaskId=='learn03') %>%
+  select(ix) %>% distinct() %>%
+  arrange(desc(ix)) %>%
+  top_n(9)
+
+df.sw <- df.sw %>% filter(!(ix %in% to_drop[[1]]))
+df.tw <- df.tw %>% filter(!(ix %in% to_drop[[1]]))
 
 ## Append learning info to trials
 df.tw <- df.tw %>% 
