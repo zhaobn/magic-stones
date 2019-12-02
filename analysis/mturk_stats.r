@@ -43,23 +43,23 @@ summarise_group <- function(list, ndigits=2, separator='|') {
 # Subjectwise basic stats
 # Age
 report_col(df.sw$age)
-# min: 24 | max: 64 | mean: 41.0882 | sd: 11.4452 
+# min: 24 | max: 64 | mean: 40.7647 | sd: 10.8685 
 
 # Sex
 summarise_group(df.sw$sex)
-# total 34 | male 17 50% | female 17 50%
+# total 34 | male 16 47.06% | female 18 52.94%
 genders <- unique(df.sw$sex);
 for (i in 1:length(genders)) {
   gender_group <- df.sw %>% filter(sex==genders[i]);
   cat(genders[i], ' age\n');
   report_col(gender_group$age);
 }
-# Male age: min: 24 | max: 58 | mean: 41 | sd: 11.9739 
-# Female age: min: 25 | max: 64 | mean: 41.1765 | sd: 11.2596 
+# Male age: min: 24 | max: 58 | mean: 40.375 | sd: 12.0768 
+# Female age: min: 27 | max: 64 | mean: 41.1111 | sd: 10.017 
 
 # Task duration
 report_col(df.sw$task_duration)
-# min: 132781 | max: 2322982 | mean: 360908.5 | sd: 362532.1 
+# min: 132781 | max: 2322982 | mean: 356366 | sd: 363682.9 
 
 # Learn tasks
 summarise_group(df.sw$learningTaskId)
@@ -128,8 +128,9 @@ df.tw <- df.tw %>%
     TRUE ~ 'd')) %>%
   mutate(sel_label=paste0(sel_col, sel_shp))
 
-ggplot(df.tw, aes(sel_label)) + geom_bar()
+# Plot selections
 ggplot(df.tw, aes(sel_label)) + geom_bar(aes(fill=learningTaskId))
+ggplot(df.tw, aes(as.character(trial))) + geom_bar(aes(fill=sel_label))
 
 
 
