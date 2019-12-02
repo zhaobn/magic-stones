@@ -2,6 +2,7 @@ options("scipen" = 10)
 options()$scipen
 
 library(dplyr)
+library(ggplot2)
 rm(list=ls())
 
 # Load data
@@ -62,6 +63,7 @@ report_col(df.sw$task_duration)
 
 # Learn tasks
 summarise_group(df.sw$learningTaskId)
+#summarise_group(df.tw$learningTaskId)
 # total 34 
 # learn01 4 11.76% 
 # learn02 5 14.71% 
@@ -111,7 +113,23 @@ check_task <- function(taskId) {
   return(trials)
 }
 inspect <- check_task('learn01')
+selections <- inspect %>% arrange(trial, selection)
 
+
+# Label selections
+df.tw <- df.tw %>%
+  mutate(sel_col=case_when(
+    substr(df.tw$selection, 1, 1) == substr(df.tw$agent, 1, 1) ~ 'a',
+    substr(df.tw$selection, 1, 1) == substr(df.tw$recipient, 1, 1) ~ 'r',
+    TRUE ~ 'd')) %>%
+  mutate(sel_shp=case_when(
+    substr(df.tw$selection, 2, 2) == substr(df.tw$agent, 2, 2) ~ 'a',
+    substr(df.tw$selection, 2, 2) == substr(df.tw$recipient, 2, 2) ~ 'r',
+    TRUE ~ 'd')) %>%
+  mutate(sel_label=paste0(sel_col, sel_shp))
+
+ggplot(df.tw, aes(sel_label)) + geom_bar()
+ggplot(df.tw, aes(sel_label)) + geom_bar(aes(fill=learningTaskId))
 
 
 
