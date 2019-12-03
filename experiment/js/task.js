@@ -36,7 +36,7 @@ effectsHistory(learningTask);
 
 let trial = trialOrder.shift();
 createGeneralizationTask(trials[trial]);
-createTrialCounter(trial);
+createTrialCounter(trialOrder);
 
 /** Set learning task button functions */
 const playBtn = document.getElementById('play-btn');
@@ -68,7 +68,7 @@ nextOneBtn.onclick = () => {
     document.getElementById('task').style.display = 'none';
     updateTask(trial);
     clearTrialCounter();
-    createTrialCounter(trial);
+    createTrialCounter(trialOrder);
     nextOneBtn.disabled = true;
 }
 
@@ -291,8 +291,9 @@ function createTrials (learningTask, trial, idx) {
 }
 
 /** Set trial count indicator */
-function createTrialCounter (trial) {
-    const text = `[${trial.slice(5,)}/15] ` + ' This magic stone will turn this normal stone into ... ?'
+function createTrialCounter (leftTrials) {
+    const nth = (15 - leftTrials.length).toString().padStart(2, '0');
+    const text = `[${nth}/15] ` + ' This magic stone will turn this normal stone into ... ?'
     const h = document.createElement('h2');
     const t = document.createTextNode(text);
     h.append(t);
