@@ -337,21 +337,6 @@ function hover (tbid, selected) {
     };
 }
 
-/** Check if form is filled */
-/** Return TRUE if form is fully filled */
-function isFilled (formID) {
-    let notFilled = false;
-    const nulls = [ '', '', 'noresp', '--', '--' ];
-    const form = document.getElementById(formID);
-    const inputs = form.elements;
-    (Object.keys(inputs)).forEach((input, idx) => {
-      let field = inputs[input];
-      notFilled = (notFilled || (field.value === nulls[idx]));
-      saveFormData(field, feedbackData);
-    });
-    return (!notFilled)
-}
-
 /** Animation effect for moving magic stone to the normal stone */
 function moveStone (task) {
     const magicStoneId = `${task.taskId}-magic-stone`;
@@ -405,12 +390,6 @@ function resetStones (task) {
     clearElements(stones);
     // Create new stones
     createStones(task);
-}
-
-function saveFormData (input, dataObj) {
-    let fieldName = input.name;
-    dataObj[fieldName] = input.value;
-    return dataObj;
 }
 
 /** Useful shorthand */
