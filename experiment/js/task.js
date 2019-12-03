@@ -17,12 +17,13 @@ let trainings = {
 }
 Object.keys(trainings).forEach (t => trainings[t].taskId = t);
 
-const learningTask = trainings.learn01;
+const learningTask = trainings.learn03;
 const trials = createTrialDataObj(learningTask);
+let trialOrder = shuffleArray(Object.keys(trials));
 
 let feedbackData = {};
 let taskData = {};
-taskData.trial = new Array(15).fill(0);
+taskData.trial = Object.keys(trials).map(t => parseInt(t.slice(5,)));
 taskData.selection = new Array(15).fill('');
 taskData.ts = new Array(15).fill(0);
 taskData.clicks = new Array(15).fill([]);
@@ -33,7 +34,7 @@ document.body.className = 'dark-page';
 createStones(learningTask);
 effectsHistory(learningTask);
 
-let trial = 'trial01';
+let trial = trialOrder.shift();
 createGeneralizationTask(trials[trial]);
 createTrialCounter(trial);
 
@@ -144,6 +145,14 @@ function createTrialDataObj (learningTask) {
     return trials;
 }
 
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
 /** Create the generaliztion task */
 function createGeneralizationTask (task) {
     createStones(task, '.box-task');
@@ -185,7 +194,7 @@ function createPanel(trial) {
         clicks.push(clicked);
 
         let idx = parseInt(trial.taskId.slice(5,)) - 1;
-        taskData.trial[idx] = idx + 1;
+        //taskData.trial[idx] = idx + 1;
         taskData.selection[idx] = readStone(tbId);
         taskData.ts[idx] = Date.now();
         taskData.clicks[idx] = clicks;
@@ -426,10 +435,9 @@ function setEffect (id, rule) {
 
 
 function updateTask (current) {
-    let tidx = parseInt(current.slice(5,));
-    if (tidx < 15) {
+    if (trialOrder.length > 0) {
         clearElements([`${current}-magic-stone`, `${current}-normal-stone`, `${current}-panel`]);
-        trial = 'trial' + (tidx + 1).toString().padStart(2, '0');
+        trial = trialOrder.shift();
         createGeneralizationTask(trials[trial]);
     } else {
         location.href = 'debrief.html'
