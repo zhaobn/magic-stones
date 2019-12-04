@@ -133,4 +133,24 @@ ggplot(df.tw, aes(sel_label)) + geom_bar(aes(fill=learningTaskId))
 ggplot(df.tw, aes(as.character(trial))) + geom_bar(aes(fill=sel_label))
 
 
+# Take a look at free responses
+df.fr <- df.sw %>% select(ix, learningTaskId, guess, id) %>% arrange(learningTaskId, ix)
+# Append learning info to trials
+df.fr <- df.fr %>% 
+  mutate(learn_agent = case_when(learningTaskId == 'learn01' ~ 'rs', learningTaskId == 'learn02' ~ 'yd', 
+                                 learningTaskId == 'learn03' ~ 'bs', learningTaskId == 'learn04' ~ 'rc', 
+                                 learningTaskId == 'learn05' ~ 'yd', learningTaskId == 'learn06' ~ 'bs')) %>%
+  mutate(learn_recipient = case_when(learningTaskId == 'learn01' ~ 'yc', learningTaskId == 'learn02' ~ 'rs',
+                                     learningTaskId == 'learn03' ~ 'rd', learningTaskId == 'learn04' ~ 'bs',
+                                     learningTaskId == 'learn05' ~ 'bs', learningTaskId == 'learn06' ~ 'yc',)) %>%
+  mutate(learn_rule = case_when(learningTaskId == 'learn01' ~ '-2s', learningTaskId == 'learn02' ~ '-2c',
+                                learningTaskId == 'learn03' ~ '-2b', learningTaskId == 'learn04' ~ '-2y',
+                                learningTaskId == 'learn05' ~ '-2y, -2c', learningTaskId == 'learn06' ~ '-2b, -2s',)) %>%
+  select(ix, learningTaskId, learn_agent, learn_recipient, learn_rule, guess, id) %>%
+  arrange(learningTaskId, ix)
+write.csv(df.fr, file = '../data/free_reponses.csv')
 
+# Prep participant (ppt) viz
+df.vz <- df.tw %>% 
+  select(ix, learningTaskId, learn_agent, learn_recipient, trial, agent, recipient, selection)
+write.csv(df.vz, file = '../data/ppt_viz.csv')
