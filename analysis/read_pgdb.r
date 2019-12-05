@@ -62,6 +62,8 @@ drop_clicks <- function(text) {
 
 ## 20191121: manual clean quotation marks
 # subject[2] = sub("\"Let's talk in person\"", "'Lets talk in person'", subject[2])
+## 20191205: manual fix double quotes
+# subject[5] = sub(" \"educated\" ", " educated ", subject[5])
 ## sw<-sapply(sapply(subject, inv_fromJSON, simplify=F), as.data.frame, simplify=F)
 ## tw<-sapply(sapply(sapply(trials, drop_clicks), inv_fromJSON, simplify=F), as.data.frame, simplify=F)
 
@@ -87,4 +89,4 @@ df.sw <- cbind(df.sw, df.sw.aux)
 df.tw <- cbind(ix=rep(df.sw$ix, each=N), id=rep(df.sw$id, each=N), df.tw.aux)
 
 ## Save data
-save(file='../data/mturk_20191128.Rdata', df.sw, df.tw)
+save(file='../data/mturk_20191203_random3.Rdata', df.sw, df.tw)
