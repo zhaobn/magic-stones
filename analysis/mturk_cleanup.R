@@ -63,3 +63,6 @@ df.tw <- df.tw %>%
 ## Save data
 save(file='../data/mturk_20191128_fixed.Rdata', df.sw, df.tw)
 
+## Prep viz data
+export <- df.sw %>% select(learningTaskId, ix) %>% arrange(learningTaskId, ix)
+write.csv(export, file='../data/subject_conditions')

@@ -43,7 +43,6 @@ body {
   background-color: rgb(255, 102, 102);
   border-radius: 50%;
   margin: 5px;
-  transition: all 1s cubic-bezier(0, 0, 1, 1);
   position: relative;
   left: 0;
 }
@@ -54,7 +53,6 @@ body {
   background-color: rgb(245, 230, 99);
   border-radius: 50%;
   margin: 5px;
-  transition: all 1s cubic-bezier(0, 0, 1, 1);
   position: relative;
   left: 0;
 }
@@ -65,7 +63,6 @@ body {
   background-color: rgb(61, 60, 134);
   border-radius: 50%;
   margin: 5px;
-  transition: all 1s cubic-bezier(0, 0, 1, 1);
   position: relative;
   left: 0;
 }
@@ -76,7 +73,6 @@ body {
   background-color: rgb(255, 102, 102);
   border-radius: 10%;
   margin: 5px;
-  transition: all 1s cubic-bezier(0, 0, 1, 1);
   position: relative;
   left: 0;
 }
@@ -87,9 +83,6 @@ body {
   background-color: rgb(245, 230, 99);
   border-radius: 10%;
   margin: 5px;
-  transition: all 1s;
-  position: relative;
-  transition: all 1s cubic-bezier(0, 0, 1, 1);
   position: relative;
   left: 0;
 }
@@ -100,7 +93,6 @@ body {
   background-color: rgb(61, 60, 134);
   border-radius: 10%;
   margin: 5px;
-  transition: all 1s cubic-bezier(0, 0, 1, 1);
   position: relative;
   left: 0;
 }
@@ -112,7 +104,6 @@ body {
   border-radius: 10%;
   transform: rotate(45deg) scale(0.8);
   margin: 5px;
-  transition: all 1s cubic-bezier(0, 0, 1, 1);
   position: relative;
   left: 0;
 }
@@ -124,7 +115,6 @@ body {
   border-radius: 10%;
   transform: rotate(45deg) scale(0.8);
   margin: 5px;
-  transition: all 1s cubic-bezier(0, 0, 1, 1);
   position: relative;
   left: 0;
 }
@@ -136,7 +126,17 @@ body {
   border-radius: 10%;
   transform: rotate(45deg) scale(0.8);
   margin: 5px;
-  transition: all 1s cubic-bezier(0, 0, 1, 1);
   position: relative;
   left: 0;
+}
+
+.panel {
+  border-radius: 5px;
+  background-color: #1A1A1D;
+  color: #e3e2df;
+  width: 100%;
+}
+
+td {
+  border-left: 3px dashed #4c4c4c;
 }

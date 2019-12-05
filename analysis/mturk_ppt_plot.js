@@ -8,14 +8,24 @@ const magicStoneBorderStyle = '10px solid rgba(136, 136, 136, .5)';
 
 /** Declare setups */
 let trainings = {
-learn01: { magicStone: 'rs', normalStone: 'yc', rules: [ '-2s' ] },
-learn02: { magicStone: 'yd', normalStone: 'rs', rules: [ '-2c' ] },
-learn03: { magicStone: 'bs', normalStone: 'rd', rules: [ '-2b' ] },
-learn04: { magicStone: 'rc', normalStone: 'bs', rules: [ '-2y' ] },
-learn05: { magicStone: 'yd', normalStone: 'bs', rules: [ '-2y', '-2c' ] },
-learn06: { magicStone: 'bs', normalStone: 'yc', rules: [ '-2b', '-2s' ] },
+  learn01: { magicStone: 'rs', normalStone: 'yc', rules: [ '-2s' ] },
+  learn02: { magicStone: 'yd', normalStone: 'rs', rules: [ '-2c' ] },
+  learn03: { magicStone: 'bs', normalStone: 'rd', rules: [ '-2b' ] },
+  learn04: { magicStone: 'rc', normalStone: 'bs', rules: [ '-2y' ] },
+  learn05: { magicStone: 'yd', normalStone: 'bs', rules: [ '-2y', '-2c' ] },
+  learn06: { magicStone: 'bs', normalStone: 'yc', rules: [ '-2b', '-2s' ] },
 }
 Object.keys(trainings).forEach (t => trainings[t].taskId = t);
+
+/** Subject data */
+const subjectConditions = {
+  learn01: [ 20, 44, 51, 52 ],
+  learn02: [ 25, 30, 42, 45, 46 ],
+  learn03: [ 29, 32, 33, 48, 54, 56 ],
+  learn04: [ 14, 15, 31, 36, 38, 39 ],
+  learn05: [ 17, 18, 24, 26, 35, 40, 43 ],
+  learn06: [ 16, 19, 23, 27, 34, 41 ],
+}
 
 // Object.keys(trainings).forEach (t => createViz(t));
 
@@ -25,15 +35,20 @@ function createViz(taskId) {
   let div = createDivWithId(`div-taskId`);
   div.append(createTaskInfo(taskId));
   div.append(createEffectSummary(taskId));
-  div.append(createPptSummary());
+  div.append(createPptSummary(taskId));
   document.body.append(div);
 
   effectsHistory(trainings[taskId]);
 }
 
-function createPptSummary () {
+function createPptSummary (taskId) {
+  let nPpt = 4;
   let div = document.createElement('div');
-  div.append(createElementWithText('h2', 'Trials summary'));
+  div.append(createElementWithText('h2', 'Trials'));
+
+  const trials = createTrialDataObj(trainings[taskId]);
+  div.append(createTrialPanel(taskId, trials, nPpt))
+
   return div;
 }
 
@@ -50,7 +65,7 @@ function createEffectSummary (taskId) {
   }
 
   let div = document.createElement('div');
-  div.append(createElementWithText('h2', 'Effect summary'));
+  div.append(createElementWithText('h2', 'Effect'));
 
   let box = createDivWithClass("box-lt");
   box.append(createBox('before'));
@@ -64,7 +79,6 @@ function createEffectSummary (taskId) {
 function createTaskInfo (taskId) {
   let div = document.createElement('div');
   div.append(createElementWithText('h1', capitalize(taskId)));
-  div.append(createElementWithText('p', 'Number of participants: 4'));
   return div;
 }
 
@@ -104,7 +118,7 @@ function effectsHistory (learningTask) {
   effectAfter.magicStone = learningTask.magicStone;
   effectAfter.normalStone = learningTask.normalStone;
   learningTask.rules.forEach (r => {
-      effectAfter.normalStone = readEffect(effectAfter.normalStone, r)
+    effectAfter.normalStone = readEffect(effectAfter.normalStone, r)
   });
 
   createStones(effectBefore, `membox-${learningTask.taskId}-before`);
@@ -115,32 +129,96 @@ function effectsHistory (learningTask) {
 function readEffect (stone, rule) {
   let changed = '';
   if(rule[2] === 'r' || rule[2] === 'b' || rule[2] === 'y') {
-      changed = rule[2] + stone[1];
+    changed = rule[2] + stone[1];
   } else {
-      changed = stone[0] + rule[2];
+    changed = stone[0] + rule[2];
   }
   return changed;
 }
 
 function createStones (task, boxId) {
-  let magicStone = document.createElement('div');
-  setAttributes(magicStone, {
-      'class': `stone-${task.magicStone}`,
-      'id': `${task.taskId}-magic-stone`,
-  });
+  let magicStone = createDivWithClass(`stone-${task.magicStone}`);
+  let normalStone = createDivWithClass(`stone-${task.normalStone}`);
   magicStone.style.border = magicStoneBorderStyle;
-  let normalStone = document.createElement('div');
-  setAttributes(normalStone, {
-      'class': `stone-${task.normalStone}`,
-      'id': `${task.taskId}-normal-stone`,
-  });
+
   const taskBox = document.getElementById(boxId);
   taskBox.append(magicStone);
   taskBox.append(normalStone);
 }
 
-function setAttributes(el, attrs) {
-  for(var key in attrs) {
-    el.setAttribute(key, attrs[key]);
+function createTrialDataObj (learningTask) {
+  let trials = {};
+  for (let i = 1; i < 16; i++) {
+    trialId = 'trial' + i.toString().padStart(2, '0');
+    trials[trialId] = {};
+    trials[trialId]['taskId'] = trialId;
+    trials[trialId]['magicStone'] = '';
+    trials[trialId]['normalStone'] = '';
+    createTrials(learningTask, trials[trialId]);
   }
+  return trials;
+}
+
+function createTrials (learningTask, trial, idx=true) {
+  const colors = [ 'r', 'y', 'b' ];
+  const shapes = [ 'c', 'd', 's' ];
+
+  const agentColor = learningTask.magicStone[0];
+  const agentShape = learningTask.magicStone[1];
+  const recipientColor = learningTask.normalStone[0];
+  const recipientShape = learningTask.normalStone[1];
+
+  const diffColor = (colors.filter(c => (c !== agentColor && c !== recipientColor)))[0];
+  const diffShape = (shapes.filter(c => (c !== agentShape && c !== recipientShape)))[0];
+
+  const trialIndex = parseInt(trial.taskId.slice(5,));
+  switch(trialIndex % 4) {
+    case 1:
+      trial.normalStone = idx? diffColor + recipientShape : recipientColor + diffShape;
+      break;
+    case 2:
+      trial.normalStone = idx? recipientColor + diffShape : diffColor + recipientShape;
+      break;
+    case 3:
+      trial.normalStone = diffColor + diffShape;
+      break;
+    default:
+      trial.normalStone = learningTask.normalStone;
+      break;
+  }
+  // Set agent properties
+  if (trialIndex > 0 && trialIndex < 4) {
+    trial.magicStone = learningTask.magicStone;
+  } else if (trialIndex > 3 && trialIndex < 8) {
+    trial.magicStone = idx? diffColor + agentShape : agentColor + diffShape;
+  } else if (trialIndex > 7 && trialIndex < 12) {
+    trial.magicStone = idx? agentColor + diffShape : diffColor + agentShape;
+  } else {
+    trial.magicStone = diffColor + diffShape;
+  }
+}
+
+function createTrialPanel(taskId, trials) {
+  const readTrial = (idx) => idx.toString().padStart(2, '0');
+
+  let tbl = document.createElement('table');
+  tbl.className = 'panel';
+
+  let header = tbl.insertRow();
+  let headerEls = [ "Trial", "Agent", "Recipient"];
+  headerEls.forEach(el => {
+    header.insertCell().appendChild(createElementWithText('p', el))
+  })
+
+  for(let i = 1; i < 16; i++){
+    let tr = tbl.insertRow();
+    for(let j = 0; j < 10; j++){
+      let tc = (j == 0)? createElementWithText('p', i.toString()) :
+        (j == 1)? createDivWithClass('stone-' + trials[`trial${readTrial(i)}`].magicStone):
+          (j == 2)? createDivWithClass('stone-' + trials[`trial${readTrial(i)}`].normalStone):
+            createElementWithText('p', 'hello');
+      tr.insertCell().appendChild(tc);
+    }
+  }
+  return tbl;
 }
