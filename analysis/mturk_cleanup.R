@@ -84,7 +84,9 @@ save(file='../data/mturk_20191128_trial_fixed.Rdata', df.sw, df.tw)
 
 ## Prep viz data
 # Subjects per learning task condition
-export <- df.sw %>% select(learningTaskId, ix) %>% arrange(learningTaskId, ix)
+export <- df.tw %>% select(learningTaskId, ix) %>% 
+  distinct() %>%
+  arrange(learningTaskId, ix)
 write.csv(export, file = '../data/subject_conditions')
 # Subject data
 ixes <- df.tw %>% select(ix) %>% distinct()

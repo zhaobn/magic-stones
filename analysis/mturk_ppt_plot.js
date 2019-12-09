@@ -21,7 +21,7 @@ Object.keys(trainings).forEach (t => trainings[t].taskId = t);
 const subjectConditions = {
   learn01: [ 20, 44, 51, 52 ],
   learn02: [ 25, 30, 42, 45, 46 ],
-  learn03: [ 29, 32, 33, 48, 54, 56 ],
+  learn03: [ 21, 22, 28, 29, 32, 33 ],
   learn04: [ 14, 15, 31, 36, 38, 39 ],
   learn05: [ 17, 18, 24, 26, 35, 40, 43 ],
   learn06: [ 16, 19, 23, 27, 34, 41 ],
