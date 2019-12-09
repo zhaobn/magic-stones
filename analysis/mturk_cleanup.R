@@ -60,8 +60,27 @@ df.tw <- df.tw %>%
          trial, agent, recipient, selection, ts, id) %>% 
   arrange(ix)
 
+## Fix trial order
+# Read ordered trials
+library("rjson")
+trialsFile <- fromJSON(file='../data/trials.json')
+ordered_trials <- as.data.frame(trialsFile)
+ordered_trials$learningTaskId <-as.character(ordered_trials$learningTaskId)
+ordered_trials$trial <- as.numeric(as.character(ordered_trials$trial))
+ordered_trials$agent <- as.character(ordered_trials$agent)
+ordered_trials$recipient <- as.character(ordered_trials$recipient)
+df.tw$agent <- as.character(df.tw$agent)
+df.tw$recipient <- as.character(df.tw$recipient)
+
+test <- df.tw %>% 
+  left_join(ordered_trials, by = c('learningTaskId', 'agent', 'recipient')) %>%
+  select(ix, learningTaskId, learn_agent, learn_recipient, learn_rule, 
+         trial.y, agent, recipient, selection, ts, id) %>% 
+  rename(trial=trial.y) %>%
+  arrange(ix, trial) 
+
 ## Save data
-save(file='../data/mturk_20191128_fixed.Rdata', df.sw, df.tw)
+save(file='../data/mturk_20191128_trial_fixed.Rdata', df.sw, df.tw)
 
 ## Prep viz data
 export <- df.sw %>% select(learningTaskId, ix) %>% arrange(learningTaskId, ix)
