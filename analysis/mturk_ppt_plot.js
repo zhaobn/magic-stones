@@ -27,7 +27,44 @@ const subjectConditions = {
   learn06: [ 16, 19, 23, 27, 34, 41 ],
 }
 
-// Object.keys(trainings).forEach (t => createViz(t));
+const subjectTrials = {
+  "14": [ "rs","rd","bd","rs","ys","rd","yd","ys","bc","yd","bd","rs","ys","rd","yd" ],
+  "15": [ "ys","ys","ys","ys","rs","ys","rs","ys","bs","ys","bd","ys","bs","yd","rd" ],
+  "16": [ "bs","bs","bs","bs","bs","bs","bs","rs","rs","rs","rs","rd","rd","rd","rd" ],
+  "17": [ "bs","bc","bs","yc","ys","bc","bs","rc","rs","rc","rs","rc","rs","rc","rs" ],
+  "18": [ "bs","bc","ys","bc","ys","yc","yc","rc","rs","rc","ys","rs","yd","rc","rs" ],
+  "19": [ "bs","bs","bs","bd","bd","bd","bd","rs","rs","rs","rs","rd","rd","rd","rd" ],
+  "20": [ "bs","yc","bc","ys","bs","yc","bc","yd","bd","yd","bd","yd","bd","yd","bd" ],
+  "21": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","bd","yd","yc","yc" ],
+  "22": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
+  "23": [ "rs","bs","bs","rs","rs","rs","rs","yd","rd","bd","bs","rd","rd","rd","rd" ],
+  "24": [ "yc","yc","yc","rc","rc","rc","rc","yc","yc","yc","yc","rc","rc","rc","rc" ],
+  "25": [ "bc","rd","bd","rc","bc","rd","bd","rc","bc","rd","bs","rd","bd","rs","bs" ],
+  "26": [ "rc","bc","yc","rc","rc","rc","rc","ys","ys","ys","yc","rs","rs","rc","rc" ],
+  "27": [ "bs","bs","bs","yc","yd","rc","bs","rs","rs","rc","rc","yc","bs","rc","rd" ],
+  "28": [ "bs","bc","bc","bd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
+  "29": [ "bc","bs","bc","bs","bc","bd","bc","bs","ys","yd","yc","rd","yc","yd","yc" ],
+  "30": [ "bc","rs","bd","rc","bc","rd","bd","rd","bd","rs","bs","rd","bd","rs","bs" ],
+  "31": [ "bc","bc","rc","ys","rc","yd","yd","rd","rc","yd","bd","rs","rs","rd","bd" ],
+  "32": [ "bd","bd","bc","yd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
+  "33": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
+  "34": [ "bs","bs","rd","yc","rc","rs","rs","bd","bs","bd","bd","rd","rd","rd","rd" ],
+  "35": [ "rc","yc","yc","yc","rc","rc","rc","yc","ys","ys","ys","yd","rc","rs","rc" ],
+  "36": [ "yd","bs","bd","ys","ys","bs","bd","ys","yd","bs","bd","ys","yd","bs","bd" ],
+  "38": [ "yd","rs","rd","ys","yd","rs","rd","rs","rd","bs","bd","rs","rd","bs","bd" ],
+  "39": [ "bs","yd","bd","ys","bs","yd","bd","ys","bs","yd","bd","rc","rc","rd","bd" ],
+  "40": [ "yc","ys","ys","rc","rc","rc","rs","yd","yc","ys","yd","rc","rd","rs","rs" ],
+  "41": [ "bd","bs","bs","bd","bd","bd","bd","rs","rs","rs","rs","rd","rd","rd","rd" ],
+  "42": [ "yc","rs","bs","rc","bc","rs","bs","rc","bd","yd","yd","rd","bd","rs","bd" ],
+  "43": [ "yd","yc","yc","yd","yc","yd","yc","rd","rc","ys","ys","bc","rc","rs","rc" ],
+  "44": [ "rs","bs","bs","yd","yd","bd","bd","ys","ys","bs","bs","yd","yd","bd","bd" ],
+  "45": [ "bc","rs","bs","rc","bc","rs","bs","rc","bc","rs","bs","rc","bc","rs","bs" ],
+  "46": [ "bc","rs","bs","rc","bc","rs","bs","rd","bd","rd","bd","rd","bd","rd","bd" ],
+  "51": [ "rs","bs","bs","yd","yd","bd","bd","bs","ys","bs","bs","yd","yd","bd","bd" ],
+  "52": [ "ys","bs","bs","ys","ys","bs","bs","ys","ys","bs","bs","yd","bd","bd","bd" ],
+}
+
+//Object.keys(trainings).forEach (t => createViz(t));
 
 createViz('learn01');
 
@@ -47,7 +84,7 @@ function createPptSummary (taskId) {
   div.append(createElementWithText('h2', 'Trials'));
 
   const trials = createTrialDataObj(trainings[taskId]);
-  div.append(createTrialPanel(taskId, trials, nPpt))
+  div.append(createTrialPanel(taskId, trials))
 
   return div;
 }
@@ -55,8 +92,8 @@ function createPptSummary (taskId) {
 function createEffectSummary (taskId) {
   function createBox (type) {
     let innerBox = createDivWithClass("box-mem");
-    let pt = createElementWithText('p', capitalize(type));
-    innerBox.append(pt);
+    innerBox.append(createElementWithText('p', capitalize(type)));
+
     let effectBox = createDivWithId(`membox-${taskId}-${type}`);
     effectBox.setAttribute("class", `membox-${type}`);
     innerBox.append(effectBox);
@@ -222,3 +259,19 @@ function createTrialPanel(taskId, trials) {
   }
   return tbl;
 }
+
+/** Export ordered trials for R-cleanups */
+// let exportToR = {
+//   'learningTaskId': [], 'trial': [],
+//   'agent': [], 'recipient': [],
+// };
+// Object.keys(trainings).forEach (t => {
+//   exportToR['learningTaskId'] = exportToR['learningTaskId'].concat(Array(15).fill(t));
+//   let trialInfo = createTrialDataObj(trainings[t]);
+//   Object.keys(trialInfo).forEach(o => {
+//     exportToR.trial.push(parseInt(o.slice(5,)));
+//     exportToR.agent.push(trialInfo[o].magicStone);
+//     exportToR.recipient.push(trialInfo[o].normalStone);
+//   })
+// });
+// console.log(exportToR);

@@ -83,5 +83,20 @@ test <- df.tw %>%
 save(file='../data/mturk_20191128_trial_fixed.Rdata', df.sw, df.tw)
 
 ## Prep viz data
+# Subjects per learning task condition
 export <- df.sw %>% select(learningTaskId, ix) %>% arrange(learningTaskId, ix)
-write.csv(export, file='../data/subject_conditions')
+write.csv(export, file = '../data/subject_conditions')
+# Subject data
+ixes <- df.tw %>% select(ix) %>% distinct()
+read_selection <- function(x) {
+  sel <- df.tw %>% 
+    filter(ix==x) %>% arrange(trial) %>% select(selection)
+  return(sel)
+}
+data <-read_selection(ixes[[1]][1])
+for (i in 2:length(ixes[[1]])) {
+  data <- cbind(data, read_selection(ixes[[1]][i]))
+}
+names(data) <- ixes[[1]]
+data <- t(data)
+write.csv(data, file = '../data/subject_selections.csv')
