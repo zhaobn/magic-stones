@@ -64,9 +64,8 @@ const subjectTrials = {
   "52": [ "ys","bs","bs","ys","ys","bs","bs","ys","ys","bs","bs","yd","bd","bd","bd" ],
 }
 
-//Object.keys(trainings).forEach (t => createViz(t));
-
-createViz('learn01');
+Object.keys(trainings).forEach (t => createViz(t));
+//createViz('learn03');
 
 function createViz(taskId) {
   let div = createDivWithId(`div-taskId`);
@@ -237,29 +236,38 @@ function createTrials (learningTask, trial, idx=true) {
 
 function createTrialPanel(taskId, trials) {
   const readTrial = (idx) => idx.toString().padStart(2, '0');
+  const n = subjectConditions[taskId].length;
 
   let tbl = document.createElement('table');
   tbl.className = 'panel';
 
   let header = tbl.insertRow();
-  let headerEls = [ "Trial", "Agent", "Recipient"];
+  const pars = subjectConditions[taskId].map(ix => `Pt ${ix}`);
+  let headerEls = [ "Trial", "Agent", "Recipient"].concat(pars);
   headerEls.forEach(el => {
     header.insertCell().appendChild(createElementWithText('p', el))
   })
 
   for(let i = 1; i < 16; i++){
     let tr = tbl.insertRow();
-    for(let j = 0; j < 10; j++){
+    for(let j = 0; j < (n + 3); j++){
       let tc = (j == 0)? createElementWithText('p', i.toString()) :
         (j == 1)? createDivWithClass('stone-' + trials[`trial${readTrial(i)}`].magicStone):
           (j == 2)? createDivWithClass('stone-' + trials[`trial${readTrial(i)}`].normalStone):
-            createElementWithText('p', 'hello');
+            createDivWithClass('stone-' + drawSelection(taskId, i, j));
       tr.insertCell().appendChild(tc);
     }
   }
   return tbl;
 }
 
+function drawSelection(taskId, trialIdx, parIdx) {
+  if (parIdx > 2 && parIdx < subjectConditions[taskId].length + 3) {
+    let par = subjectConditions[taskId][parIdx-3];
+    let selection = subjectTrials[par.toString()][trialIdx-1];
+    return selection;
+  }
+}
 /** Export ordered trials for R-cleanups */
 // let exportToR = {
 //   'learningTaskId': [], 'trial': [],
