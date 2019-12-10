@@ -14,6 +14,7 @@ let trainings = {
   learn04: { magicStone: 'rc', normalStone: 'bs', rules: [ '-2y' ] },
   learn05: { magicStone: 'yd', normalStone: 'bs', rules: [ '-2y', '-2c' ] },
   learn06: { magicStone: 'bs', normalStone: 'yc', rules: [ '-2b', '-2s' ] },
+  random:  { magicStone: 'bs', normalStone: 'rd', rules: [ '-2b' ] },
 }
 Object.keys(trainings).forEach (t => trainings[t].taskId = t);
 
@@ -25,6 +26,7 @@ const subjectConditions = {
   learn04: [ 14, 15, 31, 36, 38, 39 ],
   learn05: [ 17, 18, 24, 26, 35, 40, 43 ],
   learn06: [ 16, 19, 23, 27, 34, 41 ],
+  random:  [ 59, 60, 61, 62, 63, 64, 65, 66 ],
 }
 
 const subjectTrials = {
@@ -62,10 +64,19 @@ const subjectTrials = {
   "46": [ "bc","rs","bs","rc","bc","rs","bs","rd","bd","rd","bd","rd","bd","rd","bd" ],
   "51": [ "bs","rs","bs","bs","bs","ys","bs","yd","bd","yd","bd","yd","bd","yd","bd" ],
   "52": [ "bs","ys","bs","ys","bs","ys","bs","ys","bs","ys","bs","yd","bd","bd","bd" ],
+  "59": [ "bd","bc","bc","yd","bd","yc","yc","bd","bc","bc","bc","yd","yd","yc","yc" ],
+  "60": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
+  "61": [ "yd","bs","bs","rs","bs","yd","yc","bs","rs","bd","rc","yd","rd","yc","bc" ],
+  "62": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","rs","yc","yc","yc" ],
+  "63": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
+  "64": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
+  "65": [ "bd","bd","bd","yd","yd","yd","yd","bs","bs","bs","bd","ys","ys","ys","ys" ],
+  "66": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
+
 }
 
 //Object.keys(trainings).forEach (t => createViz(t));
-createViz('learn06');
+createViz('random');
 
 function createViz(taskId) {
   let div = createDivWithId(`div-taskId`);
