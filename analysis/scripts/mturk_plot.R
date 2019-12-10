@@ -21,7 +21,7 @@ plot <- function(task_idx, t) {
   dt <- df.tw %>% 
     filter(learningTaskId==group & trial==t) %>%
     select(ix, selection) %>% mutate(count = 1) %>%
-    right_join(ops, by="selection") %>%
+    right_join(ops, by='selection') %>%
     mutate(count.x = ifelse(is.na(count.x), 0, count.x)) %>%
     mutate(c = count.x + count.y) %>% select(selection, c) %>%
     group_by(selection) %>% summarize(n = sum(c)) %>%
@@ -35,16 +35,42 @@ plot <- function(task_idx, t) {
   return(p)
 }
 
-plots <- list()
-
-for (i in 1:6) {
-  for (j in 1:15) {
-    idx <- i + 6 * (j - 1)
-    plots[[idx]] <- plot(i, j)
+make_plots <- function(plot_func, fig_name, width = 1200, height = 1500) {
+  plots <- list()
+  for (i in 1:6) {
+    for (j in 1:15) {
+      idx <- i + 6 * (j - 1)
+      plots[[idx]] <- do.call(plot_func, list(i,j))
+    }
   }
+
+  jpeg(fig_name, width = width, height = height)
+  do.call("grid.arrange", c(plots, ncol=6))
+  dev.off()
 }
+#plot(1,1)
+make_plots(plot, 'trials.jpeg')
 
-jpeg('trials.jpeg', width = 1200, height = 1500)
-do.call("grid.arrange", c(plots, ncol=6))
-dev.off()
-
+## Plot relative labels
+rel <- data.frame(
+  "sel_label" = c('aa', 'ar', 'ad', 'ra', 'rr', 'rd', 'da', 'dr', 'dd'),
+  "count" = rep(0, 9)
+)
+rel$sel_label <- as.character(rel$sel_label)
+plot_rel <- function(task_idx, t) {
+  group <- paste0('learn0', task_idx)
+  dt <- df.tw %>% 
+    filter(learningTaskId==group & trial==t) %>%
+    select(ix, sel_label) %>% mutate(count = 1) %>%
+    right_join(rel, by="sel_label") %>%
+    mutate(count.x = ifelse(is.na(count.x), 0, count.x)) %>%
+    mutate(c = count.x + count.y) %>% select(sel_label, c) %>%
+    group_by(sel_label) %>% summarize(n = sum(c)) %>%
+    mutate(perc=round(n/sum(n), 2)) %>% select(sel_label, perc)
+  p <- ggplot(dt, aes(x = sel_label, y = perc)) +
+    geom_bar(stat = "identity") +
+    xlab('') + ylab('') + coord_cartesian(ylim=c(0,1))
+  return(p)
+}
+#plot_rel(1,1)
+make_plots(plot_rel, 'trials_relative.jpeg')
