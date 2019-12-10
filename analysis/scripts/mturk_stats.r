@@ -6,7 +6,7 @@ library(ggplot2)
 rm(list=ls())
 
 # Load data
-load('../data/mturk_20191128_fixed.Rdata')
+load('../data/mturk_20191128_trial_fixed.Rdata')
 
 # Ensure correct data type
 df.sw$sex <- as.character(df.sw$sex)
@@ -130,7 +130,7 @@ df.tw <- df.tw %>%
 
 # Plot selections
 ggplot(df.tw, aes(sel_label)) + geom_bar(aes(fill=learningTaskId))
-ggplot(df.tw, aes(as.character(trial))) + geom_bar(aes(fill=sel_label))
+ggplot(df.tw, aes(as.numeric(as.character(trial)))) + geom_bar(aes(fill=sel_label))
 
 
 # Take a look at free responses
