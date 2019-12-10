@@ -88,7 +88,7 @@ save(file='../data/mturk_20191128_trial_fixed.Rdata', df.sw, df.tw)
 export <- df.tw %>% select(learningTaskId, ix) %>% 
   distinct() %>%
   arrange(learningTaskId, ix)
-write.csv(export, file = '../data/subject_conditions')
+write.csv(export, file = '../data/subject_conditions.csv')
 # Subject data
 ixes <- df.tw %>% select(ix) %>% distinct()
 read_selection <- function(x) {
