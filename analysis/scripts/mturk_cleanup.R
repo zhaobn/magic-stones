@@ -5,7 +5,7 @@ library(dplyr)
 rm(list=ls())
 
 ## Load data
-load('../assets/rawdata/mturk_20191128.Rdata')
+load('../rawdata/mturk_20191128.Rdata')
 
 ## Fix learningTaskId bug
 learning_tasks <- df.sw[,c(1,9)]
@@ -63,6 +63,7 @@ df.tw <- df.tw %>%
 ## Fix trial order
 # Read ordered trials
 library("rjson")
+load('../data/mturk_20191128_fixed.Rdata')
 trialsFile <- fromJSON(file='../data/trials.json')
 ordered_trials <- as.data.frame(trialsFile)
 ordered_trials$learningTaskId <-as.character(ordered_trials$learningTaskId)
@@ -72,7 +73,7 @@ ordered_trials$recipient <- as.character(ordered_trials$recipient)
 df.tw$agent <- as.character(df.tw$agent)
 df.tw$recipient <- as.character(df.tw$recipient)
 
-test <- df.tw %>% 
+df.tw <- df.tw %>% 
   left_join(ordered_trials, by = c('learningTaskId', 'agent', 'recipient')) %>%
   select(ix, learningTaskId, learn_agent, learn_recipient, learn_rule, 
          trial.y, agent, recipient, selection, ts, id) %>% 
