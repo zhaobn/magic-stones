@@ -64,12 +64,12 @@ const subjectTrials = {
   "52": [ "ys","bs","bs","ys","ys","bs","bs","ys","ys","bs","bs","yd","bd","bd","bd" ],
 }
 
-Object.keys(trainings).forEach (t => createViz(t));
-//createViz('learn03');
+//Object.keys(trainings).forEach (t => createViz(t));
+createViz('learn06');
 
 function createViz(taskId) {
   let div = createDivWithId(`div-taskId`);
-  div.append(createTaskInfo(taskId));
+  //div.append(createTaskInfo(taskId));
   div.append(createEffectSummary(taskId));
   div.append(createPptSummary(taskId));
   document.body.append(div);
@@ -114,7 +114,8 @@ function createEffectSummary (taskId) {
 
 function createTaskInfo (taskId) {
   let div = document.createElement('div');
-  div.append(createElementWithText('h1', capitalize(taskId)));
+  let title = "Group " + taskId.slice(6,);
+  div.append(createElementWithText('h1', capitalize(title)));
   return div;
 }
 
@@ -243,14 +244,14 @@ function createTrialPanel(taskId, trials) {
 
   let header = tbl.insertRow();
   const pars = subjectConditions[taskId].map(ix => `Pt ${ix}`);
-  let headerEls = [ "Trial", "Agent", "Recipient"].concat(pars);
+  let headerEls = [ "Trial", "Agent", "Recipient", "" ].concat(pars);
   headerEls.forEach(el => {
     header.insertCell().appendChild(createElementWithText('p', el))
   })
 
   for(let i = 1; i < 16; i++){
     let tr = tbl.insertRow();
-    for(let j = 0; j < (n + 3); j++){
+    for(let j = 0; j < (n + 4); j++){
       let tc = (j == 0)? createElementWithText('p', i.toString()) :
         (j == 1)? createDivWithClass('stone-' + trials[`trial${readTrial(i)}`].magicStone):
           (j == 2)? createDivWithClass('stone-' + trials[`trial${readTrial(i)}`].normalStone):
@@ -262,8 +263,8 @@ function createTrialPanel(taskId, trials) {
 }
 
 function drawSelection(taskId, trialIdx, parIdx) {
-  if (parIdx > 2 && parIdx < subjectConditions[taskId].length + 3) {
-    let par = subjectConditions[taskId][parIdx-3];
+  if (parIdx > 3 && parIdx < subjectConditions[taskId].length + 4) {
+    let par = subjectConditions[taskId][parIdx-4];
     let selection = subjectTrials[par.toString()][trialIdx-1];
     return selection;
   }
