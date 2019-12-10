@@ -74,3 +74,27 @@ plot_rel <- function(task_idx, t) {
 }
 #plot_rel(1,1)
 make_plots(plot_rel, 'trials_relative.jpeg')
+
+## Plot aggregated relative labels
+plot_group <- function(task_idx) {
+  dt <- df.tw %>% 
+    filter(learningTaskId==paste0('learn0', task_idx)) %>%
+    select(ix, sel_label) %>% mutate(count = 1) %>%
+    right_join(rel, by="sel_label") %>%
+    mutate(count.x = ifelse(is.na(count.x), 0, count.x)) %>%
+    mutate(c = count.x + count.y) %>% select(sel_label, c) %>%
+    group_by(sel_label) %>% summarize(n = sum(c)) %>%
+    mutate(perc=round(n/sum(n), 2)) %>% select(sel_label, perc)
+  p <- ggplot(dt, aes(x = sel_label, y = perc)) +
+    geom_bar(stat = "identity") +
+    xlab('') + ylab('') + coord_cartesian(ylim=c(0,1))
+  return(p)
+}
+
+jpeg(paste0('group_6.jpeg'), width = 500, height = 350)
+plot_group(6)
+dev.off()
+
+
+
+
