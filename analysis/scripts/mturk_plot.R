@@ -91,10 +91,25 @@ plot_group <- function(task_idx) {
   return(p)
 }
 
-jpeg(paste0('group_6.jpeg'), width = 500, height = 350)
-plot_group(6)
+plot_trial <- function(trial_idx) {
+  dt <- df.tw %>% 
+    filter(trial==trial_idx) %>%
+    select(ix, sel_label) %>% mutate(count = 1) %>%
+    right_join(rel, by="sel_label") %>%
+    mutate(count.x = ifelse(is.na(count.x), 0, count.x)) %>%
+    mutate(c = count.x + count.y) %>% select(sel_label, c) %>%
+    group_by(sel_label) %>% summarize(n = sum(c)) %>%
+    mutate(perc=round(n/sum(n), 2)) %>% select(sel_label, perc)
+  p <- ggplot(dt, aes(x = sel_label, y = perc)) +
+    geom_bar(stat = "identity") +
+    xlab(paste('trial', trial_idx)) + ylab('') + coord_cartesian(ylim=c(0,1))
+  return(p)
+}
+
+trial_plots <- list()
+for (i in 1:15) {
+  trial_plots[[i]] <- plot_trial(i)
+}
+jpeg('agg_trials.jpeg', width = 1000, height = 550)
+do.call("grid.arrange", c(trial_plots, ncol=5))
 dev.off()
-
-
-
-
