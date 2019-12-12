@@ -99,15 +99,55 @@ filter_hypos <- function(observation, space) {
   return(space[which(passed==1)])
 }
 
-## Create generalization simulations
-# List the six learning scenarios
-learn01 <- c('rs', 'yc', 'ys')
-learn02 <- c('yd', 'rs', 'rc')
-learn03 <- c('bs', 'rd', 'bd')
-learn04 <- c('rc', 'bs', 'ys')
-learn05 <- c('yd', 'bs', 'yc')
-learn06 <- c('bs', 'yc', 'bs')
+# Get posterior probablities
+gen_obs <- c('rd', 'bc')
+get_posterior <- function(data, hypo_space) {
+  n <- length(hypo_space)
+  likelihoods <- rep(0, len=n)
+  for (i in 1:n) {
+    likelihoods[i] <- check_hypo(c(data[1], '', data[2]), hypo_space[[i]])
+  }
+  # Smooth & normalize
+  # Ignore multiplying prior probablity because it is assumed to be unform over hypos
+  posterior <- sapply(likelihoods, 
+                      function(x) exp(x*3)/sum(sapply(likelihoods, function(x) exp(x*3))))
+  return(posterior)
+}
+# Calculate marginal posteriors
+get_prediction <- function(data, hypo_space) {
+  get_pred <- function(data, hypo) {
+    is_included <- (data[1] == hypo[1] || 
+                      (data[1] != hypo[1] && substr(data[1], 1, 1) == substr(hypo[1], 1, 1)) ||
+                      (data[1] != hypo[1] && substr(data[1], 2, 2) == substr(hypo[1], 2, 2)))
+    # Get predicted state
+    pred <- if (is_included) hypo[2] else objects[sample(1:length(objects), 1)]
+    # Fill in blanks
+    if (substr(pred, 1, 1) == '*') substr(pred, 1, 1) <- shapes[sample(1:length(shapes), 1)] else
+      if (substr(pred, 2, 2) == '*') substr(pred, 2, 2) <- colors[sample(1:length(colors), 1)]
+    return(pred)
+  }
+  predictions <- rep('', length(hypo_space))
+  for (i in 1:length(hypo_space)) {
+    predictions[i] <- get_pred(data, hypo_space[i])
+  }
+  return(predictions)
+}
+# final output
+get_posterior_predictive <- function(data, hypo_space) {
+  posteriors <- get_posterior(data, hypo_space)
+  predictions <- get_prediction(data, hypo_space)
+  to_norm <- unique(predictions)
+  dist <- rep(1, length(to_norm))
+  # Calculate marginal distributions
+  for (i in 1:length(to_norm)) {
+    dist[i] <- sum(posteriors[which(predictions==to_norm[i])])
+  }
+  # Normalize
+  return(sapply(dist, function(x) x/sum(dist)))
+}
 
-h01 <- filter_hypos(learn01, full_hypothesis_space)
-h02 <- filter_hypos(learn02, full_hypothesis_space)
+
+
+
+
 
