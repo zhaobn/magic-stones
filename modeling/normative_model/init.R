@@ -100,7 +100,6 @@ filter_hypos <- function(observation, space) {
 }
 
 # Get posterior probablities
-gen_obs <- c('rd', 'bc')
 get_posterior <- function(data, hypo_space) {
   n <- length(hypo_space)
   likelihoods <- rep(0, len=n)
@@ -136,18 +135,52 @@ get_prediction <- function(data, hypo_space) {
 get_posterior_predictive <- function(data, hypo_space) {
   posteriors <- get_posterior(data, hypo_space)
   predictions <- get_prediction(data, hypo_space)
-  to_norm <- unique(predictions)
-  dist <- rep(1, length(to_norm))
+  post_pred <- list()
+  selections <- unique(predictions)
+  dist <- rep(1, length(selections))
   # Calculate marginal distributions
-  for (i in 1:length(to_norm)) {
-    dist[i] <- sum(posteriors[which(predictions==to_norm[i])])
+  for (i in 1:length(selections)) {
+    dist[i] <- sum(posteriors[which(predictions==selections[i])])
   }
-  # Normalize
-  return(sapply(dist, function(x) x/sum(dist)))
+  post_pred[[1]] <- selections
+  post_pred[[2]] <- sapply(dist, function(x) x/sum(dist)) # normalized
+  return(post_pred)
 }
 
+## Work with data## Create simulation data
+# List the six learning scenarios
+get_learning_settings <- function(learningTaskId) {
+  switch (learningTaskId,
+    'learn01' = c('rs', 'yc', 'ys'),
+    "learn02" = c('yd', 'rs', 'rc'),
+    "learn03" = c('bs', 'rd', 'bd'),
+    "learn04" = c('rc', 'bs', 'ys'),
+    "learn05" = c('yd', 'bs', 'yc'),
+    "learn06" = c('bs', 'yc', 'bs')
+  )
+}
+# Read data
+library(dplyr)
+load('../../analysis/data/mturk_20191128_trial_fixed.Rdata')
+tasks <- df.tw %>% 
+  select(learningTaskId, trial, agent, recipient) %>% 
+  distinct() %>%
+  arrange(learningTaskId, trial)
 
+# Generate simulation data
+simulate_for <- function(lid, tid) {
+  base <- tasks %>% filter(learningTaskId==lid, trial==tid)
+  prio <- filter_hypos(get_learning_settings(lid), full_hypothesis_space)
+  post <- as.data.frame(get_posterior_predictive(c(base[[3]], base[[4]]), prio))
+  names(post) <- c('selection', 'prob')
+  return(merge(base, post))
+}
 
-
-
+df.sim <- simulate_for('learn01', 1)
+for (i in 1:6) {
+  for (j in 1:15) {
+    task <- paste0('learn0', i)
+    if (!(i==1&&j==1)) df.sim <- rbind(df.sim, simulate_for(task, j))
+  }
+}
 
