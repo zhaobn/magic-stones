@@ -113,3 +113,97 @@ for (i in 1:15) {
 jpeg('agg_trials.jpeg', width = 1000, height = 550)
 do.call("grid.arrange", c(trial_plots, ncol=5))
 dev.off()
+
+#######################################################################
+## Plot simulations
+#######################################################################
+
+# Selections
+df.sim$selection <- as.character(df.sim$selection)
+ops <- data.frame(
+  "selection" = c('rs', 'rd', 'rc', 'ys', 'yd', 'yc', 'bs', 'bd', 'bc'),
+  "prob" = rep(0, 9)
+)
+ops$selection <- as.character(ops$selection)
+plot <- function(task_idx, t) {
+  group <- paste0('learn0', task_idx)
+  dt <- df.sim %>% 
+    filter(learningTaskId==group & trial==t) %>%
+    select(selection, prob) %>%
+    right_join(ops, by='selection') %>%
+    mutate(prob.x = ifelse(is.na(prob.x), 0, prob.x)) %>%
+    mutate(p = prob.x + prob.y) %>% select(selection, p)
+  p <- ggplot(dt, aes(x = selection, y = p)) +
+    geom_bar(stat = "identity") +
+    xlab('') +
+    #xlab(paste("Task", task_idx, "Trial", t)) + 
+    ylab('') +
+    coord_cartesian(ylim=c(0,1))
+  return(p)
+}
+make_plots(plot, 'sim_trials.jpeg')
+
+# Relative labels
+rel <- data.frame(
+  "sel_label" = c('aa', 'ar', 'ad', 'ra', 'rr', 'rd', 'da', 'dr', 'dd'),
+  "prob" = rep(0, 9)
+)
+rel$sel_label <- as.character(rel$sel_label)
+plot_rel <- function(task_idx, t) {
+  group <- paste0('learn0', task_idx)
+  dt <- df.sim %>% 
+    filter(learningTaskId==group & trial==t) %>%
+    select(sel_label, prob) %>%
+    right_join(rel, by="sel_label") %>%
+    mutate(prob.x = ifelse(is.na(prob.x), 0, prob.x)) %>%
+    mutate(p = prob.x + prob.y) %>% select(sel_label, p)
+  p <- ggplot(dt, aes(x = sel_label, y = p)) +
+    geom_bar(stat = "identity") +
+    xlab('') + ylab('') + coord_cartesian(ylim=c(0,1))
+  return(p)
+}
+
+make_plots(plot_rel, 'sim_trials_relative.jpeg')
+
+## Aggregated data
+plot_group <- function(task_idx) {
+  dt <- df.sim %>% 
+    filter(learningTaskId==paste0('learn0', task_idx)) %>%
+    select(sel_label, prob) %>%
+    right_join(rel, by="sel_label") %>%
+    mutate(prob.x = ifelse(is.na(prob.x), 0, prob.x)) %>%
+    mutate(p = prob.x + prob.y) %>% select(sel_label, p) %>%
+    group_by(sel_label) %>% summarize(n = sum(p)) %>%
+    mutate(perc=round(n/sum(n), 2)) %>% select(sel_label, perc)
+  p <- ggplot(dt, aes(x = sel_label, y = perc)) +
+    geom_bar(stat = "identity") +
+    xlab('') + ylab('') + coord_cartesian(ylim=c(0,1))
+  return(p)
+}
+group <- 6
+jpeg(paste0('sim_agg_g', group, '.jpeg'), width = 500, height = 350)
+plot_group(group)
+dev.off()
+
+
+plot_trial <- function(trial_idx) {
+  dt <- df.sim %>% 
+    filter(trial==trial_idx) %>%
+    select(sel_label, prob) %>%
+    right_join(rel, by="sel_label") %>%
+    mutate(prob.x = ifelse(is.na(prob.x), 0, prob.x)) %>%
+    mutate(p = prob.x + prob.y) %>% select(sel_label, p) %>%
+    group_by(sel_label) %>% summarize(n = sum(p)) %>%
+    mutate(perc=round(n/sum(n), 2)) %>% select(sel_label, perc)
+  p <- ggplot(dt, aes(x = sel_label, y = perc)) +
+    geom_bar(stat = "identity") +
+    xlab(paste('trial', trial_idx)) + ylab('') + coord_cartesian(ylim=c(0,1))
+  return(p)
+}
+trial_plots <- list()
+for (i in 1:15) {
+  trial_plots[[i]] <- plot_trial(i)
+}
+jpeg('sim_agg_trials.jpeg', width = 1000, height = 550)
+do.call("grid.arrange", c(trial_plots, ncol=5))
+dev.off()

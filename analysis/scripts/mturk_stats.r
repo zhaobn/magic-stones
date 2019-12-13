@@ -115,18 +115,22 @@ check_task <- function(taskId) {
 inspect <- check_task('learn01')
 selections <- inspect %>% arrange(trial, selection)
 
-
 # Label selections
-df.tw <- df.tw %>%
-  mutate(sel_col=case_when(
-    substr(df.tw$selection, 1, 1) == substr(df.tw$agent, 1, 1) ~ 'a',
-    substr(df.tw$selection, 1, 1) == substr(df.tw$recipient, 1, 1) ~ 'r',
-    TRUE ~ 'd')) %>%
-  mutate(sel_shp=case_when(
-    substr(df.tw$selection, 2, 2) == substr(df.tw$agent, 2, 2) ~ 'a',
-    substr(df.tw$selection, 2, 2) == substr(df.tw$recipient, 2, 2) ~ 'r',
-    TRUE ~ 'd')) %>%
-  mutate(sel_label=paste0(sel_col, sel_shp))
+add_sel_label <- function(dataframe) {
+  df <- dataframe %>%
+    mutate(sel_col=case_when(
+      substr(dataframe$selection, 1, 1) == substr(dataframe$agent, 1, 1) ~ 'a',
+      substr(dataframe$selection, 1, 1) == substr(dataframe$recipient, 1, 1) ~ 'r',
+      TRUE ~ 'd')) %>%
+    mutate(sel_shp=case_when(
+      substr(dataframe$selection, 2, 2) == substr(dataframe$agent, 2, 2) ~ 'a',
+      substr(dataframe$selection, 2, 2) == substr(dataframe$recipient, 2, 2) ~ 'r',
+      TRUE ~ 'd')) %>%
+    mutate(sel_label=paste0(sel_col, sel_shp))
+  return(df)
+}
+df.tw <- add_sel_label(df.tw)
+df.sim <- add_sel_label(df.sim)
 
 # Plot selections
 ggplot(df.tw, aes(sel_label)) + geom_bar(aes(fill=learningTaskId))
@@ -150,7 +154,3 @@ df.fr <- df.fr %>%
   arrange(learningTaskId, ix)
 write.csv(df.fr, file = '../data/free_reponses.csv')
 
-# Prep participant (ppt) viz
-df.vz <- df.tw %>% 
-  select(ix, learningTaskId, learn_agent, learn_recipient, trial, agent, recipient, selection)
-write.csv(df.vz, file = '../data/ppt_viz.csv')
