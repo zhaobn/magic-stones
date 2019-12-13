@@ -20,6 +20,9 @@
 \begin{document}
 \maketitle
 
+% Raw participant data
+\section{Participant data}
+\subsection{Raw data}
 
 \begin{figure}[h!]
 	\centering
@@ -63,22 +66,34 @@
   % \caption{Some general caption of all the figures. In (\subref{fig:group01}) you can see a  green square....}
 \end{figure}
 
+
 \newpage
-\begin{figure}
+Obviously, generalizations are not random, as shown in Figure~\ref{fig:sum}. Take the third column from left for example, a dominant selection can be observed across 15 trials.
+
+\begin{figure}[h!]
   \centering
-  \includegraphics[width=.85\linewidth]{trials}
+  \includegraphics[width=.8\linewidth]{trials}
   \caption{Participant raw selections summary. Each row is for one trial, and each column is for one task. For each sub-figure, y-axis is percentage, and x-axis from left to right is: bc, bd, bs, rc, rd, rs, yc, yd, ys.}
+  \label{fig:sum}
 \end{figure}
 
 \newpage
-\begin{figure}
+If we plot each participant selection relative to the agent stone and recipient stone in that generalization task, the uniformity of generalization is even clearer. In the last raw of Figure~\ref{fig:sum_rel}, almost everyone made a same choice across 6 different learning tasks. 
+
+\begin{figure}[h!]
   \centering
-  \includegraphics[width=.85\linewidth]{trials_relative}
+  \includegraphics[width=.8\linewidth]{trials_relative}
   \caption{Relative selections summary. Each row is for one trial, and each column is for one task. For each sub-figure, y-axis is percentage, and x-axis from left to right is: aa, ad, ar, da, dd, dr, ra, rd, rr.}
+  \label{fig:sum_rel}
 \end{figure}
 
+% Aggregated by groups
 \newpage
-\begin{figure}
+\subsection{Aggregated by relative selection}
+
+Between-subject aggregation shows that different learning tasks induce different generalization patterns, as illustrated by Figure~\ref{fig:agg_groups}.
+
+\begin{figure}[h!]
   \centering
   \begin{subfigure}[t]{0.25\textwidth}
     \centering
@@ -113,16 +128,25 @@
     \caption{To a different object} \label{fig:agg_g5}
   \end{subfigure}
   \caption{Aggregated relative selections per task. For each sub-figure, y-axis is percentage, and x-axis from left to right is: aa, ad, ar, da, dd, dr, ra, rd, rr.}
+  \label{fig:agg_groups}
 \end{figure}
 
-\begin{figure}
+% Aggregated by trials
+Aggregation by trials (within-subject) emphasizes that while the generalization scenario further differs from the learning scenario, participants tend to make a more similar decision.
+
+\begin{figure}[h!]
   \centering
-  \includegraphics[width=\linewidth]{agg_trials}
+  \includegraphics[width=.85\linewidth]{agg_trials}
   \caption{Aggregated relative selections per trial. For each sub-figure, y-axis is percentage, and x-axis from left to right is: aa, ad, ar, da, dd, dr, ra, rd, rr.}
 \end{figure}
 
+% Order effects
 \newpage
-\begin{figure}
+\subsection{Order effects? Not really}
+
+Comparing a randomized sequence of trials and ordered sequence of trials shows no significant difference.
+
+\begin{figure}[h!]
   \centering
   \begin{subfigure}[t]{0.45\textwidth}
     \centering
@@ -136,6 +160,82 @@
     \caption{Task 3 randomized.} \label{fig:random}
   \end{subfigure}
   \caption{Order does not effect generalization predictions.}
+\end{figure}
+
+% ----------------------------------------------
+% ------------ Simulation data -----------------
+% ----------------------------------------------
+
+\newpage
+\section{Normative model simulations}
+\subsection{Raw simulations}
+
+Different from the participant data, the normative model is more uncertain when the generalization scenario differs more from the learning task, as shown in the last few columns in Figure~\ref{fig:sim_raw}. In the same situation, humans tend to concentrate on one selection instead of choosing randomly.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=.8\linewidth]{sim_trials}
+  \caption{Simulation raw selections summary. Each row is for one trial, and each column is for one task. For each sub-figure, y-axis is percentage, and x-axis from left to right is: bc, bd, bs, rc, rd, rs, yc, yd, ys.}
+  \label{fig:sim_raw}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=.8\linewidth]{sim_trials_relative}
+  \caption{Relative selections summary. Each row is for one trial, and each column is for one task. For each sub-figure, y-axis is percentage, and x-axis from left to right is: aa, ad, ar, da, dd, dr, ra, rd, rr.}
+\end{figure}
+
+% Aggregated by groups
+\clearpage
+
+\subsection{Aggregated by relative selections}
+
+The normative model does not show specific patterns towards each learning task (Figure~\ref{fig:sim_agg_groups}). It does show a tendency to concentrate on one selection as the generalization scenarios further differs from the learning scenarios (last figure in Figure~\ref{fig:sim_agg_trials}), but it predicts a different concentration point compared with participant data.
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[t]{0.25\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{sim_agg_g1} 
+    \caption{To the same shape} \label{fig:sim_agg_g1}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.25\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{sim_agg_g3} 
+    \caption{To the same color} \label{fig:sim_agg_g3}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.25\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{sim_agg_g6} 
+    \caption{To the same object} \label{fig:sim_agg_g6}
+  \end{subfigure}
+
+  \vspace{1em}
+  \begin{subfigure}[t]{0.25\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{sim_agg_g2} 
+    \caption{To a different shape} \label{fig:sim_agg_g2}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.25\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{sim_agg_g4} 
+    \caption{To a different color} \label{fig:sim_agg_g4}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.25\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{sim_agg_g5} 
+    \caption{To a different object} \label{fig:sim_agg_g5}
+  \end{subfigure}
+  \caption{Aggregated relative selections per task. For each sub-figure, y-axis is percentage, and x-axis from left to right is: aa, ad, ar, da, dd, dr, ra, rd, rr.}
+  \label{fig:sim_agg_groups}
+\end{figure}
+
+% Aggregated by trials
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=.8\linewidth]{sim_agg_trials}
+  \caption{Aggregated relative selections per trial. For each sub-figure, y-axis is percentage, and x-axis from left to right is: aa, ad, ar, da, dd, dr, ra, rd, rr.}
+  \label{fig:sim_agg_trials}
 \end{figure}
 
 
