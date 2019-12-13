@@ -161,7 +161,8 @@ get_learning_settings <- function(learningTaskId) {
 }
 # Read data
 library(dplyr)
-load('../../analysis/data/mturk_20191128_trial_fixed.Rdata')
+file <- '../../analysis/data/mturk_20191128_trial_fixed.Rdata'
+load(file)
 tasks <- df.tw %>% 
   select(learningTaskId, trial, agent, recipient) %>% 
   distinct() %>%
@@ -184,3 +185,4 @@ for (i in 1:6) {
   }
 }
 
+save(file=file, df.sw, df.tw, df.sim)
