@@ -145,10 +145,14 @@ function createTrialDataObj (learningTask) {
     return trials;
 }
 
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+function shuffleArray(array, opt='') {
+    if (opt === 'random') {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    } else if (opt === 'reverse') {
+        array = array.reverse()
     }
     return array;
 }
