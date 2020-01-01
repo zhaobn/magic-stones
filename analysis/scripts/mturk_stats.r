@@ -154,3 +154,21 @@ df.fr <- df.fr %>%
   arrange(learningTaskId, ix)
 write.csv(df.fr, file = '../data/free_reponses.csv')
 
+# Check theory compliance
+df.tw <- df.tw %>%
+  mutate(to_same_shape = if_else(substr(selection,2,2)==substr(agent,2,2), TRUE, FALSE)) %>%
+  mutate(to_same_color = if_else(substr(selection,1,1)==substr(agent,1,1), TRUE, FALSE)) %>%
+  mutate(to_same_object = if_else(selection==agent, TRUE, FALSE)) %>%
+  mutate(to_diff_shape = if_else((substr(selection,2,2)!=substr(agent,2,2) && substr(selection,2,2)!=substr(recipient,2,2)), TRUE, FALSE)) %>%
+  mutate(to_diff_color = if_else((substr(selection,1,1)!=substr(agent,1,1) && substr(selection,1,1)!=substr(recipient,1,1)), TRUE, FALSE)) %>%
+  mutate(to_diff_object = if_else(selection!=agent && selection!=recipient, TRUE, FALSE))
+save(file='../data/mturk_20200101_trial_evaluated.Rdata', df.sw, df.tw, df.sim)
+# Take a look
+test <- df.tw %>% filter(ix=='20') %>% 
+  select(agent, recipient, selection, to_same_shape) %>%
+  mutate(kept_color = if_else(substr(selection,1,1)==substr(recipient,1,1), TRUE, FALSE))
+
+
+
+
+
