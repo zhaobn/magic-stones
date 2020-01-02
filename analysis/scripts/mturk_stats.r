@@ -224,9 +224,15 @@ ggplot(per_group_p, aes(fill=compliance, y=value, x=learningTaskId)) +
   geom_bar(position="dodge", stat="identity") + 
   labs(x='', y='') +
   scale_fill_grey()
+# -> compliance_per_trial.jpeg
 ggplot(per_group_total_p, aes(y=value, x=learningTaskId)) + 
-  geom_bar(stat="identity") + labs(x='', y='') + scale_fill_grey()
+  geom_bar(stat="identity", fill="azure4") + labs(x='', y='') + scale_fill_grey()
+# -> total_compliance_per_learning_condition.jpeg
+
+
 # Per trial
+trials <- seq(1,15)
+
 per_trial_total <- comp %>%
   group_by(trial, compliance) %>%
   summarise (n = n()) %>% mutate(total_compliance = n / sum(n)) %>%
@@ -239,22 +245,33 @@ per_trial_r2 <- comp %>%
   group_by(trial, r2) %>%
   summarise (n = n()) %>% mutate(r2_compliance = n / sum(n)) %>%
   filter(r2==TRUE) %>% select(trial, r2_compliance)
+
 ggplot(per_trial_total, aes(x=trial, y=total_compliance)) + 
-  geom_bar(stat="identity") + labs(x='', y='') + scale_fill_grey()
+  geom_bar(stat="identity", fill="azure4") + labs(x='', y='') + scale_fill_grey() +
+  scale_x_continuous("Trials", labels = as.character(trials), breaks = trials)
+# -> total_compliance_per_trial.jpeg
 
 per_trial_r1_p <- per_trial_r1%>%mutate(compliance='r1')%>%select(trial, compliance, value=r1_compliance)
 per_trial_r2_p <- per_trial_r2%>%mutate(compliance='r2')%>%select(trial, compliance, value=r2_compliance)
 per_trial_total_p <- per_trial_total%>%mutate(compliance='total')%>%select(trial, compliance, value=total_compliance)
 per_trial_p <- rbind(per_trial_r1_p, per_trial_r2_p, per_trial_total_p)
   
-trials <- seq(1,15)
 ggplot(per_trial_p, aes(fill=compliance, y=value, x=trial)) + 
   geom_bar(position="dodge", stat="identity") + ylab('') + scale_fill_grey() +
   scale_x_continuous("Trials", labels = as.character(trials), breaks = trials)
+# -> compliance_per_trial.jpeg
 
 # Individual
-
-
+ix <- comp$ix %>% unique()
+ind <- comp %>%
+  group_by(ix, compliance) %>%
+  summarise (n = n()) %>% mutate(perc = n / sum(n)) %>%
+  filter(compliance==TRUE)
+ggplot(ind, aes(x=reorder(ix, -perc), y=perc)) + 
+  geom_bar(stat="identity", fill="azure4") + 
+  labs(x='Participant', y='Compliance') +
+  geom_hline(yintercept=0.5, linetype="dashed", color = "red")
+# -> individual_compliance.jpeg
 
 
 
