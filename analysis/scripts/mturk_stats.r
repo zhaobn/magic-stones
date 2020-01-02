@@ -224,6 +224,37 @@ ggplot(per_group_p, aes(fill=compliance, y=value, x=learningTaskId)) +
   geom_bar(position="dodge", stat="identity") + 
   labs(x='', y='') +
   scale_fill_grey()
+ggplot(per_group_total_p, aes(y=value, x=learningTaskId)) + 
+  geom_bar(stat="identity") + labs(x='', y='') + scale_fill_grey()
+# Per trial
+per_trial_total <- comp %>%
+  group_by(trial, compliance) %>%
+  summarise (n = n()) %>% mutate(total_compliance = n / sum(n)) %>%
+  filter(compliance==TRUE) %>% select(trial, total_compliance)
+per_trial_r1 <- comp %>%
+  group_by(trial, r1) %>%
+  summarise (n = n()) %>% mutate(r1_compliance = n / sum(n)) %>%
+  filter(r1==TRUE) %>% select(trial, r1_compliance)
+per_trial_r2 <- comp %>%
+  group_by(trial, r2) %>%
+  summarise (n = n()) %>% mutate(r2_compliance = n / sum(n)) %>%
+  filter(r2==TRUE) %>% select(trial, r2_compliance)
+ggplot(per_trial_total, aes(x=trial, y=total_compliance)) + 
+  geom_bar(stat="identity") + labs(x='', y='') + scale_fill_grey()
+
+per_trial_r1_p <- per_trial_r1%>%mutate(compliance='r1')%>%select(trial, compliance, value=r1_compliance)
+per_trial_r2_p <- per_trial_r2%>%mutate(compliance='r2')%>%select(trial, compliance, value=r2_compliance)
+per_trial_total_p <- per_trial_total%>%mutate(compliance='total')%>%select(trial, compliance, value=total_compliance)
+per_trial_p <- rbind(per_trial_r1_p, per_trial_r2_p, per_trial_total_p)
+  
+trials <- seq(1,15)
+ggplot(per_trial_p, aes(fill=compliance, y=value, x=trial)) + 
+  geom_bar(position="dodge", stat="identity") + ylab('') + scale_fill_grey() +
+  scale_x_continuous("Trials", labels = as.character(trials), breaks = trials)
+
+# Individual
+
+
 
 
 
