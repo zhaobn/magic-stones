@@ -6,7 +6,10 @@ library(ggplot2)
 rm(list=ls())
 
 # Load data
-load('../data/mturk_20191128_trial_fixed.Rdata')
+datafile <- 'mturk_20200101_trial_evaluated'
+load(paste0('../data/', datafile, '.Rdata'))
+# 'mturk_20191128_trial_fixed'
+
 
 # Ensure correct data type
 df.sw$sex <- as.character(df.sw$sex)
@@ -141,15 +144,26 @@ ggplot(df.tw, aes(as.numeric(as.character(trial)))) + geom_bar(aes(fill=sel_labe
 df.fr <- df.sw %>% select(ix, learningTaskId, guess, id) %>% arrange(learningTaskId, ix)
 # Append learning info to trials
 df.fr <- df.fr %>% 
-  mutate(learn_agent = case_when(learningTaskId == 'learn01' ~ 'rs', learningTaskId == 'learn02' ~ 'yd', 
-                                 learningTaskId == 'learn03' ~ 'bs', learningTaskId == 'learn04' ~ 'rc', 
-                                 learningTaskId == 'learn05' ~ 'yd', learningTaskId == 'learn06' ~ 'bs')) %>%
-  mutate(learn_recipient = case_when(learningTaskId == 'learn01' ~ 'yc', learningTaskId == 'learn02' ~ 'rs',
-                                     learningTaskId == 'learn03' ~ 'rd', learningTaskId == 'learn04' ~ 'bs',
-                                     learningTaskId == 'learn05' ~ 'bs', learningTaskId == 'learn06' ~ 'yc',)) %>%
-  mutate(learn_rule = case_when(learningTaskId == 'learn01' ~ '-2s', learningTaskId == 'learn02' ~ '-2c',
-                                learningTaskId == 'learn03' ~ '-2b', learningTaskId == 'learn04' ~ '-2y',
-                                learningTaskId == 'learn05' ~ '-2y, -2c', learningTaskId == 'learn06' ~ '-2b, -2s',)) %>%
+  mutate(learn_agent = case_when(
+    learningTaskId == 'learn01' ~ 'rs', 
+    learningTaskId == 'learn02' ~ 'yd', 
+    learningTaskId == 'learn03' ~ 'bs', 
+    learningTaskId == 'learn04' ~ 'rc', 
+    learningTaskId == 'learn05' ~ 'yd', 
+    learningTaskId == 'learn06' ~ 'bs')) %>%
+  mutate(learn_recipient = case_when(
+    learningTaskId == 'learn01' ~ 'yc', 
+    learningTaskId == 'learn02' ~ 'rs',
+    learningTaskId == 'learn03' ~ 'rd', 
+    learningTaskId == 'learn04' ~ 'bs',
+    learningTaskId == 'learn05' ~ 'bs', 
+    learningTaskId == 'learn06' ~ 'yc',)) %>%
+  mutate(learn_rule = case_when(
+    learningTaskId == 'learn01' ~ '-2s', 
+    learningTaskId == 'learn03' ~ '-2b', 
+    learningTaskId == 'learn04' ~ '-2y',
+    learningTaskId == 'learn05' ~ '-2y, -2c', 
+    learningTaskId == 'learn06' ~ '-2b, -2s',)) %>%
   select(ix, learningTaskId, learn_agent, learn_recipient, learn_rule, guess, id) %>%
   arrange(learningTaskId, ix)
 write.csv(df.fr, file = '../data/free_reponses.csv')
@@ -159,15 +173,57 @@ df.tw <- df.tw %>%
   mutate(to_same_shape = if_else(substr(selection,2,2)==substr(agent,2,2), TRUE, FALSE)) %>%
   mutate(to_same_color = if_else(substr(selection,1,1)==substr(agent,1,1), TRUE, FALSE)) %>%
   mutate(to_same_object = if_else(selection==agent, TRUE, FALSE)) %>%
-  mutate(to_diff_shape = if_else((substr(selection,2,2)!=substr(agent,2,2) && substr(selection,2,2)!=substr(recipient,2,2)), TRUE, FALSE)) %>%
-  mutate(to_diff_color = if_else((substr(selection,1,1)!=substr(agent,1,1) && substr(selection,1,1)!=substr(recipient,1,1)), TRUE, FALSE)) %>%
-  mutate(to_diff_object = if_else(selection!=agent && selection!=recipient, TRUE, FALSE))
-save(file='../data/mturk_20200101_trial_evaluated.Rdata', df.sw, df.tw, df.sim)
-# Take a look
-test <- df.tw %>% filter(ix=='20') %>% 
-  select(agent, recipient, selection, to_same_shape) %>%
+  mutate(to_diff_shape = if_else(substr(selection,2,2)!=substr(agent,2,2), TRUE, FALSE)) %>%
+  mutate(to_diff_color = if_else(substr(selection,1,1)!=substr(agent,1,1), TRUE, FALSE)) %>%
+  mutate(to_diff_object = if_else(selection!=agent & selection!=recipient, TRUE, FALSE)) %>%
+  mutate(kept_shape = if_else(substr(selection,2,2)==substr(recipient,2,2), TRUE, FALSE)) %>%
   mutate(kept_color = if_else(substr(selection,1,1)==substr(recipient,1,1), TRUE, FALSE))
+save(file='../data/mturk_20200101_trial_evaluated.Rdata', df.sw, df.tw, df.sim)
 
+comp <- df.tw %>%
+  mutate(r1 = case_when(
+    learningTaskId=='learn01' & to_same_shape ~ TRUE,
+    learningTaskId=='learn02' & to_diff_shape ~ TRUE,
+    learningTaskId=='learn03' & to_same_color ~ TRUE,
+    learningTaskId=='learn04' & to_diff_color ~ TRUE,
+    learningTaskId=='learn05' & to_diff_object ~ TRUE,
+    learningTaskId=='learn06' & to_same_object ~ TRUE,
+    TRUE ~ FALSE)) %>%
+  mutate(r2 = case_when(
+    learningTaskId=='learn01' & kept_color ~ TRUE,
+    learningTaskId=='learn02' & kept_color ~ TRUE,
+    learningTaskId=='learn03' & kept_shape ~ TRUE,
+    learningTaskId=='learn04' & kept_shape ~ TRUE,
+    learningTaskId=='learn05' & to_diff_object ~ TRUE,
+    learningTaskId=='learn06' & to_same_object ~ TRUE,
+    TRUE ~ FALSE)) %>%
+  select(ix, learningTaskId, trial, agent, recipient, selection, r1, r2) %>%
+  mutate(compliance=r1&r2)
+# Stats: compliance per group
+per_group_total <- comp %>%
+  group_by(learningTaskId, compliance) %>%
+  summarise (n = n()) %>% mutate(total_compliance = n / sum(n)) %>%
+  filter(compliance==TRUE) %>% select(learningTaskId, total_compliance)
+per_group_r1 <- comp %>%
+  group_by(learningTaskId, r1) %>%
+  summarise (n = n()) %>% mutate(r1_compliance = n / sum(n)) %>%
+  filter(r1==TRUE) %>% select(learningTaskId, r1_compliance)
+per_group_r2 <- comp %>%
+  group_by(learningTaskId, r2) %>%
+  summarise (n = n()) %>% mutate(r2_compliance = n / sum(n)) %>%
+  filter(r2==TRUE) %>% select(learningTaskId, r2_compliance)
+per_group <- per_group_r1 %>% left_join(per_group_r2) %>% left_join(per_group_total)
+# Plot it
+per_group_r1_p <- per_group_r1%>%mutate(compliance='r1')%>%select(learningTaskId, compliance, value=r1_compliance)
+per_group_r2_p <- per_group_r2%>%mutate(compliance='r2')%>%select(learningTaskId, compliance, value=r2_compliance)
+per_group_total_p <- per_group_total%>%mutate(compliance='total')%>%select(learningTaskId, compliance, value=total_compliance)
+per_group_p <- rbind(per_group_r1_p, per_group_r2_p, per_group_total_p) %>%
+  filter(!(learningTaskId=='learn05'&(compliance=='r1'|compliance=='r2'))) %>%
+  filter(!(learningTaskId=='learn06'&(compliance=='r1'|compliance=='r2')))
+ggplot(per_group_p, aes(fill=compliance, y=value, x=learningTaskId)) + 
+  geom_bar(position="dodge", stat="identity") + 
+  labs(x='', y='') +
+  scale_fill_grey()
 
 
 
