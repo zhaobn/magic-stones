@@ -224,7 +224,7 @@ ggplot(per_group_p, aes(fill=compliance, y=value, x=learningTaskId)) +
   geom_bar(position="dodge", stat="identity") + 
   labs(x='', y='') +
   scale_fill_grey()
-# -> compliance_per_trial.jpeg
+# -> compliance_per_learning_condition.jpeg
 ggplot(per_group_total_p, aes(y=value, x=learningTaskId)) + 
   geom_bar(stat="identity", fill="azure4") + labs(x='', y='') + scale_fill_grey()
 # -> total_compliance_per_learning_condition.jpeg
@@ -272,6 +272,22 @@ ggplot(ind, aes(x=reorder(ix, -perc), y=perc)) +
   labs(x='Participant', y='Compliance') +
   geom_hline(yintercept=0.5, linetype="dashed", color = "red")
 # -> individual_compliance.jpeg
+
+
+# Measure homogeneity
+# For each learning condition
+# For each trial - count all unique selections / # ppt
+# Sum over trials for each condition
+hg <- df.tw %>%
+  select(ix, learningTaskId, trial, selection) %>%
+  group_by(learningTaskId, trial) %>%
+  summarise(vary=(n_distinct(selection)-1)/n()) %>%
+  group_by(learningTaskId) %>%
+  summarise(total_vary=sum(vary))
+
+
+
+
 
 
 

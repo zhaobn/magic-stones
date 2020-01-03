@@ -238,5 +238,107 @@ The normative model does not show specific patterns towards each learning task (
   \label{fig:sim_agg_trials}
 \end{figure}
 
+\section{Compliance with theories}
+
+\begin{itemize}
+\item learn01: to the same shape as magic stone (and kept color unchanged)
+\item learn02: to a different shape as magic stone (and kept color unchanged)
+\item learn03: to the same color as magic stone (and kept shape unchanged)
+\item learn04: to a different color as magic stone (and kept shape unchanged)
+\item learn05: To a different object
+\item learn06: To the same object as the magic stone
+\end{itemize}
+
+\subsection{Total compliance}
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[t]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{total_compliance_per_learning_condition} 
+    \caption{Per learning condition}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.55\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{total_compliance_per_trial} 
+    \caption{Per generalization trial}
+  \end{subfigure}
+  \caption{Percent of selections that comply with the underlying theory, aggregated per learning condition and per generalization trial separately.}
+  \label{fig:total_comp}
+\end{figure}
+
+\newpage
+\subsection{Details}
+
+For learn01 - learn04, take the description outside of the parenthesis as `r1', and description inside the parenthesis as `r2', we can compare to what extent participants comply with such theories.
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[t]{0.3\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{total_compliance_per_learning_condition} 
+    \caption{Overall compliance}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.6\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{compliance_per_learning_condition} 
+    \caption{Split by sub-rule compliance}
+  \end{subfigure}
+  \caption{Percent of selections that comply with the underlying theory, aggregated per learning condition.}
+  \label{fig:comp_learn}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[t]{0.35\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{total_compliance_per_trial} 
+    \caption{Overall compliance}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.6\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{compliance_per_trial} 
+    \caption{Split by sub-rule compliance}
+  \end{subfigure}
+  \caption{Percent of selections that comply with the underlying theory, aggregated per generalization trial.}
+  \label{fig:comp_trial}
+\end{figure}
+
+\newpage
+\subsection{Individual}
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=.8\linewidth]{individual_compliance} 
+  \caption{Compliance per participant.} 
+  \label{fig:comp_ppt}
+\end{figure}
+
+
+\section{Homogeneity}
+
+To measure how participant selections vary across learning conditions, define trial $i$'s variation $v_i := (U - 1) /n $ where $U$ is the number of unique selections from all participants for trial $i$, and $n$ is the number of participants in this trial. 
+We take $U - 1$ because of the intuition that if all participants select the same stone, the number of unique selections is 1 and variation is 0.
+Variation $V_J$ for a learning condition $J$ is therefore defined as $V_j := \sum_{i \in J}v_i$, for all generalization trial $i$ under learning condition $J$.
+
+Variations for the six above mentioned learning conditions are as follows
+
+\begin{table}[b]
+\centering
+\begin{tabular}{l|l|l}
+Learning condition & Theory & Variation \\
+\hline
+1                  & To the same shape & 2.75 \\
+2                  & To a different shape & 3.00 \\
+3                  & To the same color & 1.33  \\
+4                  & To a different color & 5.16  \\
+5                  & To a different object & 4.57  \\
+6                  & To the same object & 3.00  \\
+\end{tabular}
+\end{table}
+
+
+
 
 \end{document}
