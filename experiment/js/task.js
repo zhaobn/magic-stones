@@ -14,10 +14,11 @@ let trainings = {
   learn04: { magicStone: 'rc', normalStone: 'bs', rules: [ '-2y' ] },
   learn05: { magicStone: 'yd', normalStone: 'bs', rules: [ '-2y', '-2c' ] },
   learn06: { magicStone: 'bs', normalStone: 'yc', rules: [ '-2b', '-2s' ] },
+  learn07: { magicStone: 'rd', normalStone: 'ys', rules: [ '-2b', '-2c' ] },
 }
 Object.keys(trainings).forEach (t => trainings[t].taskId = t);
 
-const learningTask = trainings.learn03;
+const learningTask = trainings.learn07;
 const trials = createTrialDataObj(learningTask);
 let trialOrder = shuffleArray(Object.keys(trials));
 
