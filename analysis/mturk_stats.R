@@ -285,7 +285,9 @@ hg <- df.tw %>%
   group_by(learningTaskId) %>%
   summarise(total_vary=sum(vary))
 
-
+# Time spent
+mean(df.sw$task_duration)/1000/60 #5.939434
+mean(df.sw$instructions_duration)/1000/60 #5.939434
 
 
 

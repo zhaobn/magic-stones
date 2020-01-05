@@ -16,11 +16,11 @@ Proudly powered by [<img src="http://vanilla-js.com/assets/button.png">](http://
 
 - `experiment/` folder holds the source code for the web experiment. See the [Development](#Development) section for more details.
 
-- Pilot data and preliminary analysis scripts are in the `data/` and `analysis/` folders, all prefixed with dates that data was collected.
+- `data/` holds data for all pilots and mturk experiments.
 
-- `notes/` folder has some initial modeling ideas.
+- `analysis/` folder is the place for all data cleaning, analysis, stats, plots, and modeling scripts.
 
-- `asset/` folder stores (an old) demo video clip, participant consent documents, and all raw data.
+- `notes/` folder stores some drafting tex files.
 
 
 ## Development
