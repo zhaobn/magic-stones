@@ -16,6 +16,7 @@
 \usepackage{subcaption}
 \graphicspath{{../figs/}}
 
+\usepackage{amsmath}
 
 \begin{document}
 \maketitle
@@ -324,7 +325,7 @@ Variation $V_J$ for a learning condition $J$ is therefore defined as $V_j := \su
 
 Variations for the six above mentioned learning conditions are as follows
 
-\begin{table}[b]
+\begin{table}[h!]
 \centering
 \begin{tabular}{l|l|l}
 Learning condition & Theory & Variation \\
@@ -338,7 +339,50 @@ Learning condition & Theory & Variation \\
 \end{tabular}
 \end{table}
 
+\section{Notes}
 
+\begin{enumerate}
+\item To the same feature is easier than to a different one
+\item Shape change is more uniform in generalization
+\end{enumerate}
+
+\section{Compare Nine Theories}
+
+Let $y$ be a theory from the nine theories ($object \to object$, $color \to shape$, etc), $t$ be a generalization trial for a given learning condition (each learning condition has 15 trials), $\mathbf{n}_t$ be the normative selection(s) for trial $t$, $\mathbf{s}_t^y$ be the predictions given by theory $y$, and $\mathbf{d}_t$ be the predictions made by participants.
+%
+Measure level of agreement between a theory $y$ for a learning condition and
+\begin{itemize}
+  \item Normative selection: 
+    $$\sum_{t}\frac{Am(\mathbf{n}_t, \mathbf{s}_t)}{15}$$
+    where 
+    \[
+    Am(\mathbf{n}_t, \mathbf{s}_t)=
+      \begin{cases}
+        1 & \text{if } s^*_t \in \mathbf{n}_t\\
+        0 & \text{otherwise}
+      \end{cases}
+    \]
+    $P(s^*_t) >= P(s)$ for all $s \in \mathbf{s}_t$.
+  \item Participant selection:
+    $$\sum_{t}(\sum_{d_i \in \mathbf{d}_t}^{s_i \in \mathbf{s}_t}(|P(d_i) - P(s_i)|))/15$$
+\end{itemize}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{nine_theories_w_norm} 
+    \caption{With normative selections}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{nine_theories_w_ppt} 
+    \caption{With participant selections}
+  \end{subfigure}
+  \label{fig:theory_comp}
+
+\end{figure}
 
 
 \end{document}

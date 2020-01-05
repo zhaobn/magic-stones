@@ -8,6 +8,13 @@ for (c in 1:length(colors)) {
     objects <- c(objects, paste0(colors[c], shapes[s]))
   }
 }
+t <- c('o', 'c', 's')
+theories<-vector(mode="character", length=length(t)^2)
+for (i in 1:length(t)) {
+  for (j in 1:length(t)) {
+    theories[j+length(t)*(i-1)]<-paste0(t[i], '-', t[j])
+  }
+}
 
 ## Generate the complete hypothesis space
 full_hypothesis_space <- list()
@@ -100,16 +107,18 @@ filter_hypos <- function(observation, space) {
 }
 
 # Get posterior probablities
-get_posterior <- function(data, hypo_space) {
+get_posterior <- function(data, hypo_space, theory) {
   n <- length(hypo_space)
   likelihoods <- rep(0, len=n)
   for (i in 1:n) {
-    likelihoods[i] <- check_hypo(c(data[1], '', data[2]), hypo_space[[i]])
+    likelihoods[i] <- check_hypo(c(data[1], '', data[2]), hypo_space[[i]], theory)
   }
   # Smooth & normalize
   # Ignore multiplying prior probablity because it is assumed to be unform over hypos
+  # Debug: smooth according to the size of hypo_space
+  m<-ceiling(sqrt(n))
   posterior <- sapply(likelihoods, 
-                      function(x) exp(x*3)/sum(sapply(likelihoods, function(x) exp(x*3))))
+                      function(x) exp(x*m)/sum(sapply(likelihoods, function(x) exp(x*m))))
   return(posterior)
 }
 # Calculate marginal posteriors
@@ -132,8 +141,8 @@ get_prediction <- function(data, hypo_space) {
   return(predictions)
 }
 # final output
-get_posterior_predictive <- function(data, hypo_space) {
-  posteriors <- get_posterior(data, hypo_space)
+get_posterior_predictive <- function(obs, data, hypo_space, theory) {
+  posteriors <- get_posterior(obs, hypo_space, theory)
   predictions <- get_prediction(data, hypo_space)
   post_pred <- list()
   selections <- unique(predictions)
@@ -186,3 +195,133 @@ for (i in 1:6) {
 }
 
 save(file=file, df.sw, df.tw, df.sim)
+
+#######################################################
+# Refactor for further use
+#######################################################
+generate_hypo_space <- function(theory) {
+  space<-list()
+  cause <- switch (substr(theory,1,1), 'o'=objects, 'c'=colors, 's'=shapes)
+  effect <- switch (substr(theory,3,3), 'o'=objects, 'c'=colors, 's'=shapes)
+  n <- length(space)
+  for (i in 1:length(cause)) {
+    for (j in (1:length(effect))) {
+      idx <- n + j + length(effect) * (i - 1)
+      hypothesis <- c(compose_from(cause[i]), compose_from(effect[j]))
+      space[[idx]] <- hypothesis
+    }
+  }
+  return(space)
+}
+# !!! Overwrite check_hypo()
+check_hypo <- function(observation, hypo, theory) {
+  pass <- FALSE
+  pass <- switch (theory,
+    'o-o' = observation[1]==hypo[1]&&observation[3]==hypo[2],
+    'o-c' = observation[1]==hypo[1]&&substr(hypo[2],2,2)=='*'&&substr(observation[3],1,1)==substr(hypo[2], 1, 1),
+    'o-s' = observation[1]==hypo[1]&&substr(hypo[2],1,1)=='*'&&substr(observation[3],2,2)==substr(hypo[2], 2, 2),
+    'c-o' = substr(hypo[1],2,2)=='*'&&substr(hypo[1],1, 1)==substr(observation[1],1,1)&&hypo[2]==observation[3],
+    'c-c' = substr(hypo[1],2,2)=='*'&&substr(hypo[1],1,1)==substr(observation[1],1,1)&&substr(observation[3],1,1)==substr(hypo[2],1,1),
+    'c-s' = substr(hypo[1],2,2)=='*'&&substr(hypo[1],1,1)==substr(observation[1],1,1)&&substr(observation[3],2,2)==substr(hypo[2],2,2),
+    's-o' = substr(hypo[1],1,1)=='*'&&substr(hypo[1],2,2)==substr(observation[1],2,2)&&hypo[2]==observation[3],
+    's-c' = substr(hypo[1],1,1)=='*'&&substr(hypo[1],2,2)==substr(observation[1],2,2)&&substr(observation[3],1,1)==substr(hypo[2],1,1),
+    's-s' = substr(hypo[1],1,1)=='*'&&substr(hypo[1],2,2)==substr(observation[1],2,2)&&substr(observation[3],2,2)==substr(hypo[2],2,2),
+  ) 
+  return(pass)
+}
+
+filter_hypos <- function(observation, space, theory) {
+  passed <- list()
+  for (i in 1:length(space)) {
+    passed[[i]] <- check_hypo(observation, space[[i]], theory)  
+  }
+  return(space[which(passed==1)])
+}
+
+# Debug: fix randomized list order
+get_pred <- function(data, hypo) {
+  is_included <- (data[1] == hypo[1] || 
+                    (data[1] != hypo[1] && substr(data[1], 1, 1) == substr(hypo[1], 1, 1)) ||
+                    (data[1] != hypo[1] && substr(data[1], 2, 2) == substr(hypo[1], 2, 2)))
+  # Get predicted state
+  pred <- if (is_included) hypo[2] else objects[sample(1:length(objects), 1)]
+  # Fill in blanks
+  if (substr(pred, 1, 1) == '*') substr(pred, 1, 1) <- shapes[sample(1:length(shapes), 1)] else
+    if (substr(pred, 2, 2) == '*') substr(pred, 2, 2) <- colors[sample(1:length(colors), 1)]
+  return(pred)
+}
+
+get_posterior <- function(obs, data, hypo_space, theory) {
+  n <- length(hypo_space)
+  prio <- rep(0, len=n)
+  preds <- rep('', len=n)
+  for (i in 1:n) {
+    prio[i] <- check_hypo(obs, hypo_space[[i]], theory)
+    preds[i] <- get_pred(data, hypo_space[[i]])
+  }
+  # Smooth & normalize
+  m<-ceiling(sqrt(n))
+  posterior<-sapply(prio,function(x) exp(x*m)/sum(sapply(prio, function(x) exp(x*m))))
+  result<-cbind(as.data.frame(preds), as.data.frame(posterior)) %>%
+    group_by(preds) %>%
+    summarise(post=sum(posterior))
+  return(result)
+}
+get_trial_sim <- function(condition, tid, obs, hypo_space, theory) {
+  base<-tasks%>%filter(learningTaskId==condition, trial==tid)
+  trial_data<-c(base[[3]], base[[4]])
+  result<-get_posterior(obs, trial_data, hypo_space, theory)
+  result$trial=tid
+  result$condition=condition
+  result<-result %>% select(condition, trial, selection=preds, prob=post)
+  return(result)
+}
+get_cond_sim <- function(condition, theory) {
+  hypothesis_space<-generate_hypo_space(theory)
+  obs<-get_learning_settings(condition)
+  
+  result <- get_trial_sim(condition, 1, obs, hypothesis_space, theory)
+  for (i in 2:15) {
+    result<-rbind(result, get_trial_sim(condition, i, obs, hypothesis_space, theory))
+  }
+  return(result)
+}
+get_theory_sim <- function(theory) {
+  result<-get_cond_sim('learn01', theory)
+  for (i in 2:6) {
+    result<-rbind(result, get_cond_sim(paste0('learn0', i), theory))
+  }
+  return(result)
+}
+get_diff<-function(a, b, opt){
+  input<-c(a, b)
+  if (opt=='1') {
+    return(setdiff(colors, input))
+  } else if (opt=='2') {
+    return(setdiff(shapes, input))
+  } else {
+    return(NULL)
+  }
+}
+# Get normative results
+get_norm <- function(data, condition, tid){
+  data<-data%>%filter(learningTaskId==condition&trial==tid)
+  agent<-data$agent
+  recipient<-data$recipient
+  norm<-switch (condition,
+    'learn01' = paste0(substr(recipient,1,1),substr(agent,2,2)),
+    'learn02' = paste0(substr(recipient,1,1),get_diff(substr(agent,2,2), substr(recipient,2,2), '2')),
+    'learn03' = paste0(substr(agent,1,1),substr(recipient,2,2)),
+    'learn04' = paste0(get_diff(substr(agent,1,1), substr(recipient,1,1), '1'),substr(recipient,2,2)),
+    'learn05' = paste0(substr(agent,1,1),get_diff(substr(agent,2,2), substr(recipient,2,2), '2')),
+    'learn06' = agent,
+  )
+  return(cbind(data,norm))
+}
+norm<-get_norm(tasks,'learn01',1)
+for (i in 1:6) {
+  for (j in 1:15) {
+    if (!(i==1&&j==1)) norm<-rbind(norm, get_norm(tasks, paste0('learn0',i), j))
+  }
+}
+
