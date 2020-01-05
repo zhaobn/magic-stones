@@ -325,3 +325,25 @@ for (i in 1:6) {
   }
 }
 
+# Normative predictions according to code
+get_norm <- function(data, condition, tid){
+  data<-data%>%filter(learningTaskId==condition&trial==tid)
+  agent<-data$agent
+  recipient<-data$recipient
+  norm<-switch (condition,
+    'learn01' = paste0(substr(recipient,1,1),'s'),
+    'learn02' = paste0(substr(recipient,1,1),'c'),
+    'learn03' = paste0('b',substr(recipient,2,2)),
+    'learn04' = paste0('y',substr(recipient,2,2)),
+    'learn05' = 'yc',
+    'learn06' = 'bs',
+  )
+  return(cbind(data,norm))
+}
+
+
+
+
+
+
+
