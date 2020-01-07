@@ -6,10 +6,7 @@ library(ggplot2)
 rm(list=ls())
 
 # Load data
-datafile <- 'mturk_20200101_trial_evaluated'
-load(paste0('../data/processed/', datafile, '.Rdata'))
-# 'mturk_20191128_trial_fixed'
-
+load(paste0('../data/mturk_20200107.Rdata'))
 
 # Ensure correct data type
 df.sw$sex <- as.character(df.sw$sex)

@@ -65,8 +65,8 @@ pt.tw <- pt.tw %>%
 ## Fix trial order
 # Read ordered trials
 library("rjson")
-load('../data/mturk_20191128_fixed.Rdata')
-trialsFile <- fromJSON(file='../data/trials.json')
+load('../data/mturk_20200107.Rdata')
+trialsFile <- fromJSON(file='../data/other/trials.json')
 ordered_trials <- as.data.frame(trialsFile)
 ordered_trials$learningTaskId <-as.character(ordered_trials$learningTaskId)
 ordered_trials$trial <- as.numeric(as.character(ordered_trials$trial))
@@ -83,7 +83,7 @@ df.tw <- df.tw %>%
   arrange(ix, trial) 
 
 ## Save data
-save(file='../data/mturk_20191128_trial_fixed.Rdata', df.sw, df.tw)
+save(file='../data/mturk_20200107.Rdata', df.sw, df.tw)
 
 ## Prep viz data
 # Subjects per learning task condition
@@ -92,7 +92,7 @@ export <- df.tw %>% select(learningTaskId, ix) %>%
   arrange(learningTaskId, ix)
 write.csv(export, file = '../data/subject_conditions.csv')
 # Subject data
-ixes <- df.tw %>% select(ix) %>% distinct()
+ixes <- df.tw %>% select(ix) %>% distinct() %>% filter(ix>66)
 read_selection <- function(x) {
   sel <- df.tw %>% 
     filter(ix==x) %>% arrange(trial) %>% select(selection)
@@ -104,7 +104,7 @@ for (i in 2:length(ixes[[1]])) {
 }
 names(data) <- ixes[[1]]
 data <- t(data)
-write.csv(data, file = '../data/subject_selections.csv')
+write.csv(data, file = '../data/subject_selections_2.csv')
 
 # Check how many needed to get 10 per group
 p.sw<-df.sw
@@ -120,4 +120,5 @@ pt.tw<-df.tw
 df.sw<-rbind(df.sw, pt.sw)
 df.tw<-rbind(df.tw, pt.tw)
 save(df.sw, df.tw, file='../data/mturk_20190101.Rdata')
+
 

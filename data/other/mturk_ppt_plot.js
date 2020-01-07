@@ -20,12 +20,12 @@ Object.keys(trainings).forEach (t => trainings[t].taskId = t);
 
 /** Subject data */
 const subjectConditions = {
-  learn01: [ 20, 44, 51, 52 ],
-  learn02: [ 25, 30, 42, 45, 46 ],
-  learn03: [ 21, 22, 28, 29, 32, 33 ],
-  learn04: [ 14, 15, 31, 36, 38, 39 ],
-  learn05: [ 17, 18, 24, 26, 35, 40, 43 ],
-  learn06: [ 16, 19, 23, 27, 34, 41 ],
+  learn01: [ 20, 44, 51, 52, 71, 80, 84, 92 ],
+  learn02: [ 25, 30, 42, 45, 46, 79, 87, 88, 89 ],
+  learn03: [ 21, 22, 28, 29, 32, 33, 69, 74, 76, 82, 85 ],
+  learn04: [ 14, 15, 31, 36, 38, 39, 70, 72, 75, 86, 91, 93 ],
+  learn05: [ 17, 18, 24, 26, 35, 40, 43, 73, 78, 81, 83 ],
+  learn06: [ 16, 19, 23, 27, 34, 41, 68, 77, 90, 94 ],
   random:  [ 59, 60, 61, 62, 63, 64, 65, 66 ],
 }
 
@@ -72,12 +72,41 @@ const subjectTrials = {
   "64": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
   "65": [ "bd","bd","bd","yd","yd","yd","yd","bs","bs","bs","bd","ys","ys","ys","ys" ],
   "66": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
-
+  "68": [ "rs","bd","bd","rs","rs","rs","rs","bd","bd","bd","bd","rd","rd","rd","rd" ],
+  "69": [ "bd","bc","bc","yd","yd","yc","yc","bd","bd","bc","bc","yd","yd","yc","yc" ],
+  "70": [ "bs","rd","bd","rs","bs","rd","bd","rs","bs","rd","bd","rs","bs","rd","bd" ],
+  "71": [ "bs","ys","bs","ys","bs","ys","bs","ys","bd","yd","bd","yd","bd","yd","bd" ],
+  "72": [ "rs","ys","rd","rs","rs","rs","bs","rs","bs","rs","rs","ys","bs","rs","rs" ],
+  "73": [ "yc","yc","yc","rc","rc","rc","rc","yc","ys","ys","ys","rs","rs","rs","rs" ],
+  "74": [ "rd","yd","rc","bd","bd","bc","rc","yd","bc","bc","bc","yd","bd","yc","bc" ],
+  "75": [ "ys","yd","yd","ys","ys","yd","yd","ys","ys","yd","yd","ys","ys","yd","yd" ],
+  "76": [ "bd","rd","bd","bd","bd","bd","yc","bd","rd","rc","bd","bd","yd","yc","yc" ],
+  "77": [ "rs","bs","bs","rs","rs","rs","rs","bd","bd","bd","bd","rd","rd","rd","rd" ],
+  "78": [ "yc","yc","yc","yc","rc","ys","ys","yd","yc","ys","ys","rd","rd","rs","rs" ],
+  "79": [ "bc","rs","bs","rc","bc","rs","bs","rc","bc","rs","bs","rc","bc","rs","bs" ],
+  "80": [ "bs","ys","bs","ys","bs","ys","bs","ys","bs","yd","bd","yd","bd","yd","bd" ],
+  "81": [ "yc","bc","ys","rc","rc","bs","rs","yc","yd","bs","yd","rd","rd","rs","rs" ],
+  "82": [ "bd","bc","bc","yd","yd","yc","yc","bd","bc","bc","bc","yd","yd","yc","yc" ],
+  "83": [ "yc","yc","yc","rc","rc","rc","rc","yc","yc","yc","yc","rc","rc","rc","rc" ],
+  "84": [ "bs","ys","bs","ys","bs","ys","bs","yd","bd","yd","bd","yd","bd","bd","bd" ],
+  "85": [ "bd","bd","bd","bd","bd","bd","bc","bd","bd","bd","bc","bd","bd","bd","bc" ],
+  "86": [ "bs","yd","bd","ys","bs","yd","bd","ys","bs","yd","bs","rs","bs","yd","bd" ],
+  "87": [ "bc","rs","bs","rc","bc","rs","bs","rc","bc","rs","bs","rc","bd","rs","bs" ],
+  "88": [ "bc","rd","bd","rc","bc","rd","bd","rd","bd","rc","bc","rs","bs","rc","rs" ],
+  "89": [ "bc","rc","bs","rc","bc","rs","bs","rd","bc","rd","bd","rd","bd","rd","bd" ],
+  "90": [ "rs","bs","bs","rs","rs","rs","rs","bs","bs","bd","bd","rd","rd","rd","rd" ],
+  "91": [ "bs","yd","bd","ys","bs","yd","rd","ys","bs","yd","bd","rs","rs","rd","rd" ],
+  "92": [ "bs","yd","bd","ys","bs","ys","bs","yd","bd","yd","bd","yd","bd","yd","bd" ],
+  "93": [ "rs","rs","rd","bs","bs","rd","bd","rs","bs","yd","bd","rs","bs","rd","bd" ],
+  "94": [ "bs","bd","bs","bs","rs","rs","rs","bd","bd","bd","bd","rd","rd","rd","rd" ],
 }
 
+/** Create page */
 //Object.keys(trainings).forEach (t => createViz(t));
-createViz('random');
+createViz('learn06');
 
+
+/** Helper functions */
 function createViz(taskId) {
   let div = createDivWithId(`div-taskId`);
   //div.append(createTaskInfo(taskId));
@@ -254,8 +283,8 @@ function createTrialPanel(taskId, trials) {
   tbl.className = 'panel';
 
   let header = tbl.insertRow();
-  const pars = subjectConditions[taskId].map(ix => `Pt ${ix}`);
-  let headerEls = [ "Trial", "Agent", "Recipient", "" ].concat(pars);
+  const pars = subjectConditions[taskId].map(ix => `P ${ix}`);
+  let headerEls = [ "Trial", "A", "R", "" ].concat(pars);
   headerEls.forEach(el => {
     header.insertCell().appendChild(createElementWithText('p', el))
   })
