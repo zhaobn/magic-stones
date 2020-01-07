@@ -5,7 +5,7 @@ library(dplyr)
 rm(list=ls())
 
 ## Load data
-load('../rawdata/mturk_20191128.Rdata')
+load('../data/mturk_20200107.Rdata')
 
 ## Fix learningTaskId bug
 learning_tasks <- df.sw[,c(1,9)]
@@ -39,7 +39,9 @@ df.sw <- df.sw %>% filter(!(ix %in% to_drop[[1]]))
 df.tw <- df.tw %>% filter(!(ix %in% to_drop[[1]]))
 
 ## Append learning info to trials
-df.tw <- df.tw %>% 
+learning_tasks<-pt.sw %>% select(ix, learningTaskId)
+pt.tw <- pt.tw %>%left_join(learning_tasks, by='ix')
+pt.tw <- pt.tw %>% 
   mutate(learn_agent = case_when(learningTaskId == 'learn01' ~ 'rs', learningTaskId == 'learn02' ~ 'yd', 
                                  learningTaskId == 'learn03' ~ 'bs', learningTaskId == 'learn04' ~ 'rc', 
                                  learningTaskId == 'learn05' ~ 'yd', learningTaskId == 'learn06' ~ 'bs')) %>%
@@ -55,7 +57,7 @@ df.sw <- df.sw %>%
   select(ix, learningTaskId, date, time, instructions_duration, task_duration,
          age, sex, engagement, difficulty, guess, feedback, id, token) %>% 
   arrange(ix)
-df.tw <- df.tw %>% 
+pt.tw <- pt.tw %>% 
   select(ix, learningTaskId, learn_agent, learn_recipient, learn_rule, 
          trial, agent, recipient, selection, ts, id) %>% 
   arrange(ix)
@@ -103,3 +105,19 @@ for (i in 2:length(ixes[[1]])) {
 names(data) <- ixes[[1]]
 data <- t(data)
 write.csv(data, file = '../data/subject_selections.csv')
+
+# Check how many needed to get 10 per group
+p.sw<-df.sw
+p.tw<-df.tw
+load('../data/processed/mturk_20191128_trial_fixed.Rdata')
+ex<-df.sw %>% select(ix, learningTaskId)
+df<-p.sw %>% select(ix, learningTaskId)
+groups<-rbind(ex,df)%>%group_by(learningTaskId)%>%tally()
+
+# Combine all batches
+pt.sw<-df.sw
+pt.tw<-df.tw
+df.sw<-rbind(df.sw, pt.sw)
+df.tw<-rbind(df.tw, pt.tw)
+save(df.sw, df.tw, file='../data/mturk_20190101.Rdata')
+
