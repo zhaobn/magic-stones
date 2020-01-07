@@ -18,9 +18,20 @@ let trainings = {
 }
 Object.keys(trainings).forEach (t => trainings[t].taskId = t);
 
-const learningTask = trainings.learn07;
+const learningTask = trainings[getTask()];
 const trials = createTrialDataObj(learningTask);
 let trialOrder = shuffleArray(Object.keys(trials));
+
+function getTask () {
+    const head = Math.random() > 0.5;
+    if (Math.random() > 0.3333) {
+        task = head? 'learn02' : 'learn01'
+    } else {
+        task = head? 'learn04' : 'learn06'
+    }
+    return task;
+}
+
 
 let feedbackData = {};
 let taskData = {};
