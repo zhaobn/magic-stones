@@ -39,7 +39,7 @@ df.sw <- df.sw %>% filter(!(ix %in% to_drop[[1]]))
 df.tw <- df.tw %>% filter(!(ix %in% to_drop[[1]]))
 
 ## Append learning info to trials
-learning_tasks<-pt.sw %>% select(ix, learningTaskId)
+learning_tasks<-df.sw %>% select(ix, learningTaskId)
 pt.tw <- pt.tw %>%left_join(learning_tasks, by='ix')
 pt.tw <- pt.tw %>% 
   mutate(learn_agent = case_when(learningTaskId == 'learn01' ~ 'rs', learningTaskId == 'learn02' ~ 'yd', 
@@ -83,7 +83,7 @@ df.tw <- df.tw %>%
   arrange(ix, trial) 
 
 ## Save data
-save(file='../data/mturk_20200107.Rdata', df.sw, df.tw)
+save(file='../data/mturk_20200108_combo.Rdata', df.sw, df.tw)
 
 ## Prep viz data
 # Subjects per learning task condition
@@ -119,6 +119,14 @@ pt.sw<-df.sw
 pt.tw<-df.tw
 df.sw<-rbind(df.sw, pt.sw)
 df.tw<-rbind(df.tw, pt.tw)
-save(df.sw, df.tw, file='../data/mturk_20190101.Rdata')
+save(df.sw, df.tw, file='../data/mturk_20200108_combo.Rdata')
+
+# Combo test
+df.tw <- df.tw %>%
+  mutate(learningTaskId='learn07', learn_agent='rd', learn_recipient='ys', learn_rule='-2b, -2c') %>%
+  select(ix, learningTaskId, learn_agent, learn_recipient, learn_rule, 
+         trial, agent, recipient, selection, ts, id)
+
+
 
 

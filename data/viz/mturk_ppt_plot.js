@@ -15,6 +15,7 @@ let trainings = {
   learn05: { magicStone: 'yd', normalStone: 'bs', rules: [ '-2y', '-2c' ] },
   learn06: { magicStone: 'bs', normalStone: 'yc', rules: [ '-2b', '-2s' ] },
   random:  { magicStone: 'bs', normalStone: 'rd', rules: [ '-2b' ] },
+  learn07: { magicStone: 'rd', normalStone: 'ys', rules: [ '-2b', '-2c' ] },
 }
 Object.keys(trainings).forEach (t => trainings[t].taskId = t);
 
@@ -27,6 +28,7 @@ const subjectConditions = {
   learn05: [ 17, 18, 24, 26, 35, 40, 43, 73, 78, 81, 83 ],
   learn06: [ 16, 19, 23, 27, 34, 41, 68, 77, 90, 94 ],
   random:  [ 59, 60, 61, 62, 63, 64, 65, 66 ],
+  learn07: [ 96, 97, 98, 99, 100, 101, 102, 103, 104 ],
 }
 
 const subjectTrials = {

@@ -272,6 +272,12 @@ ggplot(ind, aes(x=reorder(ix, -perc), y=perc)) +
   geom_hline(yintercept=0.5, linetype="dashed", color = "red")
 # -> individual_compliance.jpeg
 
+# Compliance vs aga
+ind <- ind %>% left_join(df.sw, by='ix') %>%
+  select(ix, learningTaskId, age, sex, perc)
+ind$age <- as.numeric(as.character(ind$age))
+cor.test(ind$perc, ind$age)
+summary(lm(perc~sex, ind))
 
 # Measure homogeneity
 # For each learning condition
@@ -297,9 +303,9 @@ hgt <- df.tw %>%
   summarise(vary=(n_distinct(selection)-1)/n())
   
 
-# Time spent
 mean(df.sw$task_duration)/1000/60 #5.939434
 mean(df.sw$instructions_duration)/1000/60 #5.939434
+
 
 
 
