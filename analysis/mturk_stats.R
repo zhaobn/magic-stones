@@ -19,11 +19,11 @@ df.sw$difficulty <- as.numeric(as.character(df.sw$difficulty))
 df.sw$engagement <- as.numeric(as.character(df.sw$engagement))
 
 # Helper functions
-report_col <- function(list, ndigits=4, separator='|') {
-  cat('min:', round(min(list), ndigits), separator,
-      'max:', round(max(list), ndigits), separator,
-      'mean:', round(mean(list), ndigits), separator,
-      'sd:', round(sd(list), ndigits), '\n');
+report_col <- function(list, ndigits=4, separator=',') {
+  cat('min', round(min(list), ndigits), separator,
+      'max', round(max(list), ndigits), separator,
+      'mean', round(mean(list), ndigits), separator,
+      'sd', round(sd(list), ndigits), '\n');
 }
 
 summarise_group <- function(list, ndigits=2, separator='|') {
@@ -41,69 +41,68 @@ summarise_group <- function(list, ndigits=2, separator='|') {
 
 
 # Subjectwise basic stats
-# Age
 report_col(df.sw$age)
-# min: 24 | max: 64 | mean: 40.7647 | sd: 10.8685 
-
-# Sex
 summarise_group(df.sw$sex)
-# total 34 | male 16 47.06% | female 18 52.94%
+
 genders <- unique(df.sw$sex);
 for (i in 1:length(genders)) {
   gender_group <- df.sw %>% filter(sex==genders[i]);
   cat(genders[i], ' age\n');
   report_col(gender_group$age);
 }
-# Male age: min: 24 | max: 58 | mean: 40.375 | sd: 12.0768 
-# Female age: min: 27 | max: 64 | mean: 41.1111 | sd: 10.017 
 
-# Task duration
-report_col(df.sw$task_duration)
-# min: 132781 | max: 2322982 | mean: 356366 | sd: 363682.9 
-
-# Learn tasks
+report_col(td$task_duration/60000)
 summarise_group(df.sw$learningTaskId)
-#summarise_group(df.tw$learningTaskId)
-# total 34 
-# learn01 4 11.76% 
-# learn02 5 14.71% 
-# learn03 6 17.65%
-# learn04 6 17.65% 
-# learn05 7 20.59% 
-# learn06 6 17.65% 
+
+# Is there a outlier in task duration?
+td <- df.sw %>% arrange(desc(task_duration)) # P43
 
 # Out of curisity
-report_col(df.sw$difficulty) # min: 0 | max: 10 | mean: 4.8235 | sd: 2.9896 
-report_col(df.sw$engagement) # min: 2 | max: 10 | mean: 8.5882 | sd: 2.0906 
+report_col(df.sw$difficulty) 
+report_col(df.sw$engagement) 
+
+td <- df.sw%>%filter(!(ix==43))
+td <- td %>% group_by(learningTaskId) %>% 
+  summarise(avg_task_dur=mean(task_duration/60000))
+df.sw %>% group_by(learningTaskId) %>% summarise(avg_dfty=mean(difficulty))
+
 
 # Take a peek of stats per learning condition groups
 lg_shape <- df.sw %>% filter(learningTaskId %in% c('learn01', 'learn02')) # groups with a shape-changing rule
 lg_color <- df.sw %>% filter(learningTaskId %in% c('learn03', 'learn04')) # groups with a color-changing rule
 lg_object <- df.sw %>% filter(learningTaskId %in% c('learn05', 'learn06')) # groups with color & shape changing rules
 
-nrow(lg_shape) # 9
-nrow(lg_color) # 12
-nrow(lg_object) # 13
+nrow(lg_shape)
+nrow(lg_color)
+nrow(lg_object)
 
-report_col(lg_shape$task_duration)  # min: 218973 | max: 575022 | mean: 345779.4 | sd: 133882.9 
-report_col(lg_color$task_duration)  # min: 157104 | max: 370915 | mean: 294222.9 | sd: 64136.33 
-report_col(lg_object$task_duration) # min: 132781 | max: 2322982 | mean: 432938.5 | sd: 579199 
+report_col(lg_shape$task_duration)
+report_col(lg_color$task_duration)
+report_col(lg_object$task_duration)
 
-report_col(lg_shape$difficulty)  # min: 0 | max: 10 | mean: 4.8889 | sd: 3.2189 
-report_col(lg_color$difficulty)  # min: 3 | max: 10 | mean: 5 | sd: 3.4112 
-report_col(lg_object$difficulty) # min: 0 | max: 9 | mean: 4.6154 | sd: 2.6312 
+report_col(lg_shape$difficulty)
+report_col(lg_color$difficulty)
+report_col(lg_object$difficulty)
 
 lg_same <- df.sw %>% filter(learningTaskId %in% c('learn01', 'learn03', 'learn06')) # change to the same feature
 lg_diff <- df.sw %>% filter(learningTaskId %in% c('learn02', 'learn04','learn05')) # change to a different feature
 
-nrow(lg_same) # 16
-nrow(lg_diff) # 18
+nrow(lg_same) 
+nrow(lg_diff) 
 
-report_col(lg_same$task_duration) # min: 183647 | max: 575022 | mean: 308112.8 | sd: 94710.8 
-report_col(lg_diff$task_duration) # min: 132781 | max: 2322982 | mean: 407838.1 | sd: 492196.9 
+hg_same<-hgt %>%filter(learningTaskId %in% c('learn01', 'learn03', 'learn06')) 
+hg_diff<-hgt %>% filter(learningTaskId %in% c('learn02', 'learn04','learn05'))
 
-report_col(lg_same$difficulty) # min: 0 | max: 10 | mean: 3.625 | sd: 3.2223 
-report_col(lg_diff$difficulty) # min: 0 | max: 10 | mean: 5.8889 | sd: 2.3736 
+t.test(lg_same$task_duration, lg_diff$task_duration)
+t.test(lg_same$difficulty, lg_diff$difficulty)
+t.test(hg_same$vary, hg_diff$vary)
+
+
+report_col(lg_same$task_duration) 
+report_col(lg_diff$task_duration) 
+
+report_col(lg_same$difficulty) 
+report_col(lg_diff$difficulty)
 
 
 # Take a look per learning task
@@ -220,10 +219,12 @@ per_group_p <- rbind(per_group_r1_p, per_group_r2_p, per_group_total_p) %>%
 ggplot(per_group_p, aes(fill=compliance, y=value, x=learningTaskId)) + 
   geom_bar(position="dodge", stat="identity") + 
   labs(x='', y='') +
-  scale_fill_grey()
+  scale_fill_manual(values = c("lightsteelblue3", "steelblue", "steelblue4"))
+  #scale_colour_gradient(low = "gray90", high = "lightsteelblue3")
 # -> compliance_per_learning_condition.jpeg
 ggplot(per_group_total_p, aes(y=value, x=learningTaskId)) + 
-  geom_bar(stat="identity", fill="azure4") + labs(x='', y='') + scale_fill_grey()
+  geom_bar(stat="identity", fill="steelblue") + labs(x='', y='') + 
+  scale_fill_grey()
 # -> total_compliance_per_learning_condition.jpeg
 
 
@@ -244,7 +245,7 @@ per_trial_r2 <- comp %>%
   filter(r2==TRUE) %>% select(trial, r2_compliance)
 
 ggplot(per_trial_total, aes(x=trial, y=total_compliance)) + 
-  geom_bar(stat="identity", fill="azure4") + labs(x='', y='') + scale_fill_grey() +
+  geom_bar(stat="identity", fill="lightpink") + labs(x='', y='') + scale_fill_grey() +
   scale_x_continuous("Trials", labels = as.character(trials), breaks = trials)
 # -> total_compliance_per_trial.jpeg
 
@@ -265,7 +266,8 @@ ind <- comp %>%
   summarise (n = n()) %>% mutate(perc = n / sum(n)) %>%
   filter(compliance==TRUE)
 ggplot(ind, aes(x=reorder(ix, -perc), y=perc)) + 
-  geom_bar(stat="identity", fill="azure4") + 
+  geom_bar(stat="identity", fill="lightpink") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   labs(x='Participant', y='Compliance') +
   geom_hline(yintercept=0.5, linetype="dashed", color = "red")
 # -> individual_compliance.jpeg
@@ -281,6 +283,19 @@ hg <- df.tw %>%
   summarise(vary=(n_distinct(selection)-1)/n()) %>%
   group_by(learningTaskId) %>%
   summarise(total_vary=sum(vary))
+hg2 <- df.tw %>%
+  select(ix, learningTaskId, trial, selection) %>%
+  group_by(learningTaskId, trial) %>%
+  summarise(vary=n_distinct(selection)-1, total=n()) %>%
+  mutate(max=if_else(total>8, 8, as.numeric(total))) %>%
+  group_by(learningTaskId) %>%
+  summarise(total_vary=sum(vary), total_max=sum(max)) %>%
+  mutate(var=total_vary/total_max)
+hgt <- df.tw %>%
+  select(ix, learningTaskId, trial, selection) %>%
+  group_by(learningTaskId, trial) %>%
+  summarise(vary=(n_distinct(selection)-1)/n())
+  
 
 # Time spent
 mean(df.sw$task_duration)/1000/60 #5.939434

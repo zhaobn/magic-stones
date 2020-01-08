@@ -1,0 +1,162 @@
+% Created: 2019-12-10
+% Plot participant data
+% http://github.com/zhaobn/magic_stones
+
+\documentclass{article}
+\title{[Magic Stones] Report for Complete Experiment 1}
+\author{Bonan Zhao (b.zhao@ed.ac.uk)}
+
+% Text formats: margin, font, spacing
+\usepackage[margin=0.8in]{geometry}
+\usepackage{charter}
+\renewcommand{\baselinestretch}{1.3}
+
+% Graphics
+\usepackage{graphicx}
+\usepackage{subcaption}
+\graphicspath{{../figs/}}
+
+\usepackage{amsmath}
+
+\begin{document}
+\maketitle
+
+% Raw participant data
+\section{Participant data}
+
+\begin{figure}[h!]
+	\centering
+  \begin{subfigure}[t]{0.32\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{learn01} 
+  	\caption{To the same shape} \label{fig:learn01}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.32\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{learn03} 
+  	\caption{To the same color} \label{fig:learn03}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.32\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{learn06} 
+  	\caption{To the same object} \label{fig:learn06}
+  \end{subfigure}
+
+  \vspace{1em}
+  \begin{subfigure}[t]{0.32\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{learn02} 
+  	\caption{To a different shape} \label{fig:learn02}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.32\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{learn04} 
+  	\caption{To a different color} \label{fig:learn04}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.32\textwidth}
+  	\centering
+  	\includegraphics[width=\linewidth]{learn05} 
+  	\caption{To a different object} \label{fig:learn05}
+  \end{subfigure}
+  \caption{Each figure is for one learning condition. 
+  Each learning condition has 15 trials (15 rows).}
+\end{figure}
+
+\section{Stats}
+
+\begin{itemize}
+  \item Age: min 24, max 67, mean 41.1639, sd 11.1238 
+  \item Gender: female 28 (45.9\%), male 33 (54.1\%)
+  %\item Task duration (minutes): min 2.2068, max 10.0976, mean 4.8756, sd 1.8663
+  %\item Self-report difficulty: min 0, max 10, mean 4.6557, sd 3.1564
+\end{itemize}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{c|l|c|c|c|c|c}
+  Condition & Description & Count & Share & Task dur. mean (min.) & S-Dfty. mean & Variation \\
+  \hline
+  1        & To the same shape     & 8     & 13.11\% & 5.1873 & 3.38 & 10.83\% \\
+  2        & To a different shape  & 9     & 14.75\% & 5.0942 & 7.89 & 18.33\% \\
+  3        & To the same color     & 11    & 18.03\% & 4.7480 & 3.45 & 22.50\% \\
+  4        & To a different color  & 12    & 19.67\% & 4.1504 & 5.17 & 38.33\% \\
+  5        & To a different object & 11    & 18.03\% & 5.2803 & 5.09 & 30.00\% \\
+  6        & To the same object    & 10    & 16.39\% & 5.0351 & 3.00 & 16.67\% \\
+  \hline
+  Total    &                       & 61    &         & 4.8756 (sd 1.87) & 4.65 (sd 3.16) & \\
+  \end{tabular}
+  \caption{Basic stats per condition. S-Dfty.: Self-report difficulty.}
+  \label{table:conditions}
+\end{table}
+
+\subsubsection*{Variation}
+
+Variation is defined as how much observed difference out of the maximal possible difference.
+%
+For a condition $C$ and each of its generalization task $i$, let $U_i$ be the number of unique predictions all participants made in this task, and $n$ be the number of participants, \emph{observed difference} is defined as $U_i - 1$ because of the intuition that if all the participants make the same prediction, the number of unique selections is 1 and variation should be 0, and \emph{maximal difference} $M_i$ is given by
+
+\[M_i=
+  \begin{cases}
+    8 & \text{if } n \geq 9 \\
+    n & \text{otherwise}
+  \end{cases}
+\]
+
+Formally, variation measure $V_C$ for condition $C$ is $$V_C := (\sum_{i \in C}U_i-1)/\sum_{i \in C}M_i$$.
+
+Overall, participants make quite homogeneous predictions - variation measure for all the conditions are below 40\% of the largest variations, with condition 4 (to a different color) being the one with most various predictions. For condition 1 (to the same shape), participants make very uniform predictions, with a variation measure of just 10.84\%.
+
+\subsubsection*{``To the same xx'' V.S. ``To a different xx''}
+
+Conditions 1, 3, and 6 can be classified as ``to the same xx'' group, where xx can be color, shape, or both (equivalent to the object), and conditions 2, 4, 5 can be classified as ``to a different xx'' group. Statistical test shows that compared to the ``to a different xx'' group, participant report the ``to the same xx'' group is significantly easier ($p<0.0001$), and make more homogeneous predictions ($p=0.0001$). However there is so significant difference for task duration between these two groups.
+
+\section{Compliance}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{com_group} 
+    \caption{Aggregated by conditions.}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{com_trial} 
+    \caption{Aggregated by tasks.}
+  \end{subfigure}
+
+  \begin{subfigure}[t]{0.9\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{com_ind} 
+    \caption{Individuals}
+  \end{subfigure}
+  \caption{Percent of selections that comply with the underlying theory.}
+  \label{fig:compliance}
+\end{figure}
+
+\section{Theories}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{th_norm} 
+    \caption{With code setup}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{th_ppt} 
+    \caption{With participant selections}
+  \end{subfigure}
+  \label{fig:theory_comp}
+\end{figure}
+
+
+\end{document}
+
+
