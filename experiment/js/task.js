@@ -164,7 +164,9 @@ function counterBalance(array) {
     Math.random() > 0.5 ? [array[4], array[5]] = [array[5], array[4]] : null;
     Math.random() > 0.5 ? [array[8], array[8]] = [array[9], array[8]] : null;
     Math.random() > 0.5 ? [array[12], array[13]] = [array[13], array[12]] : null;
-    Math.random() > 0.5 ? array = array.slice(0, 3).concat(array.slice(7,11)).concat(array.slice(3,7)).concat(array.slice(11,)) : null;
+    Math.random() > 0.5 ? array = array.slice(0, 3)
+        .concat(array.slice(7,11)).concat(array.slice(3,7))
+        .concat(array.slice(11,)) : null;
     return(array)
 }
 
