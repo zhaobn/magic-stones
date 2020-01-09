@@ -18,21 +18,9 @@ let trainings = {
 }
 Object.keys(trainings).forEach (t => trainings[t].taskId = t);
 
-// const learningTask = trainings[getTask()];
-const learningTask = trainings.learn01;
+const learningTask = trainings[getTask()];
 const trials = createTrialDataObj(learningTask);
 let trialOrder = shuffleArray(Object.keys(trials), 'reverse');
-
-function getTask () {
-    const head = Math.random() > 0.5;
-    if (Math.random() > 0.3333) {
-        task = head? 'learn02' : 'learn01'
-    } else {
-        task = head? 'learn04' : 'learn06'
-    }
-    return task;
-}
-
 
 let feedbackData = {};
 let taskData = {};
@@ -360,6 +348,22 @@ function getCurrentLocation(id) {
     rect.left = pos.left;
     rect.right = pos.right;
     return rect;
+}
+
+function getTask (opt = 'random') {
+    if (opt === 'random') {
+        const rIdx = Math.ceil(Math.random() * Object.keys(trainings).length);
+        task = 'learn' + rIdx.toString().padStart(2, '0');
+    } else {
+        const head = Math.random() > 0.5;
+        if (Math.random() > 0.3333) {
+            task = head? 'learn02' : 'learn01'
+        } else {
+            task = head? 'learn04' : 'learn06'
+        }
+    }
+    console.log(task);
+    return task;
 }
 
 /** Psedo hover effects */
