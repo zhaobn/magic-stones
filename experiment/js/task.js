@@ -18,9 +18,10 @@ let trainings = {
 }
 Object.keys(trainings).forEach (t => trainings[t].taskId = t);
 
-const learningTask = trainings[getTask()];
+// const learningTask = trainings[getTask()];
+const learningTask = trainings.learn01;
 const trials = createTrialDataObj(learningTask);
-let trialOrder = shuffleArray(Object.keys(trials));
+let trialOrder = shuffleArray(Object.keys(trials), 'reverse');
 
 function getTask () {
     const head = Math.random() > 0.5;
@@ -145,14 +146,13 @@ function clearTrialCounter () {
 /** Create data object */
 function createTrialDataObj (learningTask) {
     let trials = {};
-    control = Math.round(Math.random());
     for (let i = 1; i < 16; i++) {
         trialId = 'trial' + i.toString().padStart(2, '0');
         trials[trialId] = {};
         trials[trialId]['taskId'] = trialId;
         trials[trialId]['magicStone'] = '';
         trials[trialId]['normalStone'] = '';
-        createTrials(learningTask, trials[trialId], control);
+        createTrials(learningTask, trials[trialId]);
     }
     return trials;
 }
@@ -163,10 +163,21 @@ function shuffleArray(array, opt='') {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
+    } else if (opt === 'default') {
+        array = counterBalance(array);
     } else if (opt === 'reverse') {
-        array = array.reverse()
+        array = counterBalance(array).reverse();
     }
     return array;
+}
+
+function counterBalance(array) {
+    Math.random() > 0.5 ? [array[0], array[1]] = [array[1], array[0]] : null;
+    Math.random() > 0.5 ? [array[4], array[5]] = [array[5], array[4]] : null;
+    Math.random() > 0.5 ? [array[8], array[8]] = [array[9], array[8]] : null;
+    Math.random() > 0.5 ? [array[12], array[13]] = [array[13], array[12]] : null;
+    Math.random() > 0.5 ? array = array.slice(0, 3).concat(array.slice(7,11)).concat(array.slice(3,7)).concat(array.slice(11,)) : null;
+    return(array)
 }
 
 /** Create the generaliztion task */
@@ -263,7 +274,7 @@ function createStones (task, box = '.box-lt') {
 }
 
 /** Create trial stones */
-function createTrials (learningTask, trial, idx) {
+function createTrials (learningTask, trial) {
     const colors = [ 'r', 'y', 'b' ];
     const shapes = [ 'c', 'd', 's' ];
 
@@ -281,11 +292,10 @@ function createTrials (learningTask, trial, idx) {
     // Set recipient properties
     switch(trialIndex % 4) {
         case 1:
-            // Counterbalance color and shape differences
-            trial.normalStone = idx? diffColor + recipientShape : recipientColor + diffShape;
+            trial.normalStone = diffColor + recipientShape;
             break;
         case 2:
-            trial.normalStone = idx? recipientColor + diffShape : diffColor + recipientShape;
+            trial.normalStone = recipientColor + diffShape;
             break;
         case 3:
             trial.normalStone = diffColor + diffShape;
@@ -298,9 +308,9 @@ function createTrials (learningTask, trial, idx) {
     if (trialIndex > 0 && trialIndex < 4) {
         trial.magicStone = learningTask.magicStone;
     } else if (trialIndex > 3 && trialIndex < 8) {
-        trial.magicStone = idx? diffColor + agentShape : agentColor + diffShape;
+        trial.magicStone = diffColor + agentShape;
     } else if (trialIndex > 7 && trialIndex < 12) {
-        trial.magicStone = idx? agentColor + diffShape : diffColor + agentShape;
+        trial.magicStone = agentColor + diffShape;
     } else {
         trial.magicStone = diffColor + diffShape;
     }
