@@ -6,7 +6,8 @@ library(ggplot2)
 rm(list=ls())
 
 # Load data
-load(paste0('../data/mturk_20200107.Rdata'))
+load(paste0('../data/mturk_20200112_reverse.Rdata'))
+
 
 # Ensure correct data type
 df.sw$sex <- as.character(df.sw$sex)
@@ -64,6 +65,7 @@ report_col(df.sw$engagement)
 td <- df.sw%>%filter(!(ix==43))
 td <- td %>% group_by(learningTaskId) %>% 
   summarise(avg_task_dur=mean(task_duration/60000))
+df.sw %>% group_by(learningTaskId) %>% summarise(avg_task_dur=mean(task_duration/60000))
 df.sw %>% group_by(learningTaskId) %>% summarise(avg_dfty=mean(difficulty))
 
 
@@ -85,7 +87,7 @@ report_col(lg_color$difficulty)
 report_col(lg_object$difficulty)
 
 lg_same <- df.sw %>% filter(learningTaskId %in% c('learn01', 'learn03', 'learn06')) # change to the same feature
-lg_diff <- df.sw %>% filter(learningTaskId %in% c('learn02', 'learn04','learn05')) # change to a different feature
+lg_diff <- df.sw %>% filter(learningTaskId %in% c('learn02', 'learn04', 'learn07')) # change to a different feature
 
 nrow(lg_same) 
 nrow(lg_diff) 
@@ -310,8 +312,8 @@ default <- data.frame(objects) %>% select('selection'=objects)
 default$selection <- as.character(default$selection)
 max <- var(c(1, rep(0, 8)))
 
-var_hg <- function(cond, tid, norm = TRUE) {
-  dt <- df.tw %>% filter(learningTaskId==cond&trial==tid) %>%
+var_hg <- function(data, cond, tid, norm = TRUE) {
+  dt <- data %>% filter(learningTaskId==cond&trial==tid) %>%
     count(selection) %>% mutate(freq=n/sum(n))
   dt$selection <- as.character(dt$selection)
   dt <- default %>% left_join(dt, by='selection') %>% replace(is.na(.), 0) %>%
@@ -323,19 +325,19 @@ var_hg <- function(cond, tid, norm = TRUE) {
   }
 }
 
-var_hg_cond <- function(cond) {
+var_hg_cond <- function(data, cond) {
   condition <- rep(cond, 15)
   trial <- seq(15)
   homogeneity <- rep(0, 15)
   for (i in 1:15) {
-    homogeneity[i] <- var_hg(cond, i)
+    homogeneity[i] <- var_hg(data, cond, i)
   }
   return(data.frame(condition, trial, homogeneity))
 }
 
-vhg <- var_hg_cond('learn01')
-for (i in 2:6) {
-  vhg <- rbind(vhg, var_hg_cond(paste0('learn0', i)))
+vhg <- var_hg_cond(df.tw, 'learn01')
+for (i in 2:7) {
+  vhg <- rbind(vhg, var_hg_cond(df.tw, paste0('learn0', i)))
 }
 
 ggplot(vhg, aes(x=condition, y=reorder(trial, desc(trial)), fill = homogeneity)) + 
@@ -345,36 +347,51 @@ ggplot(vhg, aes(x=condition, y=reorder(trial, desc(trial)), fill = homogeneity))
   labs(x='', y='')
 
 # Aggregated per condition
-vhg_per_cond <- rep(0, 6)
-for (i in 1:6) {
-  trials <- rep(0, 15)
-  for (j in 1:15) {
-    trials[j] <- var_hg(paste0('learn0', i), j, FALSE)
+get_var_per_cond <- function(data, groupName) {
+  vhg_per_cond <- rep(0, 7)
+  for (i in 1:7) {
+    trials <- rep(0, 15)
+    for (j in 1:15) {
+      trials[j] <- var_hg(data, paste0('learn0', i), j, FALSE)
+    }
+    vhg_per_cond[i] <- sum(trials)/(15*max)
   }
-  vhg_per_cond[i] <- sum(trials)/(15*max)
+  condition <- rep('', 7)
+  group <- rep(groupName, 7)
+  for (i in 1:7) {
+    condition[i] <- paste0('learn0', i)
+  }
+  return(data.frame(condition, group, vhg_per_cond))
 }
-condition <- rep('', 6)
-for (i in 1:6) {
-  condition[i] <- paste0('learn0', i)
-}
-var_cond <- data.frame(condition, vhg_per_cond)
-ggplot(var_cond, aes(condition, vhg_per_cond)) + 
-  geom_bar(stat="identity", fill="steelblue") + labs(x = '', y = '') 
+var_cond <- rbind(get_var_per_cond(og.tw, 'default'), get_var_per_cond(df.tw, 'reverse'))
+
+ggplot(var_cond, aes(fill=group,x=condition, y=vhg_per_cond)) + 
+  geom_bar(position="dodge", stat="identity") + 
+  labs(x = '', y = '') +
+  scale_fill_manual(values=c("lightsteelblue3","steelblue4"))
 
 # Aggregated per trial
-vhg_per_trial <- rep(0, 15)
-for (i in 1:15) {
-  conds <- rep(0, 6)
-  for (j in 1:6) {
-    conds[j] <- var_hg(paste0('learn0', j), i, FALSE)
+get_var_per_trial <- function(data, groupName) {
+  vhg_per_trial <- rep(0, 15)
+  for (i in 1:15) {
+    conds <- rep(0, 7)
+    for (j in 1:7) {
+      conds[j] <- var_hg(data, paste0('learn0', j), i, FALSE)
+    }
+    vhg_per_trial[i] <- sum(conds)/(7*max)
   }
-  vhg_per_trial[i] <- sum(conds)/(6*max)
+  trial <- seq(15)
+  group <- rep(groupName, 15)
+  return(data.frame(trial, group, vhg_per_trial))
 }
-trial <- seq(15)
-var_t <- data.frame(trial, vhg_per_trial)
-ggplot(var_t, aes(x=trial, y=vhg_per_trial)) + 
-  geom_bar(stat="identity", fill="steelblue") + labs(x = '', y = '') +
-  scale_x_continuous("trial", breaks = trial)
+var_t <- rbind(get_var_per_trial(og.tw, 'default'), get_var_per_trial(df.tw, 'reverse'))
+
+ggplot(var_t, aes(x=trial, y=vhg_per_trial, fill=group)) + 
+  geom_bar(stat="identity", position="dodge") + 
+  scale_x_continuous(breaks = trial) +
+  scale_fill_manual(values=c("lightsteelblue3","steelblue4")) +
+  labs(x = '', y = '')
+
 
 
 

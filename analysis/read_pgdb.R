@@ -89,4 +89,4 @@ df.sw <- cbind(df.sw, df.sw.aux)
 df.tw <- cbind(ix=rep(df.sw$ix, each=N), id=rep(df.sw$id, each=N), df.tw.aux)
 
 ## Save data
-save(file='../data/mturk_20200108_combo.Rdata', df.sw, df.tw)
+save(file='../data/arc/mturk_20200112_plain.Rdata', df.sw, df.tw)

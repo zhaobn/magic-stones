@@ -5,7 +5,7 @@ library(dplyr)
 rm(list=ls())
 
 ## Load data
-load('../data/mturk_20200107.Rdata')
+load('../data/mturk_20200112_reverse.Rdata')
 
 ## Fix learningTaskId bug
 learning_tasks <- df.sw[,c(1,9)]
@@ -41,16 +41,28 @@ df.tw <- df.tw %>% filter(!(ix %in% to_drop[[1]]))
 ## Append learning info to trials
 learning_tasks<-df.sw %>% select(ix, learningTaskId)
 df.tw <- df.tw %>%left_join(learning_tasks, by='ix')
-pt.tw <- pt.tw %>% 
-  mutate(learn_agent = case_when(learningTaskId == 'learn01' ~ 'rs', learningTaskId == 'learn02' ~ 'yd', 
-                                 learningTaskId == 'learn03' ~ 'bs', learningTaskId == 'learn04' ~ 'rc', 
-                                 learningTaskId == 'learn05' ~ 'yd', learningTaskId == 'learn06' ~ 'bs')) %>%
-  mutate(learn_recipient = case_when(learningTaskId == 'learn01' ~ 'yc', learningTaskId == 'learn02' ~ 'rs',
-                                     learningTaskId == 'learn03' ~ 'rd', learningTaskId == 'learn04' ~ 'bs',
-                                     learningTaskId == 'learn05' ~ 'bs', learningTaskId == 'learn06' ~ 'yc',)) %>%
-  mutate(learn_rule = case_when(learningTaskId == 'learn01' ~ '-2s', learningTaskId == 'learn02' ~ '-2c',
-                                learningTaskId == 'learn03' ~ '-2b', learningTaskId == 'learn04' ~ '-2y',
-                                learningTaskId == 'learn05' ~ '-2y, -2c', learningTaskId == 'learn06' ~ '-2b, -2s',)) 
+df.tw <- df.tw %>% 
+  mutate(learn_agent = case_when(learningTaskId == 'learn01' ~ 'rs', 
+                                 learningTaskId == 'learn02' ~ 'yd', 
+                                 learningTaskId == 'learn03' ~ 'bs', 
+                                 learningTaskId == 'learn04' ~ 'rc', 
+                                 learningTaskId == 'learn05' ~ 'yd', 
+                                 learningTaskId == 'learn06' ~ 'bs',
+                                 learningTaskId == 'learn07' ~ 'rd',)) %>%
+  mutate(learn_recipient = case_when(learningTaskId == 'learn01' ~ 'yc', 
+                                     learningTaskId == 'learn02' ~ 'rs',
+                                     learningTaskId == 'learn03' ~ 'rd', 
+                                     learningTaskId == 'learn04' ~ 'bs',
+                                     learningTaskId == 'learn05' ~ 'bs', 
+                                     learningTaskId == 'learn06' ~ 'yc',
+                                     learningTaskId == 'learn07' ~ 'ys',)) %>%
+  mutate(learn_rule = case_when(learningTaskId == 'learn01' ~ '-2s', 
+                                learningTaskId == 'learn02' ~ '-2c',
+                                learningTaskId == 'learn03' ~ '-2b', 
+                                learningTaskId == 'learn04' ~ '-2y',
+                                learningTaskId == 'learn05' ~ '-2y, -2c', 
+                                learningTaskId == 'learn06' ~ '-2b, -2s',
+                                learningTaskId == 'learn06' ~ '-2b, -2c',)) 
 
 ## Look a bit nicer
 df.sw <- df.sw %>% 
@@ -58,7 +70,7 @@ df.sw <- df.sw %>%
          age, sex, engagement, difficulty, guess, feedback, id, token) %>% 
   arrange(ix)
 df.tw <- df.tw %>% 
-  select(ix, learningTaskId, 
+  select(ix, learningTaskId, learn_agent, learn_recipient, learn_rule,
          trial, agent, recipient, selection, ts, id) %>% 
   arrange(ix)
 
@@ -66,14 +78,15 @@ df.tw <- df.tw %>%
 # Read ordered trials
 library("rjson")
 load('../data/mturk_20200107.Rdata')
-trialsFile <- fromJSON(file='../data/other/trials.json')
-ordered_trials <- as.data.frame(trialsFile)
+trialsFile <- fromJSON(file='../data/viz/trials.json')
+ordered_trials <- data.frame(trialsFile)
 ordered_trials$learningTaskId <-as.character(ordered_trials$learningTaskId)
 ordered_trials$trial <- as.numeric(as.character(ordered_trials$trial))
 ordered_trials$agent <- as.character(ordered_trials$agent)
 ordered_trials$recipient <- as.character(ordered_trials$recipient)
 df.tw$agent <- as.character(df.tw$agent)
 df.tw$recipient <- as.character(df.tw$recipient)
+df.tw$learningTaskId <- as.character(df.tw$learningTaskId)
 
 df.tw <- df.tw %>% 
   left_join(ordered_trials, by = c('learningTaskId', 'agent', 'recipient')) %>%
@@ -83,16 +96,21 @@ df.tw <- df.tw %>%
   arrange(ix, trial) 
 
 ## Save data
-save(file='../data/mturk_20200108_combo.Rdata', df.sw, df.tw)
+save(file='../data/mturk_20200109.Rdata', df.sw, df.tw)
 
 ## Prep viz data
 # Subjects per learning task condition
 export <- df.tw %>% select(learningTaskId, ix) %>% 
   distinct() %>%
   arrange(learningTaskId, ix)
-write.csv(export, file = '../data/subject_conditions.csv')
+showIx <- function(cond) {
+  dt <- export %>% filter(learningTaskId==cond)
+  dt$ix
+}
+showIx('learn07')
+
 # Subject data
-ixes <- df.tw %>% select(ix) %>% distinct() %>% filter(ix>66)
+ixes <- df.tw %>% select(ix) %>% distinct()
 read_selection <- function(x) {
   sel <- df.tw %>% 
     filter(ix==x) %>% arrange(trial) %>% select(selection)
@@ -104,7 +122,7 @@ for (i in 2:length(ixes[[1]])) {
 }
 names(data) <- ixes[[1]]
 data <- t(data)
-write.csv(data, file = '../data/subject_selections_2.csv')
+write.csv(data, file = '../data/rev_selections.csv')
 
 # Check how many needed to get 10 per group
 p.sw<-df.sw
