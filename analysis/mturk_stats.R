@@ -138,6 +138,9 @@ ggplot(df.tw, aes(as.numeric(as.character(trial)))) + geom_bar(aes(fill=sel_labe
 
 # Take a look at free responses
 df.fr <- df.sw %>% select(ix, learningTaskId, guess, id) %>% arrange(learningTaskId, ix)
+fr <- df.sw %>% filter(learningTaskId=='learn05') %>% select(ix, guess)
+write.csv(fr, file='learn05_guess.csv')
+
 # Append learning info to trials
 df.fr <- df.fr %>% 
   mutate(learn_agent = case_when(
@@ -301,10 +304,7 @@ hgt <- df.tw %>%
   select(ix, learningTaskId, trial, selection) %>%
   group_by(learningTaskId, trial) %>%
   summarise(vary=(n_distinct(selection)-1)/n())
-  
 
-mean(df.sw$task_duration)/1000/60 #5.939434
-mean(df.sw$instructions_duration)/1000/60 #5.939434
 # Try var
 default <- data.frame(objects) %>% select('selection'=objects)
 default$selection <- as.character(default$selection)
