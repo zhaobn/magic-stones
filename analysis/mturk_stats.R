@@ -305,9 +305,76 @@ hgt <- df.tw %>%
 
 mean(df.sw$task_duration)/1000/60 #5.939434
 mean(df.sw$instructions_duration)/1000/60 #5.939434
+# Try var
+default <- data.frame(objects) %>% select('selection'=objects)
+default$selection <- as.character(default$selection)
+max <- var(c(1, rep(0, 8)))
 
+var_hg <- function(cond, tid, norm = TRUE) {
+  dt <- df.tw %>% filter(learningTaskId==cond&trial==tid) %>%
+    count(selection) %>% mutate(freq=n/sum(n))
+  dt$selection <- as.character(dt$selection)
+  dt <- default %>% left_join(dt, by='selection') %>% replace(is.na(.), 0) %>%
+    select(selection, freq)
+  if (norm) {
+    return(var(dt$freq)/max)# normalize
+  } else {
+    return(var(dt$freq))
+  }
+}
 
+var_hg_cond <- function(cond) {
+  condition <- rep(cond, 15)
+  trial <- seq(15)
+  homogeneity <- rep(0, 15)
+  for (i in 1:15) {
+    homogeneity[i] <- var_hg(cond, i)
+  }
+  return(data.frame(condition, trial, homogeneity))
+}
 
+vhg <- var_hg_cond('learn01')
+for (i in 2:6) {
+  vhg <- rbind(vhg, var_hg_cond(paste0('learn0', i)))
+}
+
+ggplot(vhg, aes(x=condition, y=reorder(trial, desc(trial)), fill = homogeneity)) + 
+  geom_raster() +
+  geom_text(aes(label = round(homogeneity, 2))) +
+  scale_fill_gradient(low = "white", high = "steelblue4") + 
+  labs(x='', y='')
+
+# Aggregated per condition
+vhg_per_cond <- rep(0, 6)
+for (i in 1:6) {
+  trials <- rep(0, 15)
+  for (j in 1:15) {
+    trials[j] <- var_hg(paste0('learn0', i), j, FALSE)
+  }
+  vhg_per_cond[i] <- sum(trials)/(15*max)
+}
+condition <- rep('', 6)
+for (i in 1:6) {
+  condition[i] <- paste0('learn0', i)
+}
+var_cond <- data.frame(condition, vhg_per_cond)
+ggplot(var_cond, aes(condition, vhg_per_cond)) + 
+  geom_bar(stat="identity", fill="steelblue") + labs(x = '', y = '') 
+
+# Aggregated per trial
+vhg_per_trial <- rep(0, 15)
+for (i in 1:15) {
+  conds <- rep(0, 6)
+  for (j in 1:6) {
+    conds[j] <- var_hg(paste0('learn0', j), i, FALSE)
+  }
+  vhg_per_trial[i] <- sum(conds)/(6*max)
+}
+trial <- seq(15)
+var_t <- data.frame(trial, vhg_per_trial)
+ggplot(var_t, aes(x=trial, y=vhg_per_trial)) + 
+  geom_bar(stat="identity", fill="steelblue") + labs(x = '', y = '') +
+  scale_x_continuous("trial", breaks = trial)
 
 
 
