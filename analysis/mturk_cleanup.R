@@ -40,7 +40,7 @@ df.tw <- df.tw %>% filter(!(ix %in% to_drop[[1]]))
 
 ## Append learning info to trials
 learning_tasks<-df.sw %>% select(ix, learningTaskId)
-pt.tw <- pt.tw %>%left_join(learning_tasks, by='ix')
+df.tw <- df.tw %>%left_join(learning_tasks, by='ix')
 pt.tw <- pt.tw %>% 
   mutate(learn_agent = case_when(learningTaskId == 'learn01' ~ 'rs', learningTaskId == 'learn02' ~ 'yd', 
                                  learningTaskId == 'learn03' ~ 'bs', learningTaskId == 'learn04' ~ 'rc', 
@@ -57,8 +57,8 @@ df.sw <- df.sw %>%
   select(ix, learningTaskId, date, time, instructions_duration, task_duration,
          age, sex, engagement, difficulty, guess, feedback, id, token) %>% 
   arrange(ix)
-pt.tw <- pt.tw %>% 
-  select(ix, learningTaskId, learn_agent, learn_recipient, learn_rule, 
+df.tw <- df.tw %>% 
+  select(ix, learningTaskId, 
          trial, agent, recipient, selection, ts, id) %>% 
   arrange(ix)
 

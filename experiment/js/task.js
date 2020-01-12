@@ -357,8 +357,8 @@ function getTask (opt = 'random') {
         const rIdx = Math.ceil(Math.random() * Object.keys(trainings).length);
         task = 'learn' + rIdx.toString().padStart(2, '0');
     } else {
-        if (Math.random() < 0.2) {
-            task = Math.random() > 0.5? 'learn01' : 'learn04'
+        if (Math.random() < 0.12) {
+            task = 'learn02';
         } else {
             const rIdx = Math.ceil(Math.random() * Object.keys(trainings).length);
             task = 'learn' + rIdx.toString().padStart(2, '0');

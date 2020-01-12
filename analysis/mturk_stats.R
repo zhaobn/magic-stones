@@ -51,7 +51,7 @@ for (i in 1:length(genders)) {
   report_col(gender_group$age);
 }
 
-report_col(td$task_duration/60000)
+report_col(df.sw$task_duration/60000)
 summarise_group(df.sw$learningTaskId)
 
 # Is there a outlier in task duration?
