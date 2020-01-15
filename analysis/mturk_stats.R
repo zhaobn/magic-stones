@@ -6,7 +6,7 @@ library(ggplot2)
 rm(list=ls())
 
 # Load data
-load(paste0('../data/mturk_20200109.Rdata'))
+load(paste0('../data/mturk_20200112_reverse.Rdata'))
 
 
 # Ensure correct data type
@@ -394,7 +394,24 @@ ggplot(var_t, aes(x=trial, y=vhg_per_trial, fill=group)) +
   scale_fill_manual(values=c("lightsteelblue3","steelblue4")) +
   labs(x = '', y = '')
 
-
-
+# Prep a frequency table for comparison
+default$selection<-as.character(default$selection)
+count_selection<-function(cond, tid, data=df.tw) {
+  learningTaskId<-rep(paste0('learn0', cond), length(default[,1]))
+  trial<-rep(tid, length(default[,1]))
+  dt<-data%>%filter(learningTaskId==paste0('learn0',cond)&trial==tid)%>%count(selection) 
+  dt$selection<-as.character(dt$selection)
+  dt<-default%>%left_join(dt, by='selection')%>%replace(is.na(.), 0)%>%mutate(freq=n/sum(n))
+  dt<-cbind(data.frame(learningTaskId, trial), dt)
+  return(dt)
+}
+df.freq<-count_selection(1,1)
+ncond<-as.numeric(substr(max(df.tw$learningTaskId),7,7))
+for (i in 1:ncond) {
+  for (j in 1:max(df.tw$trial)) {
+    if (!(i==1&j==1)) df.freq<-rbind(df.freq, count_selection(i,j))
+  }
+}
+save(df.sw, df.tw, df.freq, file='../data/mturk_20200112_reverse.Rdata')
 
 
