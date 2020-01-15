@@ -6,7 +6,7 @@ library(ggplot2)
 rm(list=ls())
 
 # Load data
-load(paste0('../data/mturk_20200112_reverse.Rdata'))
+load(paste0('../data/mturk_20200109.Rdata'))
 
 
 # Ensure correct data type
@@ -139,9 +139,11 @@ ggplot(df.tw, aes(as.numeric(as.character(trial)))) + geom_bar(aes(fill=sel_labe
 
 
 # Take a look at free responses
-df.fr <- df.sw %>% select(ix, learningTaskId, guess, id) %>% arrange(learningTaskId, ix)
-fr <- df.sw %>% filter(learningTaskId=='learn05') %>% select(ix, guess)
-write.csv(fr, file='learn05_guess.csv')
+extract_free_responses <- function(cond) {
+  fr <- df.sw %>% filter(learningTaskId==cond) %>% select(ix, guess)
+  write.csv(fr, file=paste0('rev_', cond, '_guess.csv'))
+}
+extract_free_responses('learn07')
 
 # Append learning info to trials
 df.fr <- df.fr %>% 
