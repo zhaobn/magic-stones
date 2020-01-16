@@ -414,4 +414,57 @@ for (i in 1:ncond) {
 }
 save(df.sw, df.tw, df.freq, file='../data/mturk_20200112_reverse.Rdata')
 
+# Compare participant data with normative model
+df.freq$learningTaskId<-as.character(df.freq$learningTaskId)
+df.pred$learningTaskId<-as.character(df.pred$learningTaskId)
+ppt_norm <- df.freq %>% 
+  left_join(df.pred, by=c('learningTaskId', 'trial', 'selection')) %>%
+  select(learningTaskId, trial, selection, ppt=freq, nm=pp) %>%
+  arrange(learningTaskId, trial, selection)
+
+# Plots
+ppt<-ppt_norm %>% select(learningTaskId, trial, selection, value=ppt) %>% mutate(type='participant')
+nmp<-ppt_norm %>% select(learningTaskId, trial, selection, value=nm) %>% mutate(type='normative')
+ppt_nm<-rbind(ppt, nmp) %>% select(learningTaskId, trial, selection, type, value) %>%
+  arrange(learningTaskId, trial, selection)
+
+ggplot(ppt_nm, aes(x=selection, y=value, fill=type)) + 
+  geom_bar(position="dodge", stat="identity") +
+  facet_grid(trial ~ learningTaskId) +
+  labs(x='', y='') + scale_fill_brewer(palette="Paired") + 
+  theme(legend.position="bottom", legend.title=element_blank())
+
+# Aggregate per condition/trial by d-bar
+ppt_norm<-ppt_norm %>% mutate(d=abs(nm-ppt))
+ppt_norm_per_condition<-ppt_norm %>% group_by(learningTaskId) %>%
+  summarise(dsum=sum(d), n=n()) %>% mutate(d=dsum/n)
+ggplot(ppt_norm_per_condition, aes(x=learningTaskId, y=d)) + 
+  geom_bar(stat="identity", fill="steelblue") + labs(x='', y='')
+
+ppt_norm_per_trial<-ppt_norm %>% group_by(trial) %>%
+  summarise(dsum=sum(d), n=n()) %>% mutate(d=dsum/n)
+ggplot(ppt_norm_per_trial, aes(x=trial, y=d)) + 
+  geom_bar(stat="identity", fill="steelblue") + labs(x='', y='')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
