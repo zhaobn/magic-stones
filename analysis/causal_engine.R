@@ -21,43 +21,44 @@ set <- function(feature, object, val) {
   substr(object, dict[[feature]], dict[[feature]]) <- val
   return(object)
 }
-isEqual <- function(feature, o_1, o_2) {
-  return(substr(o_1, dict[[feature]], dict[[feature]])==substr(o_2, dict[[feature]], dict[[feature]]))
+fetch <- function(values) {
+  return(sample(values, 1))
 }
 # Based on primitives
-getDiff <- function(feature, target) {
-  f <- get(feature, target)
-  v <- settings[[feature]]
-  return(v[!v %in% f])
-}
-getNew <- function(feature, agent, target) {
-  remove <- c(get(feature, agent), get(feature, target))
-  left <- settings[[feature]] [! settings[[feature]] %in% remove]
-  return(sample(left, 1))
+exclude <- function(feature, object) {
+  vals<-vector()
+  if (typeof(object)=='list') {
+    for (o in object) {
+      vals<-c(vals, get(feature, o))
+    }
+  } else {
+    vals<-c(get(feature, object))
+  }
+  return(setdiff(settings[[feature]], vals))
 }
 
 # Causal engine
 parse_effect <- function(feature, data) {
   funcs <- list()
-  if (isEqual(feature, data[['target']], data[['result']])) {
+  if (get(feature, data[['result']])==get(feature, data[['target']])) {
     funcs[[paste0('kept_target_', feature)]] <- function(feature, data) get(feature, data[['target']])
   } else {
-    funcs[[paste0('diff_target_', feature)]] <- function(feature, data) getDiff(feature, data[['target']])
+    funcs[[paste0('diff_target_', feature)]] <- function(feature, data) fetch(exclude(feature, data[['target']]))
   }
   funcs[[paste0('fixed_', feature)]] <- function(feature, data) get(feature, data[['target']])
-  funcs[[paste0('random_', feature)]] <- function (feature, data) sample(settings[[feature]], 1)
+  funcs[[paste0('random_', feature)]] <- function (feature, data) fetch(settings[[feature]])
   return(funcs)
 }
 check_cause <- function(feature, data, effects) {
-  agent <- substr(data[['agent']], dict[[feature]], dict[[feature]])
-  isObserved <- agent %in% c(effects[[1]](feature, data), effects[[2]](feature, data))
-  if (isObserved) {
+  if (get(feature, data[['result']]==get(feature, data[['agent']]))) {
     effects[[paste0('equal_agent_', feature)]] <- function(feature, data) get(feature, data[['agent']])
   } else {
-    effects[[paste0('diff_agent_', feature)]] <- function(feature, data) getDiff(feature, data[['agent']])
+    effects[[paste0('diff_agent_', feature)]] <- function(feature, data) fetch(exclude(feature, data[['agent']]))
   }
-  if(!isObserved & !isEqual(feature, data[['target']], data[['result']])) {
-    effects[[paste0('new_', feature)]] <- getNew(feature, data[['agent']], data[['target']])
+  if(paste0('diff_target_',feature)%in%names(effects)&paste0('diff_agent_',feature)%in%names(effects)) {
+    effects[[paste0('new_', feature)]] <- function(feature, data) {
+      fetch(exclude(feature, list(data[['agent']], data['target'])))
+    }
   }
   return(effects)
 }
