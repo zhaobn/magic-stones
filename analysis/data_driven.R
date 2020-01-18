@@ -129,7 +129,6 @@ get_sim <- function(training, task, type) {
   return(result)
 }
 
-
 # Example
 data <- list()
 data[['agent']] <- 'rs'
@@ -140,14 +139,67 @@ task <- list()
 task[['agent']] <- 'bs'
 task[['target']] <- 'bc'
 
+get_sim(data, task, '')
 get_sim(data, task, 'a')
 
+# Get trial data
+# Read from normative model.R: tasks, learnings 
+take_cond<-function(cond=1, list=learnings) {
+  df<-data.frame(list[[cond]])
+  df$learningTaskId<-paste0('learn0', cond)
+  df<-df%>%select(learningTaskId, learn_agent=agent, learn_target=target, learn_result=result)
+  return(df)
+}
+trainings<-take_cond()
+for (i in 2:length(learnings)) {
+  trainings<-rbind(trainings, take_cond(i))
+}
+df.tasks<-tasks %>% left_join(trainings, by='learningTaskId') %>%
+  select(learningTaskId, trial, learn_agent, learn_target, learn_result, agent, target=recipient)
+save(df.tasks, file='data_driven.Rdata')
 
+# Try some
+sim_for<-function(cond, tid, source=df.tasks) {
+  dt<-source %>% filter(learningTaskId==paste0('learn0', cond)&trial==tid)
+  data <- list(); task <- list()
+  data[['agent']]<-as.character(dt$learn_agent)
+  data[['target']]<-as.character(dt$learn_target)
+  data[['result']]<-as.character(dt$learn_result)
+  task[['agent']]<-as.character(dt$agent)
+  task[['target']]<-as.character(dt$target)
+  
+  pred<-get_sim(data, task, 'a')
+  pred$learningTaskId<-paste0('learn0', cond)
+  pred$trial<-tid
+  pred<-pred %>% select(learningTaskId, trial, selection, prob)
+  return(pred)
+} 
+df.sim<-sim_for(1, 1)
+for (i in 1:7) {
+  for (j in 1:15) {
+    if(!(i==1&j==1)) df.sim<-rbind(df.sim, sim_for(i, j))
+  }
+}
+save(df.sim, df.tasks, file='data_driven.Rdata')
 
+# Plots
+df.freq$learningTaskId<-as.character(df.freq$learningTaskId)
+df.sim$learningTaskId<-as.character(df.sim$learningTaskId)
+ppt_dd <- df.freq %>% 
+  left_join(df.sim, by=c('learningTaskId', 'trial', 'selection')) %>%
+  select(learningTaskId, trial, selection, ppt=freq, dd=prob) %>%
+  arrange(learningTaskId, trial, selection)
 
+ppt<-ppt_dd %>% select(learningTaskId, trial, selection, value=ppt) %>% mutate(type='participant')
+ddp<-ppt_dd %>% select(learningTaskId, trial, selection, value=dd) %>% mutate(type='data_driven')
+pt_dd<-rbind(ppt, ddp) %>% select(learningTaskId, trial, selection, type, value) %>%
+  arrange(learningTaskId, trial, selection)
 
-
-
+ggplot(pt_dd, aes(x=selection, y=value, fill=type)) + 
+  geom_bar(position="dodge", stat="identity") +
+  facet_grid(trial ~ learningTaskId) +
+  labs(x='', y='') + scale_fill_brewer(palette="Paired") + 
+  theme(legend.position="bottom", legend.title=element_blank())
 
 
 
