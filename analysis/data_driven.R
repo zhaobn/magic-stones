@@ -19,6 +19,23 @@ prob<-function(feature) {
   for (i in settings[[feature]]) feature_list[[i]] <- 0
   return(feature_list)
 }
+# TODO: Generalize to n-levels
+all_obs<-function(opts=settings) {
+  obs<-vector()
+  for (i in 1:length(opts[[1]])) {
+    for (j in 1:length(opts[[2]])) {
+      obs<-c(obs, paste0(opts[[1]][i], opts[[2]][j]))
+    }
+  }
+  return(obs)
+} 
+all_selections<-function(setup=settings) {
+  df<-data.frame('selection'=all_obs(setup))
+  for (i in 1:length(setup)) {
+    df<-df%>%mutate(!!names(setup)[i]:=substr(selection, i, i))
+  }
+  return(df)
+}
 
 # Primitives
 get <- function(feature, object, type) {
@@ -37,9 +54,15 @@ fetch <- function(feature, values, type) {
     return(sample(values, 1)) 
   }
 }
-set <- function(feature, object, val) {
-  substr(object, dict[[feature]], dict[[feature]]) <- val
-  return(object)
+set <- function(feature, result, val) {
+  if (typeof(result)=='list' & typeof(val)=='list') {
+    pcol<-paste0(feature, '_prob')
+    result[,pcol] <- 0
+    for (v in names(val)) result[,pcol][result[,feature]==v]<-val[[v]]
+  } else {
+    substr(result, dict[[feature]], dict[[feature]]) <- val
+  }
+  return(result)
 }
 # Based on primitives
 exclude <- function(feature, object) {
@@ -81,7 +104,7 @@ check_cause <- function(feature, data, effects, type='a') {
 }
 
 # Simulations
-decide <- function(feature, training, task, obj, type) {
+decide <- function(feature, training, task, result, type) {
   candidateRules <- check_cause(feature, training, parse_effect(feature, training, type), type)
   if (type=='a') {
     fd<-prob(feature)
@@ -91,15 +114,18 @@ decide <- function(feature, training, task, obj, type) {
         fd[[d]] <- fd[[d]] + (pred_dist[[d]] * 1/length(candidateRules))
       }
     }
-    return(fd)
+    return(set(feature, result, fd))
   } else {
     candidate <- candidateRules[[sample(1:length(candidateRules), 1)]](feature, task, type)
-    return(set(feature, obj, candidate))
+    return(set(feature, result, candidate))
   }
 }
 get_sim <- function(training, task, type) {
-  result <- task[['target']]
+  result <- if (type=='a') all_selections() else task[['target']]
   for (f in features) result <- decide(f, training, task, result, type)
+  if (type=='a') {
+    result <- result %>% mutate(prob=color_prob*shape_prob) %>% select(selection, prob)
+  }
   return(result)
 }
 
@@ -114,7 +140,7 @@ task <- list()
 task[['agent']] <- 'bs'
 task[['target']] <- 'bc'
 
-get_sim(data, task)
+get_sim(data, task, 'a')
 
 
 
