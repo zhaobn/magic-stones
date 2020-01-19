@@ -40,6 +40,7 @@ summarise_group <- function(list, ndigits=2, separator='|') {
 # Subjectwise basic stats
 report_col(df.sw$age)
 summarise_group(df.sw$sex)
+summarise_group(rev.sw$sex)
 
 genders <- unique(df.sw$sex);
 for (i in 1:length(genders)) {
@@ -53,6 +54,9 @@ summarise_group(df.sw$learningTaskId)
 
 # Is there a outlier in task duration?
 td <- df.sw %>% arrange(desc(task_duration)) # P43
+df.sw %>% group_by(learningTaskId) %>% tally()
+mean(df.sw$task_duration)/60000
+mean(rev.sw$task_duration)/60000
 
 # Out of curisity
 report_col(df.sw$difficulty) 
@@ -101,6 +105,37 @@ report_col(lg_diff$task_duration)
 
 report_col(lg_same$difficulty) 
 report_col(lg_diff$difficulty)
+
+same_df<-df.sw%>%filter(learningTaskId %in% c('learn01', 'learn03', 'learn06'))%>%mutate(order='default')
+same_rf<-rev.sw%>%filter(learningTaskId %in% c('learn01', 'learn03', 'learn06'))%>%mutate(order='reverse')
+
+diff_df<-df.sw%>%filter(learningTaskId %in% c('learn02', 'learn04', 'learn05', 'learn07'))%>%mutate(group='default')
+diff_rf<-rev.sw%>%filter(learningTaskId %in% c('learn02', 'learn04', 'learn05', 'learn07'))%>%mutate(group='reverse')
+
+group_same<-rbind(same_df, same_rf)
+group_diff<-rbind(diff_df, diff_rf)
+# Difficulty
+group_same$difficulty<-as.numeric(as.character(group_same$difficulty))
+group_diff$difficulty<-as.numeric(as.character(group_diff$difficulty))
+
+t.test(group_same$difficulty, group_diff$difficulty)
+group<-c('same', 'different')
+difficulty<-c(mean(group_same$difficulty), mean(group_diff$difficulty))
+sd<-c(sd(group_same$difficulty), sd(group_diff$difficulty))
+t<-data.frame(group, difficulty, sd)
+ggplot(t, aes(x=group,y=difficulty,fill=c('#999999','#E69F00'))) + geom_bar(stat="identity", position="dodge") +
+  geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.2) +
+  ylim(0, 10) +
+  theme(legend.position = "none")
+# Time
+t.test(group_same$task_duration, group_diff$task_duration)
+group<-c('same', 'different')
+task_duration<-c(mean(group_same$task_duration)/60000, mean(group_diff$task_duration)/60000)
+sd<-c(sd(group_same$task_duration/60000), sd(group_diff$task_duration/60000))
+t<-data.frame(group, task_duration, sd)
+ggplot(t, aes(x=group,y=task_duration,fill=c('#999999','#E69F00'))) + geom_bar(stat="identity", position="dodge") +
+  geom_errorbar(aes(ymin=task_duration-sd, ymax=task_duration+sd), width=.2) +
+  theme(legend.position = "none")
 
 
 # Take a look per learning task
@@ -334,9 +369,16 @@ var_hg_cond <- function(data, cond) {
 }
 
 vhg <- var_hg_cond(df.tw, 'learn01')
-for (i in 2:7) {
-  vhg <- rbind(vhg, var_hg_cond(df.tw, paste0('learn0', i)))
-}
+for (i in 2:7) vhg <- rbind(vhg, var_hg_cond(df.tw, paste0('learn0', i)))
+vhg<-vhg%>%select(condition, trial, default=homogeneity)
+
+vhgr<-var_hg_cond(rev.tw, 'learn01')
+for (i in 2:7) vhgr <- rbind(vhgr, var_hg_cond(rev.tw, paste0('learn0', i)))
+vhgr<-vhgr%>%select(condition, trial, reverse=homogeneity)
+
+vht<-vhg%>%left_join(vhgr, by=c('condition', 'trial'))
+chisq.test(vht$default, vht$reverse)
+
 
 ggplot(vhg, aes(x=condition, y=reorder(trial, desc(trial)), fill = homogeneity)) + 
   geom_raster() +
@@ -344,7 +386,35 @@ ggplot(vhg, aes(x=condition, y=reorder(trial, desc(trial)), fill = homogeneity))
   scale_fill_gradient(low = "white", high = "steelblue4") + 
   labs(x='', y='')
 
+vs<-vht%>%filter(condition%in% c('learn01', 'learn03', 'learn06'))
+vst<-rbind(vs%>%select(condition, trial, v=default)%>%mutate(order='default'),
+           vs%>%select(condition, trial, v=reverse)%>%mutate(order='reverse'))
+vd<-vht%>%filter(condition%in% c('learn02', 'learn04', 'learn05', 'learn07'))
+vdt<-rbind(vd%>%select(condition, trial, v=default)%>%mutate(order='default'),
+           vd%>%select(condition, trial, v=reverse)%>%mutate(order='reverse'))
+t.test(vst$v, vdt$v)
+group<-c('same', 'different')
+homogeneity<-c(mean(vst$v), mean(vdt$v))
+sd<-c(sd(vst$v), sd(vdt$v))
+t<-data.frame(group, homogeneity, sd)
+ggplot(t, aes(x=group,y=homogeneity,fill=c('#999999','#E69F00'))) + geom_bar(stat="identity", position="dodge") +
+  geom_errorbar(aes(ymin=homogeneity-sd, ymax=homogeneity+sd), width=.2) +
+  theme(legend.position = "none")
+
 # Aggregated per condition
+vf<-rbind(vst, vdt) %>% arrange(condition, trial, order) %>%
+  mutate(group=if_else(condition%in%c('learn01', 'learn03', 'learn06'), 'same', 'diff')) %>%
+  mutate(feature=case_when(condition%in%c('learn01', 'learn02')~'color', 
+                           condition%in%c('learn03', 'learn04')~'shape', 
+                           TRUE~'-'))
+vfs<-vf%>%filter(feature!='-')%>%group_by(feature, group)%>%summarise(homogeneity=mean(v))
+ggplot(vfs, aes(x=feature, y=group)) + 
+  geom_point(aes(size=homogeneity, color=homogeneity), alpha = 0.75) +
+  scale_size(range = c(15, 60)) + 
+  theme(legend.position = "none", axis.text=element_text(size=12)) +
+  geom_text(aes(label = round(homogeneity, 3))) +
+  scale_color_gradient(low="steelblue4", high="lightsteelblue")
+
 get_var_per_cond <- function(data, groupName) {
   vhg_per_cond <- rep(0, 7)
   for (i in 1:7) {
@@ -361,12 +431,20 @@ get_var_per_cond <- function(data, groupName) {
   }
   return(data.frame(condition, group, vhg_per_cond))
 }
-var_cond <- rbind(get_var_per_cond(og.tw, 'default'), get_var_per_cond(df.tw, 'reverse'))
+
+var_cond <- rbind(get_var_per_cond(df.tw, 'default'), get_var_per_cond(rev.tw, 'reverse'))
+var_cond <- var_cond %>% select(condition, order=group, hg=vhg_per_cond) %>%
+  mutate(group=if_else(condition=='learn01'|condition=='learn03'|condition=='learn05', 'same', 'diff'))
+vs<-var_cond%>%filter(group=='same')
+vd<-var_cond%>%filter(group=='diff')
+t.test(vs$hg, vd$hg)
 
 ggplot(var_cond, aes(fill=group,x=condition, y=vhg_per_cond)) + 
   geom_bar(position="dodge", stat="identity") + 
-  labs(x = '', y = '') +
-  scale_fill_manual(values=c("lightsteelblue3","steelblue4"))
+  labs(x = '', y = '') + coord_flip() +
+  geom_text(aes(label = round(vhg_per_cond, 2)),
+                position = position_dodge(width = 1))
+  #scale_fill_manual(values=c("lightsteelblue3","steelblue4"))
 
 # Aggregated per trial
 get_var_per_trial <- function(data, groupName) {
@@ -409,3 +487,13 @@ for (i in 1:ncond) {
   }
 }
 save(df.sw, df.tw, df.freq, file='../data/mturk_20200112_reverse.Rdata')
+
+# Re-arrange data
+rev.sw<-df.sw
+rev.tw<-df.tw
+rev.freq<-df.freq
+
+save(df.sw,df.tw,df.freq,rev.sw,rev.tw,rev.freq, file='../data/mturk_20200119.Rdata')
+
+
+

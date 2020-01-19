@@ -18,7 +18,8 @@ let trainings = {
 }
 Object.keys(trainings).forEach (t => trainings[t].taskId = t);
 
-const learningTask = trainings[getTask('custom')];
+// const learningTask = trainings[getTask('custom')];
+const learningTask = trainings['learn06'];
 const trials = createTrialDataObj(learningTask);
 let trialOrder = shuffleArray(Object.keys(trials), 'reverse');
 
