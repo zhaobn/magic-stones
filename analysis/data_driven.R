@@ -40,7 +40,7 @@ all_selections<-function(setup=settings) {
 # Primitives
 get <- function(feature, object, type) {
   feature_value<-substr(object, dict[[feature]], dict[[feature]])
-  if (type=='a') {
+  if (type != '') {
     fd<-prob(feature); fd[[feature_value]]<-1; return(fd)
   }
   else {
@@ -48,7 +48,7 @@ get <- function(feature, object, type) {
   }
 }
 fetch <- function(feature, values, type) {
-  if (type=='a') {
+  if (type != '') {
     fd<-prob(feature); for (v in values) fd[[v]]<-1/length(values); return(fd)
   } else {
     return(sample(values, 1)) 
@@ -76,7 +76,20 @@ exclude <- function(feature, object) {
   }
   return(setdiff(settings[[feature]], vals))
 }
-
+# Adjustables
+get_weights<-function(rules) {
+  rule_weights<-list()
+  for (n in names(rules)) {
+    rule_weights[[n]]<-switch (substr(n, 1, 4),
+      'kept' = 0.9, 'equa' = 0.9, 'fixe' = 0.019, 'rand' = 0.001,
+      #'kept' = 0.8, 'equa' = 0.8, 'fixe' = 0.15, 'rand' = 0.05,
+    )
+  }
+  to_assign<-setdiff(names(rules), names(rule_weights))
+  space<-(1-Reduce('+', rule_weights))
+  for (n in to_assign) rule_weights[[n]]<-space/length(to_assign)
+  return(rule_weights)
+}
 # Causal engine
 parse_effect <- function(feature, data, type='a') {
   funcs <- list()
@@ -106,12 +119,14 @@ check_cause <- function(feature, data, effects, type='a') {
 # Simulations
 decide <- function(feature, training, task, result, type) {
   candidateRules <- check_cause(feature, training, parse_effect(feature, training, type), type)
-  if (type=='a') {
+  if (type!='') {
     fd<-prob(feature)
-    for (i in 1:length(candidateRules)) {
+    if (type=='w') weights<-get_weights(candidateRules)
+    for (i in names(candidateRules)) {
       pred_dist<-candidateRules[[i]](feature, task, type)
       for (d in names(pred_dist)) {
-        fd[[d]] <- fd[[d]] + (pred_dist[[d]] * 1/length(candidateRules))
+        weight<-if (type=='w') weights[[i]] else 1/length(candidateRules)
+        fd[[d]] <- fd[[d]] + (pred_dist[[d]] * weight)
       }
     }
     return(set(feature, result, fd))
@@ -121,9 +136,9 @@ decide <- function(feature, training, task, result, type) {
   }
 }
 get_sim <- function(training, task, type) {
-  result <- if (type=='a') all_selections() else task[['target']]
+  result <- if (type !='') all_selections() else task[['target']]
   for (f in features) result <- decide(f, training, task, result, type)
-  if (type=='a') {
+  if (type!='') {
     result <- result %>% mutate(prob=color_prob*shape_prob) %>% select(selection, prob)
   }
   return(result)
@@ -136,11 +151,12 @@ data[['target']] <- 'yc'
 data[['result']] <- 'ys'
 
 task <- list()
-task[['agent']] <- 'bs'
+task[['agent']] <- 'bd'
 task[['target']] <- 'bc'
 
 get_sim(data, task, '')
 get_sim(data, task, 'a')
+get_sim(data, task, 'w')
 
 # Get trial data
 # Read from normative model.R: tasks, learnings 
@@ -158,8 +174,8 @@ df.tasks<-tasks %>% left_join(trainings, by='learningTaskId') %>%
   select(learningTaskId, trial, learn_agent, learn_target, learn_result, agent, target=recipient)
 save(df.tasks, file='data_driven.Rdata')
 
-# Try some
-sim_for<-function(cond, tid, source=df.tasks) {
+# Simulations
+sim_for<-function(cond, tid, type='a', source=df.tasks) {
   dt<-source %>% filter(learningTaskId==paste0('learn0', cond)&trial==tid)
   data <- list(); task <- list()
   data[['agent']]<-as.character(dt$learn_agent)
@@ -168,38 +184,38 @@ sim_for<-function(cond, tid, source=df.tasks) {
   task[['agent']]<-as.character(dt$agent)
   task[['target']]<-as.character(dt$target)
   
-  pred<-get_sim(data, task, 'a')
+  pred<-get_sim(data, task, type)
   pred$learningTaskId<-paste0('learn0', cond)
   pred$trial<-tid
   pred<-pred %>% select(learningTaskId, trial, selection, prob)
   return(pred)
 } 
-df.sim<-sim_for(1, 1)
-for (i in 1:7) {
-  for (j in 1:15) {
-    if(!(i==1&j==1)) df.sim<-rbind(df.sim, sim_for(i, j))
+save_sim <- function(df, opt) {
+  for (i in 1:7) {
+    for (j in 1:15) {
+      if(!(i==1&j==1)) df<-rbind(df, sim_for(i, j, opt))
+    }
   }
+  return(df)
 }
-save(df.sim, df.tasks, file='data_driven.Rdata')
 
-# Plots
-df.freq$learningTaskId<-as.character(df.freq$learningTaskId)
-df.sim$learningTaskId<-as.character(df.sim$learningTaskId)
-ppt_dd <- df.freq %>% 
-  left_join(df.sim, by=c('learningTaskId', 'trial', 'selection')) %>%
-  select(learningTaskId, trial, selection, ppt=freq, dd=prob) %>%
-  arrange(learningTaskId, trial, selection)
+df.sim<-sim_for(1, 1)
+df.sim<-save_sim(df.sim, 'a')
 
-ppt<-ppt_dd %>% select(learningTaskId, trial, selection, value=ppt) %>% mutate(type='participant')
-ddp<-ppt_dd %>% select(learningTaskId, trial, selection, value=dd) %>% mutate(type='data_driven')
-pt_dd<-rbind(ppt, ddp) %>% select(learningTaskId, trial, selection, type, value) %>%
-  arrange(learningTaskId, trial, selection)
+df.weighted<-sim_for(1, 1, 'w')
+df.weighted<-save_sim(df.weighted, 'w')
 
-ggplot(pt_dd, aes(x=selection, y=value, fill=type)) + 
-  geom_bar(position="dodge", stat="identity") +
-  facet_grid(trial ~ learningTaskId) +
-  labs(x='', y='') + scale_fill_brewer(palette="Paired") + 
-  theme(legend.position="bottom", legend.title=element_blank())
+df.w2<-sim_for(1, 1, 'w')
+df.w2<-save_sim(df.w2, 'w')
+
+save(df.tasks, df.sim, df.weighted, df.w2, file='data_driven.Rdata')
+
+
+
+
+
+
+
 
 
 
