@@ -118,7 +118,7 @@ group_diff<-rbind(diff_df, diff_rf)
 group_same$difficulty<-as.numeric(as.character(group_same$difficulty))
 group_diff$difficulty<-as.numeric(as.character(group_diff$difficulty))
 
-t.test(group_same$difficulty, group_diff$difficulty)
+t.test(group_same$difficulty, group_diff$difficulty, var.equal = TRUE)
 group<-c('same', 'different')
 difficulty<-c(mean(group_same$difficulty), mean(group_diff$difficulty))
 sd<-c(sd(group_same$difficulty), sd(group_diff$difficulty))
@@ -392,7 +392,7 @@ vst<-rbind(vs%>%select(condition, trial, v=default)%>%mutate(order='default'),
 vd<-vht%>%filter(condition%in% c('learn02', 'learn04', 'learn05', 'learn07'))
 vdt<-rbind(vd%>%select(condition, trial, v=default)%>%mutate(order='default'),
            vd%>%select(condition, trial, v=reverse)%>%mutate(order='reverse'))
-t.test(vst$v, vdt$v)
+t.test(vst$v, vdt$v, var.equal = TRUE, paired=T)
 group<-c('same', 'different')
 homogeneity<-c(mean(vst$v), mean(vdt$v))
 sd<-c(sd(vst$v), sd(vdt$v))
@@ -495,5 +495,23 @@ rev.freq<-df.freq
 
 save(df.sw,df.tw,df.freq,rev.sw,rev.tw,rev.freq, file='../data/mturk_20200119.Rdata')
 
+df.sw$order='default'
+df.tw$order='default'
+df.freq$order='default'
 
+rev.sw$order='reverse'
+rev.tw$order='reverse'
+rev.freq$order='reverse'
+
+df.sw<-rbind(df.sw, rev.sw)
+df.tw<-rbind(df.tw, rev.tw)
+df.freq<-rbind(df.freq, rev.freq)
+
+df.sw<-df.sw%>%select(ix, learningTaskId, order, date, time, instructions_duration, task_duration,
+                      age, sex, engagement, difficulty, guess, feedback, id, token)
+df.tw<-df.tw%>%select(ix, learningTaskId, order, trial, learn_agent, learn_recipient, learn_rule, 
+                      agent, recipient, selection, ts, id)
+df.freq<-df.freq%>%select(learningTaskId, order, trial, selection, n, freq)
+df.tasks<-dt.task
+save(df.sw, df.tw, df.freq, df.tasks, file='cogsci_20200127.Rdata')
 

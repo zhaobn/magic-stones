@@ -81,13 +81,30 @@ get_weights<-function(rules) {
   rule_weights<-list()
   for (n in names(rules)) {
     rule_weights[[n]]<-switch (substr(n, 1, 4),
-      'kept' = 0.9, 'equa' = 0.9, 'fixe' = 0.019, 'rand' = 0.001,
-      #'kept' = 0.8, 'equa' = 0.8, 'fixe' = 0.15, 'rand' = 0.05,
+      #'kept' = 0.9, 'equa' = 0.9, 'fixe' = 0.019, 'rand' = 0.001,
+      'kept' = 0.7, 'equa' = 0.7, 'fixe' = 0.1, 'rand' = 0.05,
     )
   }
   to_assign<-setdiff(names(rules), names(rule_weights))
   space<-(1-Reduce('+', rule_weights))
   for (n in to_assign) rule_weights[[n]]<-space/length(to_assign)
+  return(rule_weights)
+}
+
+# Play with it, don't use it, not working
+get_weights<-function(rules, ce=FALSE) {
+  rule_weights<-list()
+  for (n in names(rules)) {
+    rule_weights[[n]]<-switch(substr(n, 1, 4),
+      'kept' = 1, 
+      'equa' = 1, 
+      'fixe' = 1/3, 
+      'rand' = 1/9,
+      'diff' = 1/2,
+      'new_' = 1/6)
+  }
+  total<-Reduce('+', rule_weights)
+  for (i in 1:length(rule_weights)) rule_weights[[i]]<-rule_weights[[i]]/total
   return(rule_weights)
 }
 # Causal engine
@@ -108,11 +125,11 @@ check_cause <- function(feature, data, effects, type='a') {
   } else {
     effects[[paste0('diff_agent_', feature)]] <- function(feature, data, type) fetch(feature, exclude(feature, data[['agent']]), type)
   }
-  if(paste0('diff_target_',feature)%in%names(effects)&paste0('diff_agent_',feature)%in%names(effects)) {
-    effects[[paste0('new_', feature)]] <- function(feature, data, type) {
-      fetch(feature, exclude(feature, list(data[['agent']], data['target'])), type)
-    }
-  }
+  #if(paste0('diff_target_',feature)%in%names(effects)&paste0('diff_agent_',feature)%in%names(effects)) {
+   # effects[[paste0('new_', feature)]] <- function(feature, data, type) {
+   #   fetch(feature, exclude(feature, list(data[['agent']], data['target'])), type)
+  #  }
+  #}
   return(effects)
 }
 
@@ -207,6 +224,9 @@ df.weighted<-save_sim(df.weighted, 'w')
 
 df.w2<-sim_for(1, 1, 'w')
 df.w2<-save_sim(df.w2, 'w')
+
+df.test<-sim_for(1, 1, 'w')
+df.test<-save_sim(df.test, 'w')
 
 save(df.tasks, df.sim, df.weighted, df.w2, file='data_driven.Rdata')
 

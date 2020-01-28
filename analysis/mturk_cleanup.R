@@ -146,5 +146,36 @@ df.tw <- df.tw %>%
          trial, agent, recipient, selection, ts, id)
 
 
+# Clean up for cogsci
+rename_df<-function(data) {
+  data<-data%>%filter(learningTaskId!='learn05')
+  data$learningTaskId<-as.character(data$learningTaskId)
+  data<-data%>%mutate(new_learningTaskId=case_when(
+    learningTaskId=='learn06'~'learn05',
+    learningTaskId=='learn07'~'learn06',
+    TRUE~learningTaskId
+  ))
+  return(data)
+}
+
+df.tasks<-rename_df(df.tasks)
+df.tasks<-df.tasks%>%select(learningTaskId=new_learningTaskId, trial, learn_agent,
+                            learn_target, learn_result, agent, target)
+
+
+save(df.sw, df.tw, df.freq, df.tasks, file='cogsci_20200127.Rdata')
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
