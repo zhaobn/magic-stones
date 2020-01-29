@@ -158,10 +158,11 @@ rename_df<-function(data) {
   return(data)
 }
 
-df.tasks<-rename_df(df.tasks)
-df.tasks<-df.tasks%>%select(learningTaskId=new_learningTaskId, trial, learn_agent,
-                            learn_target, learn_result, agent, target)
-
+pred2<-rename_df(df.w2)
+names(pred2)
+pred2<-pred2%>%select(learningTaskId=new_learningTaskId, trial, selection, wc_pp=prob)%>%
+  mutate(sequence='reverse')
+pd<-rbind(pred, pred2)
 
 save(df.sw, df.tw, df.freq, df.tasks, file='cogsci_20200127.Rdata')
 

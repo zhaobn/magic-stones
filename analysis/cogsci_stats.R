@@ -32,7 +32,7 @@ default$selection <- as.character(default$selection)
 
 # Calculate homogeneity measure
 max <- var(c(1, rep(0, 8)))
-get_hm <- function(cond, tid, data=similars) {
+get_hm <- function(cond, tid, data=reverses) {
   dt <- data %>% 
     filter(learningTaskId == cond & trial == tid) %>%
     count(selection) %>% 
@@ -86,6 +86,9 @@ report(differents$hm_all)
 
 t.test(similars$hm_all, differents$hm_all, var.equal = TRUE)
 
+# Save up for plotting
+save(df.sw, df.tw, df.freq, df.tasks, file='cogsci_20200127.Rdata')
+
 # Self-report difficulty
 df.sw$difficulty<-as.numeric(as.character(df.sw$difficulty))
 df_sm<-df.sw%>%filter(learningTaskId%in%c('learn01', 'learn03', 'learn05'))
@@ -100,10 +103,6 @@ report(shapes$hm_all)
 report(colors$hm_all)
 
 t.test(shapes$hm_all, colors$hm_all, var.equal = TRUE)
-
-# Model comparison
-
-
 
 
 
