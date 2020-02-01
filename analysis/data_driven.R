@@ -1,5 +1,6 @@
 
 library(dplyr)
+library(stats4)
 rm(list=ls())
 
 # Feature references
@@ -38,7 +39,7 @@ all_selections<-function(setup=settings) {
 }
 
 # Primitives
-get <- function(feature, object, type) {
+get <- function(feature, object, type='w') {
   feature_value<-substr(object, dict[[feature]], dict[[feature]])
   if (type != '') {
     fd<-prob(feature); fd[[feature_value]]<-1; return(fd)
@@ -47,7 +48,7 @@ get <- function(feature, object, type) {
     return(feature_value)
   }
 }
-fetch <- function(feature, values, type) {
+fetch <- function(feature, values, type='w') {
   if (type != '') {
     fd<-prob(feature); for (v in values) fd[[v]]<-1/length(values); return(fd)
   } else {
@@ -91,22 +92,6 @@ get_weights<-function(rules) {
   return(rule_weights)
 }
 
-# Play with it, don't use it, not working
-get_weights<-function(rules, ce=FALSE) {
-  rule_weights<-list()
-  for (n in names(rules)) {
-    rule_weights[[n]]<-switch(substr(n, 1, 4),
-      'kept' = 1, 
-      'equa' = 1, 
-      'fixe' = 1/3, 
-      'rand' = 1/9,
-      'diff' = 1/2,
-      'new_' = 1/6)
-  }
-  total<-Reduce('+', rule_weights)
-  for (i in 1:length(rule_weights)) rule_weights[[i]]<-rule_weights[[i]]/total
-  return(rule_weights)
-}
 # Causal engine
 parse_effect <- function(feature, data, type='a') {
   funcs <- list()
@@ -125,11 +110,6 @@ check_cause <- function(feature, data, effects, type='a') {
   } else {
     effects[[paste0('diff_agent_', feature)]] <- function(feature, data, type) fetch(feature, exclude(feature, data[['agent']]), type)
   }
-  #if(paste0('diff_target_',feature)%in%names(effects)&paste0('diff_agent_',feature)%in%names(effects)) {
-   # effects[[paste0('new_', feature)]] <- function(feature, data, type) {
-   #   fetch(feature, exclude(feature, list(data[['agent']], data['target'])), type)
-  #  }
-  #}
   return(effects)
 }
 
@@ -152,6 +132,7 @@ decide <- function(feature, training, task, result, type) {
     return(set(feature, result, candidate))
   }
 }
+
 get_sim <- function(training, task, type) {
   result <- if (type !='') all_selections() else task[['target']]
   for (f in features) result <- decide(f, training, task, result, type)
@@ -160,36 +141,6 @@ get_sim <- function(training, task, type) {
   }
   return(result)
 }
-
-# Example
-data <- list()
-data[['agent']] <- 'rs'
-data[['target']] <- 'yc'
-data[['result']] <- 'ys'
-
-task <- list()
-task[['agent']] <- 'bd'
-task[['target']] <- 'bc'
-
-get_sim(data, task, '')
-get_sim(data, task, 'a')
-get_sim(data, task, 'w')
-
-# Get trial data
-# Read from normative model.R: tasks, learnings 
-take_cond<-function(cond=1, list=learnings) {
-  df<-data.frame(list[[cond]])
-  df$learningTaskId<-paste0('learn0', cond)
-  df<-df%>%select(learningTaskId, learn_agent=agent, learn_target=target, learn_result=result)
-  return(df)
-}
-trainings<-take_cond()
-for (i in 2:length(learnings)) {
-  trainings<-rbind(trainings, take_cond(i))
-}
-df.tasks<-tasks %>% left_join(trainings, by='learningTaskId') %>%
-  select(learningTaskId, trial, learn_agent, learn_target, learn_result, agent, target=recipient)
-save(df.tasks, file='data_driven.Rdata')
 
 # Simulations
 sim_for<-function(cond, tid, type='a', source=df.tasks) {
@@ -208,7 +159,7 @@ sim_for<-function(cond, tid, type='a', source=df.tasks) {
   return(pred)
 } 
 save_sim <- function(df, opt) {
-  for (i in 1:7) {
+  for (i in 1:6) {
     for (j in 1:15) {
       if(!(i==1&j==1)) df<-rbind(df, sim_for(i, j, opt))
     }
@@ -216,25 +167,208 @@ save_sim <- function(df, opt) {
   return(df)
 }
 
-df.sim<-sim_for(1, 1)
+df.sim<-sim_for(1, 1, 'a')
 df.sim<-save_sim(df.sim, 'a')
 
 df.weighted<-sim_for(1, 1, 'w')
 df.weighted<-save_sim(df.weighted, 'w')
 
-df.w2<-sim_for(1, 1, 'w')
-df.w2<-save_sim(df.w2, 'w')
-
-df.test<-sim_for(1, 1, 'w')
-df.test<-save_sim(df.test, 'w')
-
 save(df.tasks, df.sim, df.weighted, df.w2, file='data_driven.Rdata')
 
+# Try MLE
+train_weights<-function(rules, equal, fixed, rand, diff) {
+  rule_weights<-list()
+  for (n in names(rules)) {
+    rule_weights[[n]]<-switch (substr(n, 1, 4),
+                               'kept' = equal,
+                               'equa' = equal,
+                               'fixe' = fixed, 
+                               'rand' = rand,
+                               diff
+    )
+  }
+  total<-Reduce('+', rule_weights)
+  for (n in names(rule_weights)) rule_weights[[n]]<-rule_weights[[n]]/total
+  return(rule_weights)
+}
+
+md_decide <- function(feature, training, task, result, equal, fixed, rand, diff) {
+  candidateRules <- check_cause(feature, training, parse_effect(feature, training, type), type)
+  fd<-prob(feature)
+  weight_to_train<-train_weights(candidateRules, equal, fixed, rand, diff)
+  for (i in names(candidateRules)) {
+    pred_dist<-candidateRules[[i]](feature, task, 'w')
+    for (d in names(pred_dist)) {
+      weight<-weight_to_train[[i]]
+      fd[[d]] <- fd[[d]] + (pred_dist[[d]] * weight)
+    }
+  }
+  return(set(feature, result, fd))
+}
+get_md_sim <- function(training, task, equal, fixed, rand, diff) {
+  result <- all_selections()
+  for (f in features) result <- md_decide(f, training, task, result, equal, fixed, rand, diff)
+  result <- result %>% mutate(prob=color_prob*shape_prob) %>% select(selection, prob)
+  return(result)
+}
+md_sim_for<-function(cond, tid, equal, fixed, rand, diff, source=df.tasks) {
+  dt<-source %>% filter(learningTaskId==paste0('learn0', cond)&trial==tid)
+  data <- list(); task <- list()
+  data[['agent']]<-as.character(dt$learn_agent)
+  data[['target']]<-as.character(dt$learn_target)
+  data[['result']]<-as.character(dt$learn_result)
+  task[['agent']]<-as.character(dt$agent)
+  task[['target']]<-as.character(dt$target)
+  
+  pred<-get_md_sim(data, task, equal, fixed, rand, diff)
+  pred$learningTaskId<-paste0('learn0', cond)
+  pred$trial<-tid
+  pred<-pred %>% select(learningTaskId, trial, selection, prob)
+  return(pred)
+} 
+
+md_sim_for(2, 4, 1, 1, 1, 1)
+
+# Courtesy to Tia
+full_model<-function(equal, fixed, rand, diff){
+  likeli=c()
+  for (i in 1:6) {
+    for (j in 1:15) {
+      behavorial<-df.sels%>%
+        filter(learningTaskId==paste0('learn0', i)&trial==j&sequence=='default') %>%
+        select(selection, n)
+      pred<-md_sim_for(i, j, equal, fixed, rand, diff)%>% select(selection, prob)
+      
+      behavorial$selection<-as.character(behavorial$selection) 
+      pred$selection<-as.character(pred$selection)
+      
+      data<-behavorial%>%left_join(pred, by='selection')
+      likeli=c(likeli, sum(log(data$prob)*data$n))
+    }
+  }
+  -sum(likeli)
+}
+
+full_model(10,1,1,1)
+mle(full_model, start = list(equal=100, fixed=20, rand=140, diff=500)) %>% attributes()
+
+#equal       fixed        rand        diff 
+#2.38953600 -0.05161830  0.45439077  0.03974783 
 
 
+#1059.12327  -22.43968  199.32625   18.02398 
+
+# Then give the probabilities with fitted weights
+df.ft<-md_sim_for(1, 1, 2.38953600, -0.05161830, 0.45439077, 0.03974783)
+for (i in 1:6) {
+  for (j in 1:15) {
+    if(!(i==1&j==1)) df.ft<-rbind(df.ft, md_sim_for(i, j, 2.38953600, -0.05161830, 0.45439077, 0.03974783))
+  }
+}
+
+# Do the whole thing again with additional context parameter
+# to account for the reverse order sequence
+
+train_weights<-function(rules, seq, equal, fixed, rand, diff, alpha) {
+  rule_weights<-list()
+  for (n in names(rules)) {
+    rule_weights[[n]]<-switch (substr(n, 1, 4),
+                               'kept' = if (seq=='reverse') equal * alpha else equal,
+                               'equa' = if (seq=='reverse') equal * alpha else equal,
+                               'fixe' = fixed, 
+                               'rand' = rand,
+                               diff
+    )
+  }
+  total<-Reduce('+', rule_weights)
+  for (n in names(rule_weights)) rule_weights[[n]]<-rule_weights[[n]]/total
+  return(rule_weights)
+}
+
+md_decide <- function(feature, training, task, result, seq, equal, fixed, rand, diff, alpha) {
+  candidateRules <- check_cause(feature, training, parse_effect(feature, training, type), type)
+  fd<-prob(feature)
+  weight_to_train<-train_weights(candidateRules, seq, equal, fixed, rand, diff, alpha)
+  for (i in names(candidateRules)) {
+    pred_dist<-candidateRules[[i]](feature, task, 'w')
+    for (d in names(pred_dist)) {
+      weight<-weight_to_train[[i]]
+      fd[[d]] <- fd[[d]] + (pred_dist[[d]] * weight)
+    }
+  }
+  return(set(feature, result, fd))
+}
+get_md_sim <- function(training, task, seq, equal, fixed, rand, diff, alpha) {
+  result <- all_selections()
+  for (f in features) result <- md_decide(f, training, task, result, seq, equal, fixed, rand, diff, alpha)
+  result <- result %>% mutate(prob=color_prob*shape_prob) %>% select(selection, prob)
+  return(result)
+}
+md_sim_for<-function(cond, tid, seq, equal, fixed, rand, diff, alpha, source=df.tasks) {
+  dt<-source %>% filter(learningTaskId==paste0('learn0', cond)&trial==tid)
+  data <- list(); task <- list()
+  data[['agent']]<-as.character(dt$learn_agent)
+  data[['target']]<-as.character(dt$learn_target)
+  data[['result']]<-as.character(dt$learn_result)
+  task[['agent']]<-as.character(dt$agent)
+  task[['target']]<-as.character(dt$target)
+  
+  pred<-get_md_sim(data, task, seq, equal, fixed, rand, diff, alpha)
+  pred$learningTaskId<-paste0('learn0', cond)
+  pred$trial<-tid
+  pred$sequence<-seq
+  pred<-pred %>% select(learningTaskId, sequence, trial, selection, prob)
+  return(pred)
+} 
+
+md_sim_for(1, 1, 'reverse', 10, 1, 1, 1, 0.8)
+
+# Courtesy to Tia
+full_model<-function(equal, fixed, rand, diff, alpha){
+  likeli=c()
+  for (i in 1:6) {
+    for (j in 1:15) {
+      for (k in c('default', 'reverse')) {
+        behavorial<-df.sels%>%
+          filter(learningTaskId==paste0('learn0', i)&trial==j&sequence==k) %>%
+          select(selection, n)
+        pred<-md_sim_for(i, j, k, equal, fixed, rand, diff, alpha)%>% select(selection, prob)
+        
+        behavorial$selection<-as.character(behavorial$selection) 
+        pred$selection<-as.character(pred$selection)
+        
+        data<-behavorial%>%left_join(pred, by='selection')
+        likeli=c(likeli, sum(log(data$prob)*data$n))
+      }
+    }
+  }
+  -sum(likeli)
+}
+
+full_model(10,1,1,1,0.1)
+mle(full_model, start = list(equal=1, fixed=1, rand=1, diff=1, alpha=1)) %>% attributes()
+
+2803.385 * 2 + 4 * log(1800)
+
+#equal       fixed        rand        diff       alpha 
+# 2.51091067 -0.05068758  0.46434372  0.05399570  0.52024053
 
 
+# Then give the probabilities with fitted weights
+df.ft<-md_sim_for(1, 1, 'default', 2.51091067, -0.05068758, 0.46434372, 0.05399570, 0.52024053)
+df.ft<-rbind(df.ft, md_sim_for(1, 1, 'reverse', 2.51091067, -0.05068758, 0.46434372, 0.05399570, 0.52024053))
+for (i in 1:6) {
+  for (j in 1:15) {
+    for (k in c('default', 'reverse')) {
+      if(!(i==1&j==1)) df.ft<-rbind(df.ft, md_sim_for(i, j, k, 2.51091067, -0.05068758, 0.46434372, 0.05399570, 0.52024053))
+    }
+  }
+}
 
+save(df.ft, df.weighted, )
+
+save(df.sw, df.tw, df.tasks, df.sels, df.mod, df.rq_plot, df.ft,
+     file = 'cogsci_20200201.Rdata')
 
 
 

@@ -166,10 +166,12 @@ pd<-rbind(pred, pred2)
 
 save(df.sw, df.tw, df.freq, df.tasks, file='cogsci_20200127.Rdata')
 
-
-
-
-
+df.pred<-rename_df(df.pred)
+names(df.pred)
+df.pred<-df.pred%>%select(learningTaskId=new_learningTaskId, trial, agent, recipient,
+                          selection, raw_pp, prob=pp)
+df.nm<-df.pred
+save(df.inf, df.nm, file = 'normative_model.Rdata')
 
 
 

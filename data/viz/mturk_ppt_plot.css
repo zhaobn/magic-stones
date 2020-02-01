@@ -1,5 +1,5 @@
 body {
-  background: #e3e2df;
+  background: #ffffff;
   font-family: Arial, Helvetica, sans-serif;
   /* padding: 30px 80px; */
 }
@@ -140,4 +140,10 @@ body {
 td {
   border-left: 3px dashed #4c4c4c;
   font-size: 24px;
+}
+
+#draw {
+  display: flex;
+  flex-direction: row;
+  margin-top: 50px;
 }
