@@ -14,26 +14,6 @@ Proudly powered by [<img src="http://vanilla-js.com/assets/button.png">](http://
 
 ## Resources
 
-- `experiment/` folder holds the source code for the web experiment. See the [Development](#Development) section for more details.
+- `experiment/` folder holds the source code for the web experiment.
 
-- `data/` holds data for all pilots and mturk experiments.
-
-- `analysis/` folder is the place for all data cleaning, analysis, stats, plots, and modeling scripts.
-
-- `notes/` folder stores some drafting tex files.
-
-
-## Development
-
-
-For debugging purpose, each "view" of the web experiment has its own HTML file and JS file. The experiment follows the order: consent -> reminder -> instruction -> comprehension -> task -> debrief.
-
-- `routes/` folder holds all the HTML files.
-
-- `js/` folder holds JS files for each HTML page - the only exception is that `reminder.html` has its js functions in the html file therefore it has no stand-alone js file.
-
-Note that in this design, stones are created as `<div />`s, and magic effect takes place by manipulating CSS.
-
-Experiment setups - including task conditions and stone properties - can be found in the beginning of `js/task.js`.
-
-To see how the experiment is served in production, check out its integration with the Flask App [here](https://github.com/zhaobn/flask-magic-stones).
+- `public/` holds materials for CogSci 2020 submission
