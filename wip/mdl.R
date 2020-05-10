@@ -16,7 +16,6 @@ abbs[['s']]<-'shape'
 
 relations<-c('=', '~')
 
-
 stones<-c()
 for (c in features[[1]]) {
   for (s in features[[2]]) {
@@ -24,7 +23,7 @@ for (c in features[[1]]) {
   }
 }
 
-# Data generator
+# Generate data
 possible_obs<-list()
 n_stones<-length(stones)
 for (a in 1:n_stones) {
@@ -52,7 +51,7 @@ sample_obs<-function() {
 full_obs<-list()
 for (i in 1:1000) full_obs[[i]]<-sample_obs()
 
-# Hypo generator
+# Generate hypotheses
 ## 1. Atomic descriptions
 atomics<-list()
 generate_atomic_hypos<-function(role, feature, type) {
@@ -94,9 +93,7 @@ for (r in c('c', 'e')) {
 rownames(atomics) <- NULL
 atomics$desc<-as.character(atomics$desc)
 
-## 2. Compose hypotheses
-hypos<-c()
-
+## 2. Composite hypotheses
 color_effects<-(atomics%>%filter(role=='e'&feature=='color')%>%select(desc))[[1]]
 shape_effects<-(atomics%>%filter(role=='e'&feature=='shape')%>%select(desc))[[1]]
 color_causes<-(atomics%>%filter(role=='c'&feature=='color')%>%select(desc))[[1]]
@@ -104,7 +101,6 @@ shape_causes<-(atomics%>%filter(role=='c'&feature=='shape')%>%select(desc))[[1]]
 
 ### 2.1 Single universal effect descriptions
 single_effects<-c(color_effects, shape_effects)
-hypos<-c(hypos, single_effects)
 
 ### 2.2 Double universal effect descriptions
 double_effects<-c()
@@ -113,9 +109,7 @@ for (c in color_effects) {
     double_effects<-c(double_effects, paste(c(c,s), collapse=','))
   }
 }
-
 uni_effects<-c(single_effects, double_effects)
-hypos<-c(hypos, double_effects)
 
 ### 2.3 Single cause descriptions
 single_causes<-c(color_causes, shape_causes)
@@ -125,30 +119,34 @@ for (c in single_causes) {
     single_cause_effects<-c(single_cause_effects, paste0(e, '[', c, ']'))
   }
 }
-hypos<-c(hypos, single_cause_effects)
 
-### 2.4 Double cause descriptions
-double_causes<-c()
-for (c in color_causes) {
-  for (s in shape_causes) {
-    double_causes<-c(double_causes, paste(c(c,s), collapse=','))
+### 2.4 Multi cause descriptions
+multi_cause_effects<-c()
+terminate<-0.5
+sample_multi<-function(hypo){
+  hypos<-if (length(hypo)>0) strsplit(hypo, '\\|')[[1]] else c()
+  sampled<-sample(single_cause_effects, 1)
+  if (sampled %in% hypos) return(hypo) else {
+    hypo<-paste(c(hypos, sampled), collapse='|')
+    if (runif(1)<0.5) return(hypo) else return(sample_multi(hypo))
   }
 }
-double_cause_effects<-c()
-for (c in double_causes) {
-  for (e in uni_effects) {
-    double_cause_effects<-c(double_cause_effects, paste0(e, '[', c, ']'))
-  }
+for (i in seq(5000)) {
+  multi_cause_effects<-c(multi_cause_effects, sample_multi(sample(single_cause_effects, 1)))
 }
-hypos<-c(hypos, double_cause_effects)
+multi_cause_effects<-unique(multi_cause_effects)
+
+### Final hypothesis space
+hypos<-c()
+hypos<-c(hypos, uni_effects)
+hypos<-c(hypos, single_cause_effects)
+hypos<-c(hypos, multi_cause_effects)
 
 hypo_space<-data.frame(hypos)
 colnames(hypo_space)<-c('hypo')
 hypo_space$hypo<-as.character(hypo_space$hypo)
 
-# Checker
-h<-hypo_space[[1]][1]
-d<-full_obs[[1]]
+# Checkers
 check_atomic<-function(at, obs) {
   read_val<-function(v, str) {
     if (grepl('\\(', str)) {
@@ -159,14 +157,17 @@ check_atomic<-function(at, obs) {
   f<-substr(at, 1, 1); feature<-abbs[[f]]
   relation<-substr(at, 5, 5)
   vals<-strsplit(at, relation)[[1]]
-  val_1<-read_val(f, vals[1])
-  val_2<-read_val(f, vals[2])
-  if (relation=='=') return(val_1==val_2) else return(!(val_1==val_2))
+  is_match<-(read_val(f, vals[1])==read_val(f, vals[2]))
+  if (relation=='=') {
+    if (is_match) return(1) else return(0)
+  } else {
+    if (is_match) return(0) else return(1/2)
+  }
 }
-check_hypo<-function(hypo, obs) {
-  has_precon<-grepl('\\[', hypo)
-  effect_desc<-if (has_precon) strsplit(hypo, '\\[')[[1]][1] else hypo
-  precond_desc<-if (has_precon) gsub('\\]', '', strsplit(hypo, '\\[')[[1]][2]) else ''
+check_desc<-function(desc, obs) {
+  has_precon<-grepl('\\[', desc)
+  effect_desc<-if (has_precon) strsplit(desc, '\\[')[[1]][1] else desc
+  precond_desc<-if (has_precon) gsub('\\]', '', strsplit(desc, '\\[')[[1]][2]) else ''
   effs<-strsplit(effect_desc, ',')[[1]]; pres<-strsplit(precond_desc, ',')[[1]]
   
   if (length(effs)==1) {
@@ -176,26 +177,58 @@ check_hypo<-function(hypo, obs) {
     effs<-c(effs, default)
   }
   
-  sat_eff<-TRUE
-  for (e in effs) sat_eff<-sat_eff&check_atomic(e, obs)
+  sat_eff<-1
+  for (e in effs) sat_eff<-sat_eff*check_atomic(e, obs)
   
   if (!has_precon) return(sat_eff) else {
-    sat_pres<-TRUE
-    for (p in pres) sat_pres<-sat_pres&check_atomic(p, obs)
-    if (sat_pres) return(sat_eff) else {
-      return(obs[['R']]==obs[['T']])
+    sat_pres<-1
+    for (p in pres) sat_pres<-sat_pres * check_atomic(p, obs)
+    if (sat_pres>0) return(sat_pres*sat_eff) else {
+      return(sat_pres*as.numeric(obs[['R']]==obs[['T']]))
     }
   }
 }
-check_hypo("c(T)~c(A),s(T)=s1[s(A)=s1]", obs)
+check_hypo<-function(hypo, obs) {
+  is_multi<-grepl('\\|', hypo)
+  if (!is_multi) return(check_desc(hypo, obs)) else {
+    sat<-0
+    descs<-strsplit(hypo, '\\|')[[1]]
+    for (d in descs) sat<-sat+check_desc(d, obs)
+    return(min(sat, 1))
+  }
+}
 
-# Normative prior
 # Complexity measure
+get_comp<-function(hypo) {
+  atomics<-c()
+  read_desc<-function(str){
+    if (grepl('\\[', str)) {
+      ats<-strsplit(str, '\\[')[[1]]
+      conds<-gsub('\\]', '', ats[2])
+      return(read_desc(paste(c(ats[1], conds), collapse=',')))
+    } else {
+      return(strsplit(str, ',')[[1]])
+    }
+  }
+  if (grepl('\\|', hypo)) {
+    hypos<-strsplit(hypo, '\\|')[[1]]
+    for (h in hypos) atomics<-c(atomics, read_desc(h))
+  } else atomics<-read_desc(hypo)
+  n<-length(atomics)
+  return(exp(-n))
+}
+hypo_space$comp<-mapply(get_comp, hypo_space$hypo)
 
-# Put together
+# Play with data
+th<-hypo_space[1,1]
+get_length<-function(hypo, data) {
+  len<-0
+  for (i in 1:length(data)) {
+    pr<-check_hypo(hypo, data[[i]])
+    len<-if (pr>0) len-log(pr) else len
+  }
+  return(len-log(get_comp(hypo)))
+}
 
-# Results
-
-# Tests & debug
 
 
