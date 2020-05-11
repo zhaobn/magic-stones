@@ -220,7 +220,6 @@ get_comp<-function(hypo) {
 hypo_space$comp<-mapply(get_comp, hypo_space$hypo)
 
 # Play with data
-th<-hypo_space[1,1]
 get_length<-function(hypo, data) {
   len<-0
   for (i in 1:length(data)) {
@@ -229,6 +228,36 @@ get_length<-function(hypo, data) {
   }
   return(len-log(get_comp(hypo)))
 }
+
+hypo<-hypo_space$hypo
+all_combo<-vector()
+for (h in hypo) all_combo<-c(all_combo, get_length(h, possible_obs))
+mdl<-data.frame(hypo, all_combo)
+
+
+# Rank probs
+rank_data<-function(data, col, ndigits=4) {
+  # absoulute ranks
+  rounded<-sort(unique(round(data[,col], ndigits)))
+  rank<-seq(length(rounded))
+  ranking<-data.frame(rank, rounded)
+  
+  data<-data%>%mutate(rounded=round(len,4))
+  data<-data%>%left_join(ranking, by='rounded')
+  
+  # relative (accumulative) rank
+  c<-data['rounded']%>%group_by(rounded)%>%tally()
+  acc<-within(c, acc_sum <- Reduce("+", n, accumulate = TRUE))
+  acc<-acc%>%mutate(nbefore=lag(acc_sum, 1))%>%replace(is.na(.), 0)%>%mutate(acc_rank=(nbefore+1))
+  data<-data%>%left_join(acc, by='rounded')%>%select(hypo, len, rank, acc_rank)
+  
+  return(data)
+}
+mdl.allcom<-mdl%>%select(hypo, len=all_combo)
+mdl.allcom<-rank_data(mdl.allcom, 'len')
+
+save(mdl.allcom, file = 'mdl.Rdata')
+
 
 
 
