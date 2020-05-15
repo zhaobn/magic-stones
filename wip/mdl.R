@@ -7,7 +7,7 @@ library(ggplot2)
 library(ggpubr)
 library(viridis)
 library(hrbrthemes)
-library("RColorBrewer")
+library(RColorBrewer)
 rm(list=ls())
 
 # Settings
@@ -412,7 +412,26 @@ ggplot(plotdata, aes(x=selection, y=value, fill=type)) +
   theme_light() +
   theme(legend.position="bottom", legend.title=element_blank())
 
-
+### Plot overall regressions
+df<-rbind(
+  df.sels%>%select(selection,sequence, freq,pred=gen)%>%mutate(model='gen'),
+  df.sels%>%select(selection,sequence, freq,pred=exp)%>%mutate(model='exp'))
+ggplot(data=df, aes_string(x="pred", y="freq")) + 
+  geom_point(shape=3, size=1) + 
+  #labs(x=col, y='') +
+  #scale_x_continuous(limits = c(0, 1)) + 
+  geom_smooth(method=lm , color="red", fill="#69b3a2", se=TRUE) +
+  facet_grid(sequence~model) +
+  #annotate("text", label = paste0("R^2 == ", r2), x = 1, y = 0, size = 5, parse=TRUE)
+  #theme_ipsum()
+  theme_light() +
+  theme(text = element_text(size=15))
+### Regression values
+get_rsq<-function(seq, mod, df=df.sels) {
+  dt<-df%>%filter(sequence==seq)%>%select(learningTaskId, trial, selection, freq, pred=!!mod)
+  return(summary(lm(data=dt, freq~pred))$r.squared)
+}
+get_rsq('reverse','exp')
 
 
 
