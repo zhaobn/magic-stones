@@ -154,13 +154,15 @@ get_comp<-function(hypo, penalty='gen') {
   if (penalty=='gen') {
     prob<-1
     for (a in atomics) prob<-prob*get_prob(a)
-    return(prob*(0.5)^(length(atomics)-1))
+    return(prob)
+    #return(prob*(0.5)^(length(atomics)-1))
   } else {
     return(exp(-length(atomics))) 
   }
 }
 df.hypos$exp<-mapply(get_comp, df.hypos$hypo)
 df.hypos$gen<-mapply(get_comp, df.hypos$hypo)
+df.hypos$genfix<-mapply(get_comp, df.hypos$hypo)
 
 # classify hypo
 hypo_type<-function(hypo) {
@@ -349,49 +351,55 @@ get_rsq<-function(lid, tid, seq, type, data=df.sels) {
                  'rsq'=c(round(rsq,4)))
   return(df)
 }
-df.rsq<-get_rsq('learn01',1,'default','gen')
-for (i in 1:6) {
-  lid<-paste0('learn0', i)
-  for (tid in 1:15) {
-    for (comp in c('gen','exp')) {
+get_comp_rsq<-function(comp, src) {
+  df<-get_rsq('learn01',1,'default',comp, src)
+  for (i in 1:6) {
+    lid<-paste0('learn0', i)
+    for (tid in 1:15) {
       for (seq in c('default', 'reverse')) {
-        if (!(i==1&tid==1&comp=='gen'&seq=='default')) {
-          df.rsq<-rbind(df.rsq, get_rsq(lid, tid, seq, comp))
+        if (!(i==1&tid==1&seq=='default')) {
+          df<-rbind(df, get_rsq(lid, tid, seq, comp, src))
         }
       }
     }
   }
+  return(df)
 }
 
-save(file='mdl.Rdata', df.hypos, df.sels, df.rsq)
-save(file='tasks.Rdata', df.learn_tasks, df.gen_trials)
 ## Plots
 ### Plot heatmap
-forheatmap<-df.rsq%>%
-  mutate(learn=case_when(learningTaskId=='learn01'~'L1',
-                         learningTaskId=='learn02'~'L2',
-                         learningTaskId=='learn03'~'L3',
-                         learningTaskId=='learn04'~'L4',
-                         learningTaskId=='learn05'~'L5',
-                         learningTaskId=='learn06'~'L6'),
-         sequence=if_else(sequence=='default', 'near', 'far')) %>%
-  select(learn, sequence, trial, comp, rsq)
-forheatmap$sequence = factor(forheatmap$sequence, levels=c('near', 'far'))
-
-ggplot(data=forheatmap, aes(x=comp, y=trial, fill=rsq)) + 
-  geom_tile(colour = "black") +
-  geom_text(aes(label = round(rsq, 2)), color="grey50", size=3) +
-  labs(x='', y='', fill='R^2') +
-  #scale_fill_gradient(low = "white", high = "steelblue4") +
-  xlim('gen', 'exp') +
-  scale_y_reverse(labels = c('task 1', seq(2, 15)), breaks = seq(1,15)) +
-  scale_fill_viridis(direction=-1) +
-  theme(legend.position="right", 
-        panel.background = element_blank(),
-        text = element_text(size=15)
-  ) +
-  facet_grid(sequence~learn) +
-  guides(fill = guide_colourbar(barwidth = 1, barheight = 10))
+fmt_heatmap<-function(src) {
+  hm<-src%>%
+    mutate(learn=case_when(learningTaskId=='learn01'~'L1',
+                           learningTaskId=='learn02'~'L2',
+                           learningTaskId=='learn03'~'L3',
+                           learningTaskId=='learn04'~'L4',
+                           learningTaskId=='learn05'~'L5',
+                           learningTaskId=='learn06'~'L6'),
+           sequence=if_else(sequence=='default', 'near', 'far')) %>%
+    select(learn, sequence, trial, comp, rsq)
+  hm$sequence = factor(hm$sequence, levels=c('near', 'far'))
+  return(hm)
+}
+plot_heatmap<-function(src) {
+  g<-ggplot(data=src, aes(x=comp, y=trial, fill=rsq)) + 
+    geom_tile(colour = "black") +
+    geom_text(aes(label = round(rsq, 2)), color="grey50", size=3) +
+    labs(x='', y='', fill='R^2') +
+    #scale_fill_gradient(low = "white", high = "steelblue4") +
+    #xlim(mods) +
+    scale_y_reverse(labels = c('task 1', seq(2, 15)), breaks = seq(1,15)) +
+    scale_fill_viridis(direction=-1) +
+    theme(legend.position="right", 
+          panel.background = element_blank(),
+          text = element_text(size=15)
+    ) +
+    facet_grid(sequence~learn) +
+    guides(fill = guide_colourbar(barwidth = 1, barheight = 10))
+  return(g)
+}
+x<-fmt_heatmap(df.rsq)
+plot_heatmap(x)
 
 ### Plot predictions
 near<-df.sels%>%filter(sequence=='default')%>%mutate(type='near')%>%
@@ -432,6 +440,83 @@ get_rsq<-function(seq, mod, df=df.sels) {
   return(summary(lm(data=dt, freq~pred))$r.squared)
 }
 get_rsq('reverse','exp')
+
+# Test new gen comp prior
+df.test<-get_pred('learn01', 1, 'genfix', df.hypos)
+for (i in 2:15) df.test<-rbind(df.test, get_pred('learn01', i, 'genfix', df.hypos))
+for (i in 2:6) {
+  cid<-paste0('learn0', i)
+  for (j in 1:15) df.test<-rbind(df.test, get_pred(cid, j, 'genfix', df.hypos))
+}
+
+df.test_rsq<-get_rsq('learn01',1,'default','genfix', df.test_sels)
+for (i in 2:15) df.test_rsq<-rbind(df.test_rsq, get_rsq('learn01',i,'default','genfix', df.test_sels))
+for (i in 1:15) df.test_rsq<-rbind(df.test_rsq, get_rsq('learn01',i,'reverse','genfix', df.test_sels))
+
+genfix<-df.test%>%select(learningTaskId, trial, selection=stone, genfix=prob)
+genfix$selection<-as.character(genfix$selection)
+genfix$learningTaskId<-as.character(genfix$learningTaskId)
+df.sels<-df.sels%>%left_join(genfix, by=c('learningTaskId', 'trial', 'selection'))
+
+df.rsq<-rbind(df.rsq, get_comp_rsq('genfix', df.sels))
+
+# Universal only
+df.uni<-df.hypos%>%filter(type=='universal')
+df.uni_preds<-get_pred('learn01', 1, 'gen', df.uni)
+for (c in 1:6) {
+  cid<-paste0('learn0',c)
+  for (i in 1:15) {
+    if (!(c==1&i==1)) df.uni_preds<-rbind(df.uni_preds, get_pred(cid, i, 'gen', df.uni))
+  }
+}
+
+uni<-df.uni_preds%>%select(learningTaskId, trial, selection=stone, uni=prob)
+uni$selection<-as.character(uni$selection)
+uni$learningTaskId<-as.character(uni$learningTaskId)
+
+df.sels<-df.sels%>%left_join(uni,by=c('learningTaskId', 'trial', 'selection'))
+df.rsq<-rbind(df.rsq, get_comp_rsq('uni', df.sels))
+
+save(df.sels, df.hypos, df.rsq, file='mdl.Rdata')
+
+# Plot regressions per L
+fmt_rg<-function(src) {
+  cols<-names(src); models<-cols[c(7:length(cols))];
+  df<-src%>%mutate(learn=case_when(learningTaskId=='learn01'~'L1',
+                                   learningTaskId=='learn02'~'L2',
+                                   learningTaskId=='learn03'~'L3',
+                                   learningTaskId=='learn04'~'L4',
+                                   learningTaskId=='learn05'~'L5',
+                                   learningTaskId=='learn06'~'L6'),
+                   sequence=if_else(sequence=='default', 'near', 'far')) %>%
+    select(learn, sequence, trial, selection, ppt=freq, !!models)
+  df$sequence<-factor(df$sequence, levels=c('near', 'far'))
+  return(df)
+}
+x<-fmt_rg(df.sels)
+plot_rg<-function(model, src) {
+  df<-src%>%select(learn, sequence, trial, selection, ppt, !!model)
+  g<-ggplot(data=df, aes_string(x=model, y="ppt")) + 
+    geom_point(shape=20, size=1) + 
+    #labs(x=col, y='') +
+    #scale_x_continuous(limits = c(0, 1)) + 
+    geom_smooth(method=lm , color="red", fill="#69b3a2", se=TRUE) +
+    facet_grid(sequence~learn) +
+    geom_text(aes(label=trial, colour=factor(selection)), size=3, check_overlap = TRUE, hjust = 0, nudge_x = 0.03)
+    #annotate("text", label = paste0("R^2 == ", r2), x = 1, y = 0, size = 5, parse=TRUE)
+    #theme_ipsum()
+    theme_light() +
+    theme(text = element_text(size=15))
+  return(g)
+}
+plot_rg('genfix', x)
+
+
+
+
+
+
+
 
 
 
