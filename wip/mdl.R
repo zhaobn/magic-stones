@@ -511,7 +511,14 @@ plot_rg<-function(model, src) {
 }
 plot_rg('genfix', x)
 
-
+## More helper functions
+append_preds<-function(mod, pred_src, dest_src) {
+  x<-pred_src%>%select(learningTaskId, trial, selection=stone, !!mod:=prob)
+  x$selection<-as.character(x$selection)
+  x$learningTaskId<-as.character(x$learningTaskId)
+  dest_src<-dest_src%>%left_join(x,by=c('learningTaskId', 'trial', 'selection'))
+  return(dest_src)
+}
 
 
 

@@ -123,32 +123,6 @@ for (i in 1:6) {
 }
 save(df.dd_sim, df.dd_rsq, file='dd.Rdata')
 
-forheatmap<-df.dd_rsq%>%
-  mutate(learn=case_when(learningTaskId=='learn01'~'L1',
-                         learningTaskId=='learn02'~'L2',
-                         learningTaskId=='learn03'~'L3',
-                         learningTaskId=='learn04'~'L4',
-                         learningTaskId=='learn05'~'L5',
-                         learningTaskId=='learn06'~'L6'),
-         sequence=if_else(sequence=='default', 'near', 'far')) %>%
-  select(learn, sequence, trial, comp, rsq)
-forheatmap$sequence = factor(forheatmap$sequence, levels=c('near', 'far'))
-
-ggplot(data=forheatmap, aes(x=comp, y=trial, fill=rsq)) + 
-  geom_tile(colour = "black") +
-  geom_text(aes(label = round(rsq, 2)), color="grey50", size=3) +
-  labs(x='', y='', fill='R^2') +
-  #scale_fill_gradient(low = "white", high = "steelblue4") +
-  xlim('gen', 'exp') +
-  scale_y_reverse(labels = c('task 1', seq(2, 15)), breaks = seq(1,15)) +
-  scale_fill_viridis(direction=-1) +
-  theme(legend.position="right", 
-        panel.background = element_blank(),
-        text = element_text(size=15)
-  ) +
-  facet_grid(sequence~learn) +
-  guides(fill = guide_colourbar(barwidth = 1, barheight = 10))
-
 
 # Order effects
 sample_more_hypos<-function(ldata, gdata) {
@@ -217,49 +191,6 @@ df.od_sim<-df.od_sim%>%left_join(exp, by=c('learningTaskId', 'trial', 'selection
 
 save(df.od_sim, df.dd_sim, df.dd_rsq, file='dd.Rdata')
 
-## Regression
-df.od_rsq<-get_rsq('learn01',1,'default','gen', df.od_sim)
-for (i in 1:6) {
-  lid<-paste0('learn0', i)
-  for (tid in 1:15) {
-    for (comp in c('gen','exp')) {
-      for (seq in c('default', 'reverse')) {
-        if (!(i==1&tid==1&comp=='gen'&seq=='default')) {
-          df.od_rsq<-rbind(df.od_rsq, get_rsq(lid, tid, seq, comp, df.od_sim))
-        }
-      }
-    }
-  }
-}
-save(df.dd_sim, df.dd_rsq, df.od_sim, df.od_rsq, file='dd.Rdata')
-
-## Plots
-forheatmap<-df.od_rsq%>%
-  mutate(learn=case_when(learningTaskId=='learn01'~'L1',
-                         learningTaskId=='learn02'~'L2',
-                         learningTaskId=='learn03'~'L3',
-                         learningTaskId=='learn04'~'L4',
-                         learningTaskId=='learn05'~'L5',
-                         learningTaskId=='learn06'~'L6'),
-         sequence=if_else(sequence=='default', 'near', 'far')) %>%
-  select(learn, sequence, trial, comp, rsq)
-forheatmap$sequence = factor(forheatmap$sequence, levels=c('near', 'far'))
-
-ggplot(data=forheatmap, aes(x=comp, y=trial, fill=rsq)) + 
-  geom_tile(colour = "black") +
-  geom_text(aes(label = round(rsq, 2)), color="grey50", size=3) +
-  labs(x='', y='', fill='R^2') +
-  #scale_fill_gradient(low = "white", high = "steelblue4") +
-  xlim('gen', 'exp') +
-  scale_y_reverse(labels = c('task 1', seq(2, 15)), breaks = seq(1,15)) +
-  scale_fill_viridis(direction=-1) +
-  theme(legend.position="right", 
-        panel.background = element_blank(),
-        text = element_text(size=15)
-  ) +
-  facet_grid(sequence~learn) +
-  guides(fill = guide_colourbar(barwidth = 1, barheight = 10))
-
 # Overall regression stats
 overall_rsg<-function(comp, seq, src) {
   ppt<-src%>%filter(sequence==seq)%>%select(learningTaskId, trial, selection, freq)
@@ -272,5 +203,66 @@ overall_rsg('exp', 'default', df.od_sim)
 overall_rsg('gen', 'reverse', df.od_sim)
 overall_rsg('exp', 'reverse', df.od_sim)
 
+
+
+# May 21, new attempt
+parse_hypo<-function(data) {
+  parse_hypo_per_feature<-function(feature, data){
+    hypos<-c()
+    read_feature_value<-function(stone) {
+      f_idx<-if (feature=='color') 1 else 2
+      return(substr(stone, f_idx, f_idx))
+    }
+    f<-substr(feature, 1, 1)
+    if (read_feature_value(data[['T']])==read_feature_value(data[['R']])) {
+      hypos<-c(hypos, paste(c(f, '(T)', '=', f, '(R)'), collapse=''))
+    } else {
+      hypos<-c(hypos, paste(c(f, '(T)', '=', f, read_feature_value(data[['T']])), collapse=''))
+      if (read_feature_value(data[['T']])==read_feature_value(data[['A']])) {
+        hypos<-c(hypos, paste(c(f, '(T)', '=', f, '(A)'), collapse=''))
+      } else {
+        hypos<-c(hypos, paste(c(f, '(T)', '~', f, '(A)'), collapse=''))
+        hypos<-c(hypos, paste(c(f, '(T)', '~', f, '(R)'), collapse=''))
+      }
+    }
+    return(hypos)
+  }
+  hypos<-list()
+  for (feature in names(features)) {
+    hypos[[feature]]<-parse_hypo_per_feature(feature, data)
+  }
+  full_hypo<-c()
+  for (c in hypos[['color']]) {
+    for (s in hypos[['shape']]) {
+      full_hypo<-c(full_hypo, paste0(c,',',s))
+    }
+  }
+  return(full_hypo)
+}
+pred_cond<-function(cid, comp, learn_src=df.learn_tasks, gen_src=df.gen_trials) {
+  data<-as.list(learn_src%>%filter(learningTaskId==cid)%>%select(A,R,T))
+  df<-data.frame(parse_hypo(data))
+  colnames(df)<-'hypo'; df$hypo<-as.character(df$hypo)
+  df[,comp]<-mapply(get_comp, df$hypo, rep(comp, length(df$hypo)))
+  df[,cid]<-mapply(check_hypo, df$hypo, rep(flatten(data), length(df$hypo)))
+  ## Gen generalization predictions
+  pred<-get_pred(cid, 1, comp, df, gen_src)
+  for (i in 2:15) pred<-rbind(pred, get_pred(cid, i, comp, df))
+  return(pred)
+}
+
+df.min<-pred_cond('learn01', 'gen')
+for (i in 2:6) df.min<-rbind(df.min, pred_cond(paste0('learn0', i), 'gen'))
+
+df.dd_sim<-append_preds('min', df.min, df.dd_sim)
+df.dd_rsq<-rbind(df.dd_rsq, get_comp_rsq('min', df.dd_sim))
+
+save(df.dd_sim, df.dd_rsq, file='dd.Rdata')
+
+x<-fmt_heatmap(df.dd_rsq)
+plot_heatmap(x)
+
+y<-fmt_rg(df.dd_sim)
+plot_rg('min', y)
 
 
