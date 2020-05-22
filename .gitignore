@@ -6,6 +6,9 @@
 .RData
 .Rhistory
 
+*.Rproj
+.Rproj.user
+
 # LaTeX temp files
 *.aux
 *.log
