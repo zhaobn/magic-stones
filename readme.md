@@ -3,7 +3,7 @@
 # Magic stones
 
 
-A One-shot generalization task that inspects causal inductive bias on abstract features.
+A one-shot generalization task that inspects causal inductive bias on abstract features.
 
 
 ## Resources
