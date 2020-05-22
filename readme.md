@@ -3,17 +3,17 @@
 # Magic stones
 
 
-A few-shot generalization task that inspects people's prior knowledge on abstract features' causal relations.
-
-
-Served via [Flask Tasks](https://github.com/bramleyccslab/flask-tasks) at http://www.bramleylab.ppls.ed.ac.uk/experiments/magic_stones (live now :star2:! Please feel free to give it a try :relaxed:. If you experience any problem or want to share your feedback, please contact me at <b.zhao@ed.ac.uk>.)
-
-
-Proudly powered by [<img src="http://vanilla-js.com/assets/button.png">](http://vanilla-js.com) and the Internet.
+A One-shot generalization task that inspects causal inductive bias on abstract features.
 
 
 ## Resources
 
-- `experiment/` folder holds the source code for the web experiment.
+- `experiment/`: source code for the web experiment.
+  Was servered via [Flask Tasks](https://github.com/bramleyccslab/flask-tasks) - see [flask-magic-stones](https://github.com/zhaobn/flask-magic-stones).
 
-- `public/` holds materials for CogSci 2020 submission
+- `behavioral_data/`:
+  - `tasks.Rdata`: experiment task configs
+  - `subjects.Rdata`: mturk experiment raw data
+  - `selections_*`: virualization of mturk experiment data
+
+- `modeling`: WIP modeling work.
