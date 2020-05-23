@@ -6,13 +6,18 @@ library(dplyr)
 library(ggplot2)
 library(viridis)
 
-# Feature configs
+# Customizable configs
 features<-list()
 features[['f']]<-paste0('f', seq(3))
 features[['g']]<-paste0('g', seq(3))
 
 obj_sep='-'
 all_objs<-get_all_objs(features)
+
+read_f<-function(feature, obj) {
+  f_idx<-if (feature=='f') 1 else 2
+  return(strsplit(obj, '-')[[1]][f_idx])
+}
 
 # Helper functions
 abbr_feature<-function(features) {
@@ -39,10 +44,6 @@ softmax<-function(vec, base=1) {
   v_exp<-exp(vec*base); sum<-sum(v_exp)
   return(v_exp/sum)
 }
-read_f<-function(feature, obj) {
-  f_idx<-if (feature=='f') 1 else 2
-  return(strsplit(obj, '-')[[1]][f_idx])
-}
 flatten<-function(list, sep=',') {
   str=c()
   for (i in 1:length(list)) str<-c(str, list[[i]])
@@ -56,7 +57,6 @@ to_list<-function(str, sep=',') {
   if (length(vecs) > 2) data[['result']]<-vecs[3]
   return(data)
 }
-
 
 # Non-causal baseline
 ## Single prediction
@@ -115,9 +115,9 @@ get_trials<-function(data) {
   
   ta_f<-c(rep(af,3),rep(df,4),rep(af,4),rep(df,4))
   ta_g<-c(rep(ag,3),rep(ag,4),rep(dg,4),rep(dg,4))
-  tr_f<-c(rf,df,df,rep(c(rf,rf,df,df),3))
-  tr_g<-c(dg, rep(c(rg,dg),7))
-  
+  tr_f<-c(df, rep(c(rf,df),7))
+  tr_g<-c(rg,dg,dg,rep(c(rg,rg,dg,dg),3))
+
   df<-data.frame(trial=seq(15), ta_f, ta_g, tr_f, tr_g)
   df<-df%>%
     mutate(agent=paste0(ta_f,obj_sep,ta_g), recipient=paste0(tr_f,obj_sep,tr_g))%>%
@@ -182,7 +182,7 @@ compose_hypo<-function(data) {
   }
   return(hypos)
 }
-get_causal_pred<-function(data, t, noise=FALSE) {
+get_causal_preds<-function(data, t, noise=FALSE) {
   get_pred_per_hypo<-function(task, hypo, t) {
     get_result_val<-function(feature, desc, task) {
       relation<-substr(desc, 5, 5)
@@ -284,6 +284,19 @@ ggplot(df.sim, aes(pred, task, fill=prob)) + geom_tile() +
   #scale_fill_gradient(low="white", high="black") +
   facet_grid(type~label)
 
-
-
+# Random baseline
+get_rand_preds<-function(data, noise=T) {
+  n<-length(all_objs)
+  df<-data.frame(task=character(0), pred=character(0), prob=numeric(0))
+  for (t in get_trials(data)$task) {
+    df<-rbind(df, data.frame(task=rep(t, n), pred=all_objs, prob=rep(1/n, n)))
+  }
+  if (noise==FALSE) return(df) else {
+    nr<-length(df$task)
+    df$noise<-mapply(rnorm, 1, rep(0.01, nr), rep(0.01, nr))
+    df$prob<-df$prob+df$noise
+    return(df[,c('task', 'pred', 'prob')])
+  }
+}
+plot_pred_hm(get_rand_preds(demo, T))
 
