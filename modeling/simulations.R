@@ -11,14 +11,27 @@ features<-list()
 features[['f']]<-paste0('f', seq(3))
 features[['g']]<-paste0('g', seq(3))
 
-all_objs<-c()
-for (f in features[['f']]) {
-  for (g in features[['g']]) {
-    all_objs<-c(all_objs, paste0(f, '-', g))
-  }
-}
+obj_sep='-'
+all_objs<-get_all_objs(features)
 
 # Helper functions
+abbr_feature<-function(features) {
+  f_dict<-list()
+  for (n in names(features)) {
+    abbr<-substr(n, 1, 1)
+    f_dict[[abbr]]<-n
+  }
+  return(f_dict)
+}
+get_all_objs<-function(features) {
+  objs<-c()
+  for (f in features[[1]]) {
+    for (g in features[[2]]) {
+      objs<-c(objs, paste0(f, obj_sep, g))
+    }
+  }
+  return(objs)
+}
 normalize<-function(vec) {
   sum<-sum(vec); norm<-vec/sum; return(norm)
 }
@@ -66,8 +79,8 @@ post_cat<-function(obs, alpha) {
   
   post_pred<-c()
   for (o in all_objs) {
-    f_post<-post%>%filter(f_val==read_f('f', o))%>%select(post)
-    g_post<-post%>%filter(f_val==read_f('g', o))%>%select(post)
+    f_post<-post%>%filter(f_val==read_f(names(features)[1], o))%>%select(post)
+    g_post<-post%>%filter(f_val==read_f(names(features)[2], o))%>%select(post)
     post_pred<-c(post_pred, as.numeric(f_post*g_post))
   }
   
@@ -93,12 +106,12 @@ get_trials<-function(data) {
   diff_fval<-function(feature, v1, v2) {
     return(setdiff(features[[feature]], c(v1, v2)))
   }
-  af<-read_f('f', data[['agent']])
-  ag<-read_f('g', data[['agent']])
-  rf<-read_f('f', data[['recipient']])
-  rg<-read_f('g', data[['recipient']])
-  df<-sample(diff_fval('f', af, rf), 1)
-  dg<-sample(diff_fval('g', ag, rg), 1)
+  af<-read_f(names(features)[1], data[['agent']])
+  ag<-read_f(names(features)[2], data[['agent']])
+  rf<-read_f(names(features)[1], data[['recipient']])
+  rg<-read_f(names(features)[2], data[['recipient']])
+  df<-sample(diff_fval(names(features)[1], af, rf), 1)
+  dg<-sample(diff_fval(names(features)[2], ag, rg), 1)
   
   ta_f<-c(rep(af,3),rep(df,4),rep(af,4),rep(df,4))
   ta_g<-c(rep(ag,3),rep(ag,4),rep(dg,4),rep(dg,4))
@@ -107,7 +120,7 @@ get_trials<-function(data) {
   
   df<-data.frame(trial=seq(15), ta_f, ta_g, tr_f, tr_g)
   df<-df%>%
-    mutate(agent=paste0(ta_f,'-', ta_g), recipient=paste0(tr_f,'-', tr_g))%>%
+    mutate(agent=paste0(ta_f,obj_sep,ta_g), recipient=paste0(tr_f,obj_sep,tr_g))%>%
     mutate(task=paste0(agent, ',', recipient))%>%
     select(trial, task)
   return(df)
@@ -158,12 +171,12 @@ compose_hypo<-function(data) {
     }
     return(hypo)
   }
-  hypo<-list()
+  hypo<-features
+  hypo[[1]]<-hypo_per_feature(names(features)[1], data)
+  hypo[[2]]<-hypo_per_feature(names(features)[2], data)
   hypos<-c()
-  hypo[['f']]<-hypo_per_feature('f', data)
-  hypo[['g']]<-hypo_per_feature('g', data)
-  for (f in hypo[['f']]) {
-    for (g in hypo[['g']]) {
+  for (f in hypo[[1]]) {
+    for (g in hypo[[2]]) {
       hypos<-c(hypos, paste0(f, ',', g))
     }
   }
@@ -180,16 +193,17 @@ get_causal_pred<-function(data, t, noise=FALSE) {
       }
     }
     
+    f_dict<-abbr_feature(features)
     f_pred<-list()
     for (d in strsplit(hypo, ',')[[1]]) {
       f<-substr(d,1,1)
-      f_pred[[f]]<-get_result_val(f, d, task)
+      f_pred[[f]]<-get_result_val(f_dict[[f]], d, task)
     }
     
     pred<-c()
-    for (f in f_pred[['f']]) {
-      for (g in f_pred[['g']]) {
-        pred<-c(pred, paste0(f, '-', g))
+    for (f in f_pred[[1]]) {
+      for (g in f_pred[[2]]) {
+        pred<-c(pred, paste0(f, obj_sep, g))
       }
     }
     
