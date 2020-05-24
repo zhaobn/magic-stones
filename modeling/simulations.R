@@ -300,3 +300,12 @@ get_rand_preds<-function(data, noise=T) {
 }
 plot_pred_hm(get_rand_preds(demo, T))
 
+
+
+
+
+
+
+
+
+
