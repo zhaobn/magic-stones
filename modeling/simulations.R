@@ -11,6 +11,8 @@ features<-list()
 features[['f']]<-paste0('f', seq(3))
 features[['g']]<-paste0('g', seq(3))
 
+relations<-c('=', '~')
+
 obj_sep='-'
 all_objs<-get_all_objs(features)
 
@@ -186,8 +188,12 @@ get_causal_preds<-function(data, t, noise=FALSE) {
   get_pred_per_hypo<-function(task, hypo, t) {
     get_result_val<-function(feature, desc, task) {
       relation<-substr(desc, 5, 5)
-      t_idx<-if (substr(desc, 8, 8)=='A') 1 else 2
-      t_val<-read_f(feature, strsplit(task, ',')[[1]][t_idx])
+      if (nchar(desc) < 8) {
+        t_val<-substr(desc, 6, 6)
+      } else {
+        t_idx<-if (substr(desc, 8, 8)=='A') 1 else 2
+        t_val<-read_f(feature, strsplit(task, ',')[[1]][t_idx])
+      }
       if (relation=='=') return(t_val) else {
         return(setdiff(features[[feature]], t_val))
       }
@@ -300,9 +306,72 @@ get_rand_preds<-function(data, noise=T) {
 }
 plot_pred_hm(get_rand_preds(demo, T))
 
+# Try a normative approach
+get_all_hypos<-function(features) {
+  per_feature<-function(feature) {
+    hypos<-c()
+    f<-substr(feature, 1, 1)
+    f_vals<-features[[feature]]
+    obs<-paste0(f, c('(A)', '(R)'))
+    for (r in relations) {
+      for (obj in c(obs, f_vals)) {
+        hypos<-c(hypos, paste0(f, '(T)', r, obj))
+      }
+    }
+    return(hypos)
+  }
+  hypos<-features
+  for (f in names(features)) {
+    hypos[[f]]<-per_feature(f)
+  }
+  hypo<-c()
+  for (f in hypos[[1]]) {
+    for (g in hypos[[2]]) {
+      hypo<-c(hypo, paste0(f,',',g))
+    }
+  }
+  return(hypo)
+}
+all_hypos<-get_all_hypos(features)
 
+get_learned_prior<-function(hypo, data) {
+  task<-paste(strsplit(data, ',')[[1]][c(1,2)], collapse=',')
+  result<-strsplit(data, ',')[[1]][3]
+  post<-get_pred_per_hypo(task, hypo, 9)
+  return(post[post$obj==result,'pp'])
+}
+get_norm_preds<-function(data, t, noise=FALSE) {
+  dh<-data.frame(hypo=all_hypos)%>%mutate(hypo=as.character(hypo))
+  dh$prior<-mapply(get_learned_prior, dh$hypo, rep(flatten(data), length(dh$hypo)))
+  dh$prior<-normalize(dh$prior)
 
+  get_norm_pred_per_task<-function(data, task, t) {
+    df<-data.frame(obj=all_objs)%>%mutate(obj=as.character(obj))
+    for (i in 1:length(dh$hypo)) {
+      hcol<-paste0('h_', i)
+      x<-get_pred_per_hypo(task, dh$hypo[i], t)
+      x[,hcol]=x$pp*dh[i,'prior']
+      df<-df%>%left_join((x[,c('obj', hcol)]), by='obj')
+    }
+    df<-df%>%mutate(task=task, pred=obj,
+                    sum = rowSums(.[2:ncol(dp)]))%>%select(task, pred, sum)
+    df$prob<-normalize(df$sum)
+    return(df[,c('task', 'pred', 'prob')])
+  }
+  
+  df<-data.frame(task=character(0), pred=character(0), prob=numeric(0))
+  for (tk in trials$task) {
+    df<-rbind(df, get_norm_pred_per_task(data, tk, t))
+  }
+  
+  if (noise==FALSE) return(df) else {
+    df$noise<-mapply(rnorm, 1, rep(0.01, length(df$pred)), rep(0.01, length(df$pred)))
+    df$prob<-df$prob+df$noise
+    return(df[,c('task', 'pred', 'prob')])
+  }
+}
 
+plot_pred_hm(get_norm_preds(data, 6, T))
 
 
 

@@ -53,10 +53,24 @@ ggplot(get_cond_data('learn01'), aes(pred, trial, fill=prob)) + geom_tile() +
 df.plot<-get_cond_data('learn01')
 for (i in 2:6) df.plot<-rbind(df.plot, get_cond_data(paste0('learn0', i)))
 
-ggplot(df, aes(pred, trial, fill=prob)) + geom_tile() + 
+df<-df.plot%>%filter(!(type=='probablistic'))
+ggplot(df.plot, aes(pred, trial, fill=prob)) + geom_tile() + 
   scale_fill_viridis(option="E", direction=-1) +
   #scale_fill_gradient(low="white", high="black") +
   facet_grid(type~condition)
+
+## Add normative preds
+norm<-data.frame(task=character(0),pred=character(0),prob=numeric(0))
+for (i in 1:6) {
+  data<-as.list(df.learn_tasks%>%filter(learningTaskId==paste0('learn0',i))%>%select(agent, recipient, result))
+  norm<-rbind(norm, get_norm_preds(data, 6, T))
+}
+norm$type<-'normative'
+norm$condition<-rep(paste0('L', rep(seq(6))),each=9*15)
+norm$trial<-rep(rep(seq(15),each=9),6)
+norm<-norm%>%select(names(df.plot))
+df.plot<-rbind(df.plot, norm)
+
 
 # Uniformaty
 ## Use very strong causal predictions
@@ -207,7 +221,8 @@ ggplot(df.cm, aes(x=trial, y=causal, group=sequence, color=sequence)) +
   geom_smooth(method = "lm", se = FALSE, linetype="dashed", size=.5)
 
 
-
+df.plot$type<-factor(df.plot$type, levels=c('probablistic', 'normative', 'causal', 'near', 'far'))
+save(df.plot, df.strict, df.hm, df.match, df.mix, file='plot.Rdata')
 
 
 
