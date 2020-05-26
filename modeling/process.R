@@ -5,6 +5,7 @@ options()$scipen
 
 library(dplyr)
 
+# Inference model to be debugged
 # Demo data
 ld<-list("agent"="rs", "recipient"="yc", "result"="ys")
 trials<-get_trials(ld)
@@ -49,6 +50,9 @@ for (tid in 1:15) {
     priors[tid+1,'causal']<-causal_raw/(prob_raw+causal_raw)
   }
 }
+
+
+
 
 
 

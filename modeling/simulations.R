@@ -6,6 +6,8 @@ library(dplyr)
 library(ggplot2)
 library(viridis)
 
+eps<-.Machine$double.eps
+
 # Customizable configs
 features<-list()
 features[['f']]<-paste0('f', seq(3))
@@ -160,40 +162,40 @@ compose_hypo<-function(data) {
   }
   return(hypos)
 }
-get_causal_preds<-function(data, t, noise=FALSE) {
-  get_pred_per_hypo<-function(task, hypo, t) {
-    get_result_val<-function(feature, desc, task) {
-      relation<-substr(desc, 5, 5)
-      if (nchar(desc) < 8) {
-        t_val<-substr(desc, 6, 6)
-      } else {
-        t_idx<-if (substr(desc, 8, 8)=='A') 1 else 2
-        t_val<-read_f(feature, strsplit(task, ',')[[1]][t_idx])
-      }
-      if (relation=='=') return(t_val) else {
-        return(setdiff(features[[feature]], t_val))
-      }
+get_pred_per_hypo<-function(task, hypo, t=6) {
+  get_result_val<-function(feature, desc, task) {
+    relation<-substr(desc, 5, 5)
+    if (nchar(desc) < 8) {
+      t_val<-substr(desc, 6, 6)
+    } else {
+      t_idx<-if (substr(desc, 8, 8)=='A') 1 else 2
+      t_val<-read_f(feature, strsplit(task, ',')[[1]][t_idx])
     }
-    
-    f_dict<-abbr_feature(features)
-    f_pred<-list()
-    for (d in strsplit(hypo, ',')[[1]]) {
-      f<-substr(d,1,1)
-      f_pred[[f]]<-get_result_val(f_dict[[f]], d, task)
+    if (relation=='=') return(t_val) else {
+      return(setdiff(features[[feature]], t_val))
     }
-    
-    pred<-c()
-    for (f in f_pred[[1]]) {
-      for (g in f_pred[[2]]) {
-        pred<-c(pred, paste0(f, obj_sep, g))
-      }
-    }
-    
-    df<-data.frame(obj=all_objs); df$obj<-as.character(df$obj)
-    df$yes<-as.numeric(df$obj%in%pred)
-    df$pp<-softmax(df$yes, t)
-    return(df[,c('obj', 'pp')])
   }
+  
+  f_dict<-abbr_feature(features)
+  f_pred<-list()
+  for (d in strsplit(hypo, ',')[[1]]) {
+    f<-substr(d,1,1)
+    f_pred[[f]]<-get_result_val(f_dict[[f]], d, task)
+  }
+  
+  pred<-c()
+  for (f in f_pred[[1]]) {
+    for (g in f_pred[[2]]) {
+      pred<-c(pred, paste0(f, obj_sep, g))
+    }
+  }
+  
+  df<-data.frame(obj=all_objs); df$obj<-as.character(df$obj)
+  df$yes<-as.numeric(df$obj%in%pred)
+  df$pp<-softmax(df$yes, t)
+  return(df[,c('obj', 'pp')])
+}
+get_causal_preds<-function(data, t, noise=FALSE) {
   get_pred_per_task<-function(data, task, t) {
     hypo<-compose_hypo(data)
     df<-data.frame(obj=all_objs); df$obj<-as.character(df$obj)
@@ -236,16 +238,17 @@ get_rand_preds<-function(data, noise=T) {
   }
 }
 
-# Try a normative approach
-get_all_hypos<-function(features) {
+# Normative approaches
+get_all_hypos<-function(features, is_relative=FALSE) {
   per_feature<-function(feature) {
     hypos<-c()
     f<-substr(feature, 1, 1)
-    f_vals<-features[[feature]]
     obs<-paste0(f, c('(A)', '(R)'))
+    if (!is_relative) obs<-c(obs, features[[feature]])
+    
     for (r in relations) {
-      for (obj in c(obs, f_vals)) {
-        hypos<-c(hypos, paste0(f, '(T)', r, obj))
+      for (o in obs) {
+        hypos<-c(hypos, paste0(f, '(T)', r, o))
       }
     }
     return(hypos)
@@ -262,16 +265,16 @@ get_all_hypos<-function(features) {
   }
   return(hypo)
 }
-all_hypos<-get_all_hypos(features)
-
 get_learned_prior<-function(hypo, data) {
   task<-paste(strsplit(data, ',')[[1]][c(1,2)], collapse=',')
   result<-strsplit(data, ',')[[1]][3]
   post<-get_pred_per_hypo(task, hypo, 9)
   return(post[post$obj==result,'pp'])
 }
-get_norm_preds<-function(data, t, noise=FALSE) {
-  dh<-data.frame(hypo=all_hypos)%>%mutate(hypo=as.character(hypo))
+get_norm_preds<-function(hypos, data, t, noise=FALSE) {
+  trials<-get_trials(data)
+  
+  dh<-data.frame(hypo=hypos)%>%mutate(hypo=as.character(hypo))
   dh$prior<-mapply(get_learned_prior, dh$hypo, rep(flatten(data), length(dh$hypo)))
   dh$prior<-normalize(dh$prior)
   
@@ -284,7 +287,7 @@ get_norm_preds<-function(data, t, noise=FALSE) {
       df<-df%>%left_join((x[,c('obj', hcol)]), by='obj')
     }
     df<-df%>%mutate(task=task, pred=obj,
-                    sum = rowSums(.[2:ncol(dp)]))%>%select(task, pred, sum)
+                    sum = rowSums(.[2:ncol(df)]))%>%select(task, pred, sum)
     df$prob<-normalize(df$sum)
     return(df[,c('task', 'pred', 'prob')])
   }
@@ -300,6 +303,7 @@ get_norm_preds<-function(data, t, noise=FALSE) {
     return(df[,c('task', 'pred', 'prob')])
   }
 }
+
 
 ## Plots
 plot_pred_hm<-function(data) {
@@ -378,7 +382,12 @@ ggplot(df.sim, aes(pred, task, fill=prob)) + geom_tile() +
 plot_pred_hm(get_rand_preds(demo, T))
 
 # Normative
-plot_pred_hm(get_norm_preds(data, 6, T))
+ld<-list('agent'='rs', 'recipient'='yc', 'result'='ys')
+## Complete normative set
+x<-get_norm_preds(get_all_hypos(features, F), ld, 6, F)
+## Relative normative set
+y<-get_norm_preds(get_all_hypos(features, T), ld, 6, F)
+z<-get_norm_preds(get_all_hypos(features, T), ld, 3, F)
 
 
 

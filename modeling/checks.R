@@ -16,11 +16,6 @@ read_f<-function(feature, obj) {
 }
 
 # Plot normative predictions vs. mturk results
-fmt_task_axis<-function(func, data, param, noise) {
-  df<-func(data, param, noise)
-  df$task<-factor(df$task, levels=rev(get_trials(data)$task))
-  return(df)
-}
 fmt_ppt_data<-function(cid, seq, ld, src=df.sels) {
   trials<-get_trials(ld)
   df<-df.sels%>%filter(learningTaskId==cid&sequence==seq)%>%select(trial, pred=selection, prob=freq)
@@ -28,6 +23,21 @@ fmt_ppt_data<-function(cid, seq, ld, src=df.sels) {
   df$task<-factor(df$task, levels=rev(trials$task))
   return(df)
 }
+fmt_cond_data<-function(df, cid, tname) {
+  df<-df%>%mutate(type=tname, condition=cid, trial=rep(seq(15),each=9))%>%
+    select(task, pred, prob, type, condition, trial)
+  return(df)
+}
+init_df_pred<-function() {
+  df<-data.frame(task=character(0),
+                 pred=character(0),
+                 prob=numeric(0),
+                 type=character(0),
+                 condition=character(0),
+                 trial=numeric(0))
+  return(df)
+}
+
 get_cond_data<-function(cid, alpha=1, temperature=3, noise=T, src=df.learn_tasks) {
   ld<-as.list(src%>%filter(learningTaskId==cid)%>%select(agent, recipient, result))
   
@@ -62,17 +72,19 @@ ggplot(df.plot, aes(pred, trial, fill=prob)) + geom_tile() +
   facet_grid(type~condition)
 
 ## Add normative preds
-norm<-data.frame(task=character(0),pred=character(0),prob=numeric(0))
-for (i in 1:6) {
-  data<-as.list(df.learn_tasks%>%filter(learningTaskId==paste0('learn0',i))%>%select(agent, recipient, result))
-  norm<-rbind(norm, get_norm_preds(data, 6, T))
+normative<-init_df_pred(); for (i in 1:6) {
+  ld<-as.list(df.learn_tasks[i,c(2,3,4)])
+  df<-get_norm_preds(ld, 6, T)
+  normative<-rbind(normative, fmt_cond_data(df, paste0('L', i), 'normative'))
 }
-norm$type<-'normative'
-norm$condition<-rep(paste0('L', rep(seq(6))),each=9*15)
-norm$trial<-rep(rep(seq(15),each=9),6)
-norm<-norm%>%select(names(df.plot))
-df.plot<-rbind(df.plot, norm)
+relative<-init_df_pred(); for (i in 1:6) {
+  ld<-as.list(df.learn_tasks[i,c(2,3,4)])
+  df<-get_norm_preds(get_all_hypos(features, T), ld, 6, T)
+  relative<-rbind(relative, fmt_cond_data(df, paste0('L', i), 'relative'))
+}
+df.plot<-rbind(df.plot, relative)
 
+df.plot$type<-factor(df.plot$type, levels=c('probablistic', 'normative', 'relative', 'causal', 'near', 'far'))
 
 # Uniformaty
 ## Use very strong causal predictions
@@ -223,15 +235,146 @@ ggplot(df.cm, aes(x=trial, y=causal, group=sequence, color=sequence)) +
   geom_smooth(method = "lm", se = FALSE, linetype="dashed", size=.5)
 
 
-df.plot$type<-factor(df.plot$type, levels=c('probablistic', 'normative', 'causal', 'near', 'far'))
 save(df.plot, df.strict, df.hm, df.match, df.mix, file='plot.Rdata')
 
+########################################################################################
 
-
-
-
-
-
+# Bound behavioral results with relative and minimal causal models
+## Fit temperature parameter from (combined) behavorial data
+full_model<-function(t) {
+  ppt<-df.sels%>%filter(sequence=='combined')%>%select(learningTaskId, trial, selection, n)
+  pred<-data.frame(learningTaskId=character(0), trial=numeric(0), selection=character(0), prob=numeric(0))
   
+  for (i in 1:6) {
+    ld<-as.list(df.learn_tasks[i,c(2:4)])
+    df<-get_norm_preds(get_all_hypos(features, T), ld, t, F)%>%
+      mutate(learningTaskId=paste0('learn0', i), trial=rep(seq(15),each=9))%>%
+      select(learningTaskId, trial, selection=pred, prob)
+    pred<-rbind(pred, df)
+  }
   
+  df<-ppt%>%left_join(pred,by=c('learningTaskId', 'trial', 'selection'))
+  likeli<-sum(log(df$prob)*df$n)
   
+  -likeli
+}
+library(stats4)
+mle(full_model, start=list(t=10))%>%attributes() # 3.19
+
+first_model<-function(t) {
+  ppt<-df.sels%>%filter(sequence=='combined'&learningTaskId=='learn01')%>%select(learningTaskId, trial, selection, n)
+  pred<-data.frame(learningTaskId=character(0), trial=numeric(0), selection=character(0), prob=numeric(0))
+  
+  for (i in 1:1) {
+    ld<-as.list(df.learn_tasks[i,c(2:4)])
+    df<-get_norm_preds(get_all_hypos(features, T), ld, t, F)%>%
+      mutate(learningTaskId=paste0('learn0', i), trial=rep(seq(15),each=9))%>%
+      select(learningTaskId, trial, selection=pred, prob)
+    pred<-rbind(pred, df)
+  }
+  
+  df<-ppt%>%left_join(pred,by=c('learningTaskId', 'trial', 'selection'))
+  likeli<-sum(log(df$prob)*df$n)
+  
+  -likeli
+}
+first_model(6)
+
+## Get model data
+nc<-data.frame(learningTaskId=character(0), trial=numeric(0), selection=character(0), prob=numeric(0))
+for (i in 1:6) {
+  ld<-as.list(df.learn_tasks[i,c(2:4)])
+  df<-get_norm_preds(get_all_hypos(features, T), ld, 3.19, F)%>%
+    mutate(learningTaskId=paste0('learn0', i), trial=rep(seq(15),each=9))%>%
+    select(learningTaskId, trial, selection=pred, prob)
+  nc<-rbind(nc, df)
+}
+nc$type<-'relative'
+
+mc<-data.frame(learningTaskId=character(0), trial=numeric(0), selection=character(0), prob=numeric(0))
+for (i in 1:6) {
+  ld<-as.list(df.learn_tasks[i,c(2:4)])
+  df<-get_causal_preds(ld, 3.19, F)%>%
+    mutate(learningTaskId=paste0('learn0', i), trial=rep(seq(15),each=9))%>%
+    select(learningTaskId, trial, selection=pred, prob)
+  mc<-rbind(mc, df)
+}
+mc$type<-'minimal'
+
+df.fitted<-rbind(nc, mc)
+save(df.fitted, file='checks.Rdata')
+
+## Plot overall likelihood
+overall_likeli<-function(cid, seq, tname, behave_src=df.sels, fitted_src=df.fitted) {
+  task<-paste0('learn0', cid)
+  seq_abb<-if (seq=='default') 'near' else 'far'
+  df<-behave_src%>%filter(learningTaskId==task&sequence==seq)%>%select(trial, selection, n)
+  pred<-fitted_src%>%filter(learningTaskId==task&type==tname)%>%select(trial, selection, prob)
+  df<-df%>%left_join(pred, by=c('trial', 'selection'))%>%mutate(likeli=n*log(prob,2))
+  return(data.frame(condition=cond<-paste0('L', cid), sequence=seq_abb, type=tname, likeli=sum(df$likeli)))
+}
+df.likeli<-data.frame(condition=character(0), sequence=character(0), type=character(0), likeli=numeric(0))
+for (i in 1:6) {
+  for (seq in c('default', 'reverse')) {
+    for (tn in c('relative', 'minimal')) {
+      df.likeli<-rbind(df.likeli, overall_likeli(i, seq, tn))
+    }
+  }
+}
+df.likeli$condition<-factor(df.likeli$condition, levels=c('L1', 'L3', 'L5', 'L2', 'L4', 'L6'))
+
+ggplot(df.likeli, aes(x=sequence, y=likeli, fill=type)) + 
+  geom_bar(stat="identity",position="dodge") +
+  facet_wrap(~condition) #+ coord_flip()
+
+## Plot likelihood per trial
+trial_likeli<-function(cid, tid, seq, tname, behave_src=df.sels, fitted_src=df.fitted) {
+  task<-paste0('learn0', cid)
+  seq_abb<-if (seq=='default') 'near' else 'far'
+  df<-behave_src%>%filter(learningTaskId==task&sequence==seq&trial==tid)%>%select(trial, selection, n)
+  pred<-fitted_src%>%filter(learningTaskId==task&type==tname&trial==tid)%>%select(trial, selection, prob)
+  df<-df%>%left_join(pred, by=c('selection'))%>%mutate(likeli=n*log(prob,2))
+  return(data.frame(condition=cond<-paste0('L', cid), trial=tid, sequence=seq_abb, type=tname, likeli=sum(df$likeli)))
+}
+df.likeli_per_trial<-data.frame(condition=character(0), trial=character(0), sequence=character(0), type=character(0), likeli=numeric(0))
+for (i in 1:6) {
+  for (j in 1:15) {
+    for (seq in c('default', 'reverse')) {
+      for (tn in c('relative', 'minimal')) {
+        df.likeli_per_trial<-rbind(df.likeli_per_trial, trial_likeli(i, j, seq, tn))
+      }
+    }
+  }
+}
+save(df.likeli, df.likeli_per_trial, file='likeli.Rdata')
+
+ggplot(df.likeli_per_trial, aes(x=trial, y=likeli, group=type, color=type)) + 
+  geom_line() + 
+  facet_grid(condition~sequence)
+
+x<-df.likeli_per_trial%>%filter(type=='minimal'&condition%in%c('L1', 'L3', 'L5'))
+#x<-df.likeli_per_trial%>%filter(type=='minimal')
+x$trial<-factor(x$trial, levels = seq(15))
+x$condition<-factor(x$condition, levels=c('L1', 'L3', 'L5', 'L2', 'L4', 'L6'))
+ggplot(df.likeli_per_trial, aes(x=trial, y=likeli, group=sequence, color=sequence)) + 
+  geom_line() +
+  geom_smooth(method = "lm", se = FALSE, linetype="dashed", size=.5) +
+  #labs(x='generalization trials', y='likelihood of the minimal model') +
+  facet_grid(type~condition)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
