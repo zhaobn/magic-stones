@@ -8,6 +8,8 @@ features[['shape']]<-c('c', 'd', 's') # circle, diamond, square
 obj_sep=''
 all_objs<-get_all_objs(features)
 
+relations<-c('=', '~')
+
 read_f<-function(feature, obj) {
   f_idx<-if (feature=='color') 1 else 2
   return(substr(obj, f_idx, f_idx))

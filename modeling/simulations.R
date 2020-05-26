@@ -39,6 +39,7 @@ get_all_objs<-function(features) {
   }
   return(objs)
 }
+
 normalize<-function(vec) {
   sum<-sum(vec); norm<-vec/sum; return(norm)
 }
@@ -60,9 +61,33 @@ to_list<-function(str, sep=',') {
   return(data)
 }
 
-# Non-causal baseline
-## Single prediction
-rand<-1/length(all_objs)
+get_trials<-function(data) {
+  diff_fval<-function(feature, v1, v2) {
+    return(setdiff(features[[feature]], c(v1, v2)))
+  }
+  af<-read_f(names(features)[1], data[['agent']])
+  ag<-read_f(names(features)[2], data[['agent']])
+  rf<-read_f(names(features)[1], data[['recipient']])
+  rg<-read_f(names(features)[2], data[['recipient']])
+  df<-sample(diff_fval(names(features)[1], af, rf), 1)
+  dg<-sample(diff_fval(names(features)[2], ag, rg), 1)
+  
+  ta_f<-c(rep(af,3),rep(df,4),rep(af,4),rep(df,4))
+  ta_g<-c(rep(ag,3),rep(ag,4),rep(dg,4),rep(dg,4))
+  tr_f<-c(df, rep(c(rf,df),7))
+  tr_g<-c(rg,dg,dg,rep(c(rg,rg,dg,dg),3))
+  
+  df<-data.frame(trial=seq(15), ta_f, ta_g, tr_f, tr_g)
+  df<-df%>%
+    mutate(agent=paste0(ta_f,obj_sep,ta_g), recipient=paste0(tr_f,obj_sep,tr_g))%>%
+    mutate(task=paste0(agent, ',', recipient))%>%
+    select(trial, task)
+  return(df)
+}
+
+
+# Simulation functions
+## Probablistic
 post_cat<-function(obs, alpha) {
   # Dirchilet
   post_cat_per_feature<-function(f, f_ob, alpha) {
@@ -89,45 +114,6 @@ post_cat<-function(obs, alpha) {
   df<-data.frame(obj=all_objs, post_pred); df$obj<-as.character(df$obj)
   return(df)
 }
-
-## Plots
-non_causal<-post_cat(all_objs[1], 1)%>%mutate(alpha=1)
-for (a in c(2,3,10)) non_causal<-rbind(non_causal,(post_cat(all_objs[1], a)%>%mutate(alpha=a)))
-non_causal$alpha<-as.factor(non_causal$alpha)
-ggplot(non_causal, aes(x=obj, y=post_pred, group=alpha, color=alpha)) + geom_line() + 
-  geom_hline(yintercept=rand, linetype="dashed") +
-  annotate(geom="text", label='random', x=9, y=rand, vjust=-.5)
-
-## Predict for Agent-Recipient-Result data points
-demo<-list()
-demo[['agent']]<-'f1-g1'
-demo[['recipient']]<-'f2-g2'
-demo[['result']]<-'f1-g3'
-
-get_trials<-function(data) {
-  diff_fval<-function(feature, v1, v2) {
-    return(setdiff(features[[feature]], c(v1, v2)))
-  }
-  af<-read_f(names(features)[1], data[['agent']])
-  ag<-read_f(names(features)[2], data[['agent']])
-  rf<-read_f(names(features)[1], data[['recipient']])
-  rg<-read_f(names(features)[2], data[['recipient']])
-  df<-sample(diff_fval(names(features)[1], af, rf), 1)
-  dg<-sample(diff_fval(names(features)[2], ag, rg), 1)
-  
-  ta_f<-c(rep(af,3),rep(df,4),rep(af,4),rep(df,4))
-  ta_g<-c(rep(ag,3),rep(ag,4),rep(dg,4),rep(dg,4))
-  tr_f<-c(df, rep(c(rf,df),7))
-  tr_g<-c(rg,dg,dg,rep(c(rg,rg,dg,dg),3))
-
-  df<-data.frame(trial=seq(15), ta_f, ta_g, tr_f, tr_g)
-  df<-df%>%
-    mutate(agent=paste0(ta_f,obj_sep,ta_g), recipient=paste0(tr_f,obj_sep,tr_g))%>%
-    mutate(task=paste0(agent, ',', recipient))%>%
-    select(trial, task)
-  return(df)
-}
-
 get_cat_preds<-function(data, alpha, noise=TRUE){
   df<-data.frame(task=character(0), pred=character(0), prob=numeric(0))
   pp<-post_cat(data[['result']], alpha)
@@ -142,18 +128,8 @@ get_cat_preds<-function(data, alpha, noise=TRUE){
   }
   return(df)
 }
-non_causal_demo<-get_cat_preds(demo, 1, T)
 
-## Plot
-plot_pred_hm<-function(data) {
-  g<-ggplot(data, aes(pred, task, fill=prob)) + 
-    geom_tile() + 
-    scale_fill_gradient(low="white", high="black")
-  return(g)
-}
-plot_pred_hm(non_causal_demo)
-
-# Construct causal theories
+## Causal
 compose_hypo<-function(data) {
   hypo_per_feature<-function(feature, data) {
     hypo<-c()
@@ -245,52 +221,7 @@ get_causal_preds<-function(data, t, noise=FALSE) {
   }
 }
 
-## Plot
-match_af<-demo; match_af[['result']]<-'f1-g2'
-plot_pred_hm(get_causal_pred(match_af, 1, T))
-
-match_diff<-demo; match_diff[['result']]<-'f2-g3'
-plot_pred_hm(get_causal_pred(match_diff, 1, T))
-
-all_diff<-demo; all_diff[['result']]<-'f3-g3'
-plot_pred_hm(get_causal_pred(all_diff, 1, T))
-
-
-# Full simulation results
-get_obs_pred<-function(src, ob_cg, is_causal, noise=T, alpha=1, tpt=1) {
-  od<-src; od[['result']]<-ob_cg[[1]]
-  df<-if (is_causal) get_causal_pred(od, tpt, noise) else get_cat_preds(od, alpha, noise)
-  df$type<-if (is_causal) 'causal' else 'non_causal'
-  df$obs<-ob_cg[[1]]
-  df$label<-names(ob_cg)
-  return(df)
-}
-
-demo
-ob_config<-list()
-ob_config[['no_change']]='f2-g2'
-ob_config[['same_as_agent']]='f1-g1'
-ob_config[['one_match']]='f2-g1'
-ob_config[['one_dif']]='f2-g3'
-ob_config[['all_diff']]='f3-g3'
-
-df.sim<-get_obs_pred(demo, ob_config[1], T)
-for (i in 1:length(obs)) {
-  for (t in c(T, F)) {
-    if (!(i==1&t==T)) df.sim<-rbind(df.sim, get_obs_pred(demo, ob_config[i], t))
-  }
-}
-df.sim$type<-factor(df.sim$type, levels=c('non_causal', 'causal'))
-df.sim$label<-factor(df.sim$label, levels=names(ob_config))
-
-save(df.sim, file='sim.Rdata')
-
-ggplot(df.sim, aes(pred, task, fill=prob)) + geom_tile() + 
-  scale_fill_viridis(option="E", direction=-1, end=0.7) +
-  #scale_fill_gradient(low="white", high="black") +
-  facet_grid(type~label)
-
-# Random baseline
+# Random
 get_rand_preds<-function(data, noise=T) {
   n<-length(all_objs)
   df<-data.frame(task=character(0), pred=character(0), prob=numeric(0))
@@ -304,7 +235,6 @@ get_rand_preds<-function(data, noise=T) {
     return(df[,c('task', 'pred', 'prob')])
   }
 }
-plot_pred_hm(get_rand_preds(demo, T))
 
 # Try a normative approach
 get_all_hypos<-function(features) {
@@ -344,7 +274,7 @@ get_norm_preds<-function(data, t, noise=FALSE) {
   dh<-data.frame(hypo=all_hypos)%>%mutate(hypo=as.character(hypo))
   dh$prior<-mapply(get_learned_prior, dh$hypo, rep(flatten(data), length(dh$hypo)))
   dh$prior<-normalize(dh$prior)
-
+  
   get_norm_pred_per_task<-function(data, task, t) {
     df<-data.frame(obj=all_objs)%>%mutate(obj=as.character(obj))
     for (i in 1:length(dh$hypo)) {
@@ -371,7 +301,96 @@ get_norm_preds<-function(data, t, noise=FALSE) {
   }
 }
 
+## Plots
+plot_pred_hm<-function(data) {
+  g<-ggplot(data, aes(pred, task, fill=prob)) + 
+    geom_tile() + 
+    scale_fill_gradient(low="white", high="black")
+  return(g)
+}
+
+
+# Plots
+## Probablistic - partical data point
+rand<-1/length(all_objs)
+non_causal<-post_cat(all_objs[1], 1)%>%mutate(alpha=1)
+for (a in c(2,3,10)) non_causal<-rbind(non_causal,(post_cat(all_objs[1], a)%>%mutate(alpha=a)))
+
+non_causal$alpha<-as.factor(non_causal$alpha)
+ggplot(non_causal, aes(x=obj, y=post_pred, group=alpha, color=alpha)) + geom_line() + 
+  geom_hline(yintercept=rand, linetype="dashed") +
+  annotate(geom="text", label='random', x=9, y=rand, vjust=-.5)
+
+## Probablistic - complete data points
+demo<-list()
+demo[['agent']]<-'f1-g1'
+demo[['recipient']]<-'f2-g2'
+demo[['result']]<-'f1-g3'
+
+non_causal_demo<-get_cat_preds(demo, 1, T)
+plot_pred_hm(non_causal_demo)
+
+# Causal
+match_af<-demo; match_af[['result']]<-'f1-g2'
+plot_pred_hm(get_causal_pred(match_af, 1, T))
+
+match_diff<-demo; match_diff[['result']]<-'f2-g3'
+plot_pred_hm(get_causal_pred(match_diff, 1, T))
+
+all_diff<-demo; all_diff[['result']]<-'f3-g3'
+plot_pred_hm(get_causal_pred(all_diff, 1, T))
+
+# Full simulation results
+get_obs_pred<-function(src, ob_cg, is_causal, noise=T, alpha=1, tpt=1) {
+  od<-src; od[['result']]<-ob_cg[[1]]
+  df<-if (is_causal) get_causal_pred(od, tpt, noise) else get_cat_preds(od, alpha, noise)
+  df$type<-if (is_causal) 'causal' else 'non_causal'
+  df$obs<-ob_cg[[1]]
+  df$label<-names(ob_cg)
+  return(df)
+}
+
+demo
+ob_config<-list()
+ob_config[['no_change']]='f2-g2'
+ob_config[['same_as_agent']]='f1-g1'
+ob_config[['one_match']]='f2-g1'
+ob_config[['one_dif']]='f2-g3'
+ob_config[['all_diff']]='f3-g3'
+
+df.sim<-get_obs_pred(demo, ob_config[1], T)
+for (i in 1:length(obs)) {
+  for (t in c(T, F)) {
+    if (!(i==1&t==T)) df.sim<-rbind(df.sim, get_obs_pred(demo, ob_config[i], t))
+  }
+}
+df.sim$type<-factor(df.sim$type, levels=c('non_causal', 'causal'))
+df.sim$label<-factor(df.sim$label, levels=names(ob_config))
+
+save(df.sim, file='sim.Rdata')
+
+ggplot(df.sim, aes(pred, task, fill=prob)) + geom_tile() + 
+  scale_fill_viridis(option="E", direction=-1, end=0.7) +
+  #scale_fill_gradient(low="white", high="black") +
+  facet_grid(type~label)
+
+# Random
+plot_pred_hm(get_rand_preds(demo, T))
+
+# Normative
 plot_pred_hm(get_norm_preds(data, 6, T))
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
