@@ -56,6 +56,7 @@ get_cond_data<-function(cid, alpha=1, temperature=3, noise=T, src=df.learn_tasks
   return(df)
 }
 
+
 ggplot(get_cond_data('learn01'), aes(pred, trial, fill=prob)) + geom_tile() + 
   #scale_fill_viridis(option="E", direction=-1, end=0.7) +
   scale_fill_gradient(low="white", high="black") +
@@ -304,6 +305,11 @@ mc$type<-'minimal'
 df.fitted<-rbind(nc, mc)
 save(df.fitted, file='checks.Rdata')
 
+ggplot(df.fitted, aes(selection, trial, fill=prob)) + geom_tile() + 
+  scale_fill_viridis(option="E", direction=-1) +
+  facet_grid(type~learningTaskId)
+
+
 ## Plot overall likelihood
 overall_likeli<-function(cid, seq, tname, behave_src=df.sels, fitted_src=df.fitted) {
   task<-paste0('learn0', cid)
@@ -361,6 +367,58 @@ ggplot(df.likeli_per_trial, aes(x=trial, y=likeli, group=sequence, color=sequenc
   geom_smooth(method = "lm", se = FALSE, linetype="dashed", size=.5) +
   #labs(x='generalization trials', y='likelihood of the minimal model') +
   facet_grid(type~condition)
+
+
+# Replot using fitted parameters
+df<-df.plot%>%select(condition, trial, pred, prob, type)
+fitted<-df.fitted%>%
+  mutate(condition=paste0('L', substr(learningTaskId, 7, 7)),
+         fit_name=if_else(type=='relative', 'fitted_relative', 'fitted_causal'))%>%
+  select(condition, trial, pred=selection, prob, type=fit_name)
+df<-rbind(df, fitted)
+ggplot(df, aes(pred, trial, fill=prob)) + geom_tile() + 
+  scale_fill_viridis(option="E", direction=-1) +
+  facet_grid(type~condition)
+
+fitted<-fitted%>%mutate(name=if_else(type=='fitted_causal', 'minimal', 'relative'))%>%
+  select(condition, trial, pred, prob, type=name)
+
+normative<-init_df_pred(); for (i in 1:6) {
+  ld<-as.list(df.learn_tasks[i,c(2,3,4)])
+  df<-get_norm_preds(get_all_hypos(features, F), ld, 3.19, F)
+  normative<-rbind(normative, fmt_cond_data(df, paste0('L', i), 'normative'))
+}
+fitted_norm<-normative%>%select(names(df.strict))
+
+df.strict<-rbind(
+  df.plot%>%filter(type%in%c('probablistic', 'normative', 'near', 'far'))%>%
+    select(names(fitted)),
+  fitted, fitted_norm
+)
+
+df.strict$type<-factor(df.strict$type, levels=c('probablistic', 'normative', "relative", "minimal", 'near', 'far'))
+ggplot(df.strict, aes(pred, trial, fill=prob)) + geom_tile() + 
+  scale_fill_viridis(option="E", direction=-1) +
+  facet_grid(type~condition)
+save(df.strict, df.plot, df.hm, df.match, df.mix, file='plot.Rdata')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -95,10 +95,10 @@ context_hypo<-function(data, seq) {
   
   return(hps)
 }
-context_hypo(as.list(df.learn_tasks[1,c(2:4)]),'near')
+context_hypo(as.list(df.learn_tasks[1,c(2:4)]),'far')
 
 get_context_preds<-function(cid, seq, t, noise=FALSE) {
-  data<-as.list(df.learn_tasks[i,c(2:4)])
+  data<-as.list(df.learn_tasks[cid,c(2:4)])
   get_pred_per_task<-function(data, seq, task, t) {
     hypo<-context_hypo(data, seq)
     df<-data.frame(obj=all_objs); df$obj<-as.character(df$obj)
@@ -107,7 +107,7 @@ get_context_preds<-function(cid, seq, t, noise=FALSE) {
       x<-get_pred_per_hypo(task, hypo[i], t)
       df<-df%>%left_join(x, by='obj')%>%rename(!!hcol:=pp)
     }
-    df<-df%>%mutate(task=task, pred=obj, sequence=seq, condition=paste0('L', i),
+    df<-df%>%mutate(task=task, pred=obj, sequence=seq, condition=paste0('L', cid),
                     sum = rowSums(.[2:ncol(df)]))
     df$prob<-normalize(df$sum)
     return(df[,c('sequence', 'condition', 'task', 'pred', 'prob')])
@@ -127,18 +127,45 @@ get_context_preds<-function(cid, seq, t, noise=FALSE) {
   return(df[,c('sequence', 'condition', 'trial', 'task', 'pred', 'prob')])
 }
 
-df.process<-get_context_preds(1,'near',3.19, T)
+
+df.process<-get_context_preds(1,'near',3.19, F)
 for (i in 1:6) {
   for (s in c('near', 'far')) {
-    if (!(i==1&s=='near')) df.process<-rbind(df.process, get_context_preds(i,s,3.19, T))
+    if (!(i==1&s=='near')) df.process<-rbind(df.process, get_context_preds(i,s,3.19, F))
   }
 }
-df.process$trial<-factor(df.process$trial, levels=seq(15))
-df.process$condition<-factor(df.process$condition, le)
+df.process$trial<-factor(df.process$trial, levels=rev(seq(15)))
+x<-df.process%>%filter(condition=='L1')
 ggplot(df.process, aes(pred, trial, fill=prob)) + geom_tile() + 
   scale_fill_viridis(option="E", direction=-1) +
   #scale_fill_gradient(low="white", high="black") +
-  facet_grid(sequence~condition)
+  facet_grid(condition~sequence)
+
+## Add prior likelihoods
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
