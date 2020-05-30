@@ -117,7 +117,8 @@ get_pred_per_hypo<-function(task, hypo, t=6) {
   
   df<-data.frame(obj=all_objs); df$obj<-as.character(df$obj)
   df$yes<-as.numeric(df$obj%in%pred)
-  df$pp<-softmax(df$yes, t)
+  
+  if (t==F) df$pp<-df$yes else df$pp<-softmax(df$yes, t)
   return(df[,c('obj', 'pp')])
 }
 
