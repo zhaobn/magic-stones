@@ -56,6 +56,12 @@ read_task<-function(task_str) {
 }
 
 # Core functions ####
+
+# return::vector
+init_cat<-function(alpha) {
+  return(rep(alpha, length(features[[1]])+length(features[[2]])))
+}
+
 ## args: obs::list, count_type::'A' - agent only, 'AR' - agent and recipient
 ## return: feats::vector, reference with feat_dict in task config
 count_feats<-function(obs, count_type) {
@@ -77,56 +83,74 @@ count_feats<-function(obs, count_type) {
 ## args: obs::list, cat::vector, count_type::"A", "AR"
 ## return: prob::float
 cat_prob<-function(obs, cat, count_type) {
-  total<-cat+count_feats(obs, count_type)
-  # Separate features
-  colors<-total[0:length(features[['color']])]
-  shapes<-total[(length(features[['color']])+1):length(total)]
-  # Keep non-zeros
-  colors<-colors[colors!=0]
-  shapes<-shapes[shapes!=0]
-  # Probabilities
-  c_prob = s_prob = 1
-  c_total<-sum(colors); s_total<-sum(shapes)
-  for (c in colors) c_prob<-c_prob*(c/c_total)
-  for (s in shapes) s_prob<-s_prob*(s/s_total)
-  
+  cat_prob_per_feat<-function(obs_feat, cat_feat) {
+    return(sum(cat_feat[which(obs_feat %in% 1)]/sum(cat_feat)))
+  }
+  obs_feats<-count_feats(obs, count_type)
+  c_prob<-cat_prob_per_feat(obs_feats[0:length(features[[1]])],cat[0:length(features[[1]])])
+  s_prob<-cat_prob_per_feat(obs_feats[(length(features[[1]])+1):length(obs_feats)], cat[(length(features[[1]])+1):length(cat)])
   return(c_prob*s_prob)
 }
 
-
-
-## args: ld::list, tasks::vector of comma-sep string, count_type::"A", "AR
-sim_cat<-function(ld, tasks, count_type) {
-  cats<-list()
-  ## 1. assign learning data-point to cat 1
-  cats[['1']]<-count_feats(ld, count_type)
-  ## 2. greedily assign cats
-  for (i in 1:length(tasks)) {
-    # start with a random cat
-    cat_num<-sample(names(cats),1)
-    # belong to this cat?
-    prob<-cat_prob(read_task(tasks[i]), cats[[cat_num]], count_type)
-    if (prob>runif(1)) {
-      # add observation feature values to this cat
-      cats[[cat_num]]<-cats[[cat_num]]+count_feats(read_task(tasks[i]), count_type)
-    } else {
-      # check for the next cat or create new cat
-     if (length(cats)==1) {
-       cats[['2']]<-count_feats(read_task(tasks[i]), count_type)
-     } else {
-       
-     }
-    }
+## return: cats::list of vectors
+update_or_new<-function(obs, cat_index, cats, count_type) {
+  cat<-cats[[cat_index]]
+  if (runif(1)<cat_prob(obs, cat, count_type)) { # update
+    cats[[cat_index]]<-cat+count_feats(obs, count_type)
+  } else { # new
+    add_to_end<-length(cats)+1
+    cats[[add_to_end]]<-init_cat(feat_alpha)+count_feats(obs, count_type)
   }
-  ## 3. for now: count distinct cats
+  return(cats)
 }
 
+## return: cats::list of vectors
+assign_cats<-function(obs, cats, count_type) {
+  current_cats<-seq(length(cats))
+  updated<-FALSE
+  while(length(current_cats)>1) {
+    check_cat<-sample(current_cats, 1)
+    if (runif(1)<cat_prob(obs, cats[[check_cat]], count_type)) { # add to this cat
+      cats[[check_cat]]<-cats[[check_cat]]+count_feats(obs, count_type)
+      updated<-TRUE
+      break
+    } else { # check for next cat
+      current_cats<-setdiff(current_cats, check_cat)
+    }
+  }
+  if (!updated) {
+    left_index<-current_cats[1]
+    cats<-update_or_new(obs, left_index, cats, count_type)
+  }
+  return(cats)
+}
+
+## return: n cats: int
+sim_feat_cat<-function(ld, tasks, feat_alpha, count_type) {
+  # Assign ld to first cat
+  cats<-list()
+  cats[[1]]<-init_cat(feat_alpha)+count_feats(ld, count_type)
+  
+  # Greedily assign categories according to feature similarity
+  for (i in 1:length(tasks)) {
+    td<-read_task(tasks[i])
+    cats<-assign_cats(td, cats, count_type)
+  }
+  
+  # For now: count distinct categories
+  return(length(cats))
+}
 
 # Simulation results ####
 ## Get data
 ld<-as.list(df.learn_tasks[1,c(2:4)])
 near_first<-get_trials(ld)
 far_first<-near_first%>%arrange(desc(row_number()))
+
+## Run sims
+feat_alpha<-0.1
+sim_feat_cat(ld, near_first$task, feat_alpha, 'A')
+
 
 # Plots ####
 
