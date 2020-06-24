@@ -17,7 +17,6 @@ features[['shape']]<-c('c', 'd', 's') # circle, diamond, square
 feat_dict<-c(features[[1]],features[[2]])
 
 obj_sep=''
-relations<-c('=', '~')
 
 read_f<-function(feature, obj) {
   f_idx<-if (feature=='color') 1 else 2
@@ -124,6 +123,19 @@ assign_cats<-function(obs, cats, alpha, count_type) {
   return(cats)
 }
 
+## return: tasks::vector
+get_tasks<-function(ld, seq, count_type) {
+  tasks<-get_trials(ld)$task
+  if (count_type=="pair"|count_type=='AR') {
+    if (seq=='near') return(tasks) else return(rev(tasks))
+  } else {
+    agents<-c()
+    for (t in tasks) agents<-c(agents, strsplit(t, ',')[[1]][1])
+    agents<-unique(agents)
+    if (seq=='near') return(agents) else return(rev(agents))
+  }
+}
+
 ## return: n cats: int
 sim_feat_cat<-function(ld, tasks, feat_alpha, count_type) {
   # Assign ld to first cat
@@ -138,7 +150,10 @@ sim_feat_cat<-function(ld, tasks, feat_alpha, count_type) {
   
   # For now: count distinct categories
   return(length(cats))
+  #return(cats)
 }
+
+#sim_feat_cat(ld, get_tasks(ld, 'near', 'A'), 0.1, 'A')
 
 # Simulation results ####
 ## Get data
@@ -149,14 +164,16 @@ far_first<-near_first%>%arrange(desc(row_number()))
 
 get_avg_cats<-function(n, seq, type, alpha) {
   total<-0; n_run<-n;
+  count_type<-if (type=='pair') 'AR' else 'A'
+  tasks<-get_tasks(ld, seq, count_type)
   while (n>0) {
-    tasks<-if (seq=='near') near_first$task else far_first$task
-    count_type<-if (type=='pair') 'AR' else 'A'
     total<-total+sim_feat_cat(ld, tasks, alpha, count_type)
     n<-n-1
   }
   return(round(total/n_run,2))
 }
+
+get_avg_cats(500, 'near', 'agent_only', 0.1)
 
 ## Run sims
 n<-c(10,100,500)
@@ -173,6 +190,17 @@ save(df.sim, file='greedy_feat.Rdata')
 ggplot(df.sim, aes(x=grouping, y=avg_cats, fill=condition))+
   geom_bar(position="dodge", stat="identity")+
   facet_grid(n~feature_alpha)
+
+# Tests ####
+df<-expand.grid(n=500, condition=task_type, grouping='agent_only', feature_alpha=feature_alpha)
+df$avg_cat<-mapply(get_avg_cats, df$n, df$condition, df$grouping, df$feature_alpha)
+
+
+
+
+
+
+
 
 
 
