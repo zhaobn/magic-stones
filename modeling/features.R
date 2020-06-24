@@ -82,7 +82,8 @@ count_feats<-function(obs, count_type) {
 ## return: prob::float
 cat_prob<-function(obs, cat, count_type) {
   cat_prob_per_feat<-function(obs_feat, cat_feat) {
-    return(prod(cat_feat[which(obs_feat %in% 1)]/sum(cat_feat)))
+    presented<-cat_feat[which(obs_feat==1)]
+    return(sum(presented)/sum(cat_feat))
   }
   obs_feats<-count_feats(obs, count_type)
   c_prob<-cat_prob_per_feat(obs_feats[0:length(features[[1]])],cat[0:length(features[[1]])])
@@ -153,14 +154,12 @@ sim_feat_cat<-function(ld, tasks, feat_alpha, count_type) {
   #return(cats)
 }
 
-#sim_feat_cat(ld, get_tasks(ld, 'near', 'A'), 0.1, 'A')
+sim_feat_cat(ld, get_tasks(ld, 'near', 'AR'), 0.01, 'AR')
 
 # Simulation results ####
 ## Get data
 ld<-as.list(df.learn_tasks[1,c(2:4)])
 # ld<-list("agent"="rs", "recipient"="yc", "result"="ys")
-near_first<-get_trials(ld)
-far_first<-near_first%>%arrange(desc(row_number()))
 
 get_avg_cats<-function(n, seq, type, alpha) {
   total<-0; n_run<-n;
