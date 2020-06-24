@@ -81,14 +81,16 @@ count_feats<-function(obs, count_type) {
 ## args: obs::list, cat::vector, count_type::"A", "AR"
 ## return: prob::float
 cat_prob<-function(obs, cat, count_type) {
-  cat_prob_per_feat<-function(obs_feat, cat_feat) {
-    presented<-cat_feat[which(obs_feat==1)]
-    return(sum(presented)/sum(cat_feat))
-  }
-  obs_feats<-count_feats(obs, count_type)
-  c_prob<-cat_prob_per_feat(obs_feats[0:length(features[[1]])],cat[0:length(features[[1]])])
-  s_prob<-cat_prob_per_feat(obs_feats[(length(features[[1]])+1):length(obs_feats)], cat[(length(features[[1]])+1):length(cat)])
-  return(c_prob*s_prob)
+  presented<-cat[which(count_feats(obs, count_type)==1)]
+  return(sum(presented)/sum(cat))
+  # cat_prob_per_feat<-function(obs_feat, cat_feat) {
+  #   presented<-cat_feat[which(obs_feat==1)]
+  #   return(sum(presented)/sum(cat_feat))
+  # }
+  # obs_feats<-count_feats(obs, count_type)
+  # c_prob<-cat_prob_per_feat(obs_feats[0:length(features[[1]])],cat[0:length(features[[1]])])
+  # s_prob<-cat_prob_per_feat(obs_feats[(length(features[[1]])+1):length(obs_feats)], cat[(length(features[[1]])+1):length(cat)])
+  # return(c_prob*s_prob)
 }
 
 ## return: cats::list of vectors
@@ -124,18 +126,22 @@ assign_cats<-function(obs, cats, alpha, count_type) {
   return(cats)
 }
 
+
 ## return: tasks::vector
-get_tasks<-function(ld, seq, count_type) {
+all_tasks<-function(ld, seq) {
   tasks<-get_trials(ld)$task
-  if (count_type=="pair"|count_type=='AR') {
-    if (seq=='near') return(tasks) else return(rev(tasks))
-  } else {
+  if (seq=='near') return(tasks) else return(rev(tasks))
+}
+get_tasks<-function(ld, seq, count_type) {
+  tasks<-all_tasks(ld, seq)
+  if (count_type=="pair"|count_type=='AR') return(tasks) else {
     agents<-c()
     for (t in tasks) agents<-c(agents, strsplit(t, ',')[[1]][1])
     agents<-unique(agents)
     if (seq=='near') return(agents) else return(rev(agents))
   }
 }
+
 
 ## return: n cats: int
 sim_feat_cat<-function(ld, tasks, feat_alpha, count_type) {
@@ -164,7 +170,7 @@ ld<-as.list(df.learn_tasks[1,c(2:4)])
 get_avg_cats<-function(n, seq, type, alpha) {
   total<-0; n_run<-n;
   count_type<-if (type=='pair') 'AR' else 'A'
-  tasks<-get_tasks(ld, seq, count_type)
+  tasks<-all_tasks(ld, seq)
   while (n>0) {
     total<-total+sim_feat_cat(ld, tasks, alpha, count_type)
     n<-n-1
@@ -172,10 +178,10 @@ get_avg_cats<-function(n, seq, type, alpha) {
   return(round(total/n_run,2))
 }
 
-get_avg_cats(500, 'near', 'agent_only', 0.1)
+get_avg_cats(100, 'near', 'agent_only', 0.1)
 
 ## Run sims
-n<-c(10,100,500)
+n<-c(10,100,1000)
 task_type<-c('near', 'far')
 count_type<-c('agent_only', 'pair')
 feature_alpha<-c(0.01, 0.1, 0.2, 1)
@@ -183,17 +189,12 @@ feature_alpha<-c(0.01, 0.1, 0.2, 1)
 df.sim<-expand.grid(n=n, condition=task_type, grouping=count_type, feature_alpha=feature_alpha)
 df.sim$avg_cats<-mapply(get_avg_cats, df.sim$n, df.sim$condition, df.sim$grouping, df.sim$feature_alpha)
 
-save(df.sim, file='greedy_feat.Rdata')
+save(df.sim, file='data/greedy_feat.Rdata')
 
 # Plots ####
 ggplot(df.sim, aes(x=grouping, y=avg_cats, fill=condition))+
   geom_bar(position="dodge", stat="identity")+
   facet_grid(n~feature_alpha)
-
-# Tests ####
-df<-expand.grid(n=500, condition=task_type, grouping='agent_only', feature_alpha=feature_alpha)
-df$avg_cat<-mapply(get_avg_cats, df$n, df$condition, df$grouping, df$feature_alpha)
-
 
 
 
