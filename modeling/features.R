@@ -133,7 +133,9 @@ cat_prior<-function(cat, cats, feat_alpha, crp_alpha, count_type, is_new=F) {
 #   @count_type {string} see above
 stone_likeli<-function(obs, cat, count_type) {
   likeli_per_feat<-function(obs_feat, cat_feat) {
-    sum(cat_feat[which(obs_feat==1)])/sum(cat_feat)
+    observed<-sum(obs_feat*cat_feat)
+    total<-sum(replace(obs_feat, obs_feat==0, 1)*cat_feat)
+    return(observed/total)
   } 
   
   obs_feats<-count_feats(obs, count_type)
@@ -186,7 +188,7 @@ sim_feat_cat<-function(ld, tasks, feat_alpha, crp_alpha, count_type) {
   #return(cats)
 }
 
-#sim_feat_cat(ld, all_tasks(ld, 'near'), 0.1, 0.5, 'A')
+sim_feat_cat(ld, all_tasks(ld, 'near'), 0.2, 0.5, 'AR')
 
 #######################################################################
 # Simulation results ####
@@ -207,7 +209,7 @@ get_avg_cats<-function(n, seq, type, feat_alpha, crp_alpha) {
   return(round(total/n_run,2))
 }
 
-get_avg_cats(100, 'near', 'agent', 0.1, 0.1)
+get_avg_cats(100, 'near', 'pair', 0.1, 0.1)
 
 ## Run sims
 #ld<-as.list(df.learn_tasks[1,c(2:4)])
