@@ -215,20 +215,22 @@ get_avg_cats(100, 'near', 'pair', 0.1, 0.1)
 #ld<-as.list(df.learn_tasks[1,c(2:4)])
 ld<-list("agent"="rs", "recipient"="yc", "result"="ys")
 
-n<-c(10,100,1000)
 task_type<-c('near', 'far')
 count_type<-c('agent_only', 'pair')
 feature_alpha<-c(0.01, 0.1, 0.2, 1)
+crp_alpha<-c(0.1, 0.5, 0.8)
 
-df.sim<-expand.grid(n=n, condition=task_type, grouping=count_type, feature_alpha=feature_alpha)
-df.sim$avg_cats<-mapply(get_avg_cats, df.sim$n, df.sim$condition, df.sim$grouping, df.sim$feature_alpha)
+df.sim<-expand.grid(condition=task_type, grouping=count_type, feature_alpha=feature_alpha, crp_alpha=crp_alpha)
+df.sim$avg_cats<-mapply(get_avg_cats, rep(1000,nrow(df.sim)), 
+                        df.sim$condition, df.sim$grouping, 
+                        df.sim$feature_alpha, df.sim$crp_alpha)
 
 save(df.sim, file='data/greedy_feat.Rdata')
 
 # Plots ####
 ggplot(df.sim, aes(x=grouping, y=avg_cats, fill=condition))+
   geom_bar(position="dodge", stat="identity")+
-  facet_grid(n~feature_alpha)
+  facet_grid(crp_alpha~feature_alpha)
 
 
 
