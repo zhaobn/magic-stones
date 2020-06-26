@@ -1,5 +1,6 @@
 
-# Libs ####
+#######################################################################
+####  Libs ####
 options("scipen" = 10)
 options()$scipen
 
@@ -10,7 +11,7 @@ library(viridis)
 eps<-.Machine$double.eps
 
 #######################################################################
-# Task configs ####
+####  Task configs ####
 features<-list()
 features[['color']]<-c('b', 'r', 'y') # blue, red, yellow
 features[['shape']]<-c('c', 'd', 's') # circle, diamond, square
@@ -18,6 +19,7 @@ features[['shape']]<-c('c', 'd', 's') # circle, diamond, square
 feat_dict<-c(features[[1]],features[[2]])
 
 obj_sep=''
+relations<-c('=', '~')
 
 read_f<-function(feature, obj) {
   f_idx<-if (feature=='color') 1 else 2
@@ -25,7 +27,30 @@ read_f<-function(feature, obj) {
 }
 
 #######################################################################
-# Helper functions ####
+####  Helper functions ####
+# Returns a dict, key is abbreviated feature, value is full f. name
+#   @features {list} key is full f. name
+abbr_feature<-function(features) {
+  f_dict<-list()
+  for (n in names(features)) {
+    abbr<-substr(n, 1, 1)
+    f_dict[[abbr]]<-n
+  }
+  return(f_dict)
+}
+# Returns a vector of all possible objects
+#   @features {list}
+get_all_objs<-function(features) {
+  objs<-c()
+  for (f in features[[1]]) {
+    for (g in features[[2]]) {
+      objs<-c(objs, paste0(f, obj_sep, g))
+    }
+  }
+  return(objs)
+}
+# Configure all possible objects
+all_objs<-get_all_objs(features)
 # Returns a vector of tasks, ordered by near/far condition
 #   @ld {list} learning data-point
 #   @seq {string} "near": near-first transfer sequence, "far": far-first
@@ -70,9 +95,31 @@ read_task<-function(task_str) {
 normalize<-function(vec) {
   sum<-sum(vec); norm<-vec/sum; return(norm)
 }
+# Returns a softmaxed vector
+#   @base {int} reverse softmax temperature parameter, higher the tighter
+softmax<-function(vec, base=1) {
+  v_exp<-exp(vec*base); sum<-sum(v_exp)
+  return(v_exp/sum)
+}
+# Stringify a data-point list
+flatten<-function(list, sep=',') {
+  str=c()
+  for (i in 1:length(list)) str<-c(str, list[[i]])
+  return(paste(str, collapse=sep))
+}
+# Turn a string version of task into list
+to_list<-function(str, sep=',') {
+  vecs<-strsplit(str, sep)[[1]]
+  data<-list()
+  data[['agent']]<-vecs[1]
+  data[['recipient']]<-vecs[2]
+  if (length(vecs) > 2) data[['result']]<-vecs[3]
+  return(data)
+}
+
 
 #######################################################################
-# Core functions ####
+####  Core functions: Categorization ####
 # Returns a vector of category summarize intialized with feature alpha
 #   @alpha {numeric}
 init_cat<-function(alpha) {
@@ -149,88 +196,107 @@ stone_likeli<-function(obs, cat, count_type) {
   return(c_prob*s_prob)
 }
 
-# Returns simulated category assignment
-#   @ld {list}, @tasks {vector of string}, 
-#   @feat_alpha {numeric}, @crp_alpha {numeric}
-#   @count_type {string}: "A", "AR"
-sim_feat_cat<-function(ld, tasks, feat_alpha, crp_alpha, count_type) {
-  # Assign ld to first cat
-  cats<-list()
-  cats[[1]]<-init_cat(feat_alpha)+count_feats(ld, count_type)
-  
-  # Greedily assign categories
-  for (i in 1:length(tasks)) {
-    td<-read_task(tasks[i])
-    # Check the probability of belonging to each existing category
-    unnorm_probs<-vector()
-    for (ci in (1:length(cats))) {
-      p_cat<-stone_likeli(td, cats[[ci]], count_type)*
-             cat_prior(cats[[ci]], cats, feat_alpha, crp_alpha, count_type, F)
-      unnorm_probs<-c(unnorm_probs, p_cat)
+
+####  Core functions: PCFGs ####
+# Returns all (universal) hypotheses
+#   @features {list} see task config
+get_all_hypos<-function(features) {
+  per_feature<-function(feature) {
+    hypos<-c()
+    f<-substr(feature, 1, 1)
+    obs<-paste0(f, c('(A)', '(R)')) # relative references
+    obs<-c(obs, features[[feature]]) # exact references
+    
+    for (r in relations) {
+      for (o in obs) {
+        hypos<-c(hypos, paste0(f, '(T)', r, o))
+      }
     }
-    # Or creating a new category
-    p_new<-stone_likeli(td, init_cat(feat_alpha), count_type)*
-           cat_prior(c(), cats, feat_alpha, crp_alpha, count_type, T)
-    unnorm_probs<-c(unnorm_probs, p_new)
-    # Normalize  
-    probs<-normalize(unnorm_probs)
-    # Assign cat accordinly
-    cat_indexes<-seq(length(cats)+1)
-    assigned_ci<-sample(cat_indexes, 1, prob=probs)
-    if (assigned_ci>length(cats)) {
-      cats[[assigned_ci]]<-init_cat(feat_alpha)+count_feats(td, count_type)
-    } else {
-      cats[[assigned_ci]]<-cats[[assigned_ci]]+count_feats(td, count_type)
+    return(hypos)
+  }
+  hypos<-features
+  for (f in names(features)) hypos[[f]]<-per_feature(f)
+  
+  hypo<-c()
+  # First, add all single hypos
+  hypo<-c(hypo, hypos[[1]])
+  hypo<-c(hypo, hypos[[2]])
+  # Then, add complex hypos
+  for (f in hypos[[1]]) {
+    for (g in hypos[[2]]) {
+      hypo<-c(hypo, paste0(f,',',g))
     }
   }
-  
-  return(length(cats))
-  #return(cats)
+  return(hypo)
 }
 
-sim_feat_cat(ld, all_tasks(ld, 'near'), 0.2, 0.5, 'AR')
+# Returns normative-defined prior for a hypothesis, unnormalized
+#   @hypo {string} a comma-separated hypothesis
+#   @beta {numeric} size of virtual feature values
+get_hypo_prior<-function(hypo, beta=10) {
+  ib<-1
+  descs<-strsplit(hypo, ',')[[1]]
+  for (d in descs) {
+    ib<-ib/(length(features)*length(relations))
+    to_draw<-if (nchar(d)>6) 2 else beta # relative vs. absolute values
+    ib<-ib/to_draw
+  }
+  return(ib)
+}
+
+# Returns P(data | hypothesis)
+#   @data {list or string} a full data-point
+#   @hypo {string}
+#   @beta {numeric} same as above
+data_given_hypo<-function(data, hypo, beta=10) {
+  li<-1 # li: short for likelihood
+  if (typeof(data)!='list') data<-to_list(data)
+  
+  get_li_per_feature<-function(feature, f_hypo) {
+    relation<-substr(f_hypo,5,5)
+    target<-if (nchar(f_hypo)<9) substr(f_hypo,6,6) else {
+      obj<-if (substr(f_hypo,8,8)=='A') 'agent' else 'recipient'
+      read_f(feature, data[[obj]])
+    }
+    # switch below 0's to eps if needed
+    if (relation=='=') {
+      li<-if (read_f(feature, data[['result']])==target) 1 else 0
+    } else {
+      li<-if (read_f(feature, data[['result']])!=target) 1/(beta-1) else 0
+    }
+    return(li)
+  }
+  
+  # If a hypothesis do not spec all features, default the missing one to unchange
+  descs<-strsplit(hypo, ',')[[1]]
+  if (length(descs)<length(features)) {
+    missed<-if (substr(descs[1],1,1)=='c') 's' else 'c'
+    no_change<-paste0(missed, '(T)=', missed, '(R)')
+    descs<-c(descs, no_change)
+  }
+  # Get likelihood
+  for (h in descs) {
+    f<-if (substr(h, 1, 1)=='c') 'color' else 'shape'
+    li<-li*get_li_per_feature(f, h)
+  }
+  return(li)
+}
+
+# Returns predicted outcome
+#   @td {list} a partial data-point, with only agent & recipient
+#   @hypo {string} a hypothesis
+get_hypo_preds<-function(td, hypo) {
+  predicted<-vector()
+  for (o in all_objs) {
+    d<-td
+    d[['result']]<-o
+    if (data_given_hypo(d, hypo) > 0) predicted<-c(predicted, o)
+  }
+  return(predicted)
+}
+
 
 #######################################################################
-# Simulation results ####
-# Returns average categories per n simulations
-#   @n {integer} n runs
-#   @seq {string} "near", "far"
-#   @type {string} "agent-only" or "agent, "pair"
-#   @feat_alpha {numeric} larger => more categories
-#   @crp_alpha {numeric} larger => more categories
-get_avg_cats<-function(n, seq, type, feat_alpha, crp_alpha) {
-  total<-0; n_run<-n;
-  count_type<-if (type=='pair') 'AR' else 'A'
-  tasks<-all_tasks(ld, seq)
-  while (n>0) {
-    total<-total+sim_feat_cat(ld, tasks, feat_alpha, crp_alpha, count_type)
-    n<-n-1
-  }
-  return(round(total/n_run,2))
-}
-
-get_avg_cats(100, 'near', 'pair', 0.1, 0.1)
-
-## Run sims
-#ld<-as.list(df.learn_tasks[1,c(2:4)])
-ld<-list("agent"="rs", "recipient"="yc", "result"="ys")
-
-task_type<-c('near', 'far')
-count_type<-c('agent_only', 'pair')
-feature_alpha<-c(0.01, 0.1, 0.2, 1)
-crp_alpha<-c(0.1, 0.5, 0.8)
-
-df.sim<-expand.grid(condition=task_type, grouping=count_type, feature_alpha=feature_alpha, crp_alpha=crp_alpha)
-df.sim$avg_cats<-mapply(get_avg_cats, rep(1000,nrow(df.sim)), 
-                        df.sim$condition, df.sim$grouping, 
-                        df.sim$feature_alpha, df.sim$crp_alpha)
-
-save(df.sim, file='data/greedy_feat.Rdata')
-
-# Plots ####
-ggplot(df.sim, aes(x=grouping, y=avg_cats, fill=condition))+
-  geom_bar(position="dodge", stat="identity")+
-  facet_grid(crp_alpha~feature_alpha)
 
 
 
