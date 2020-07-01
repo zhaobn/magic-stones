@@ -118,7 +118,7 @@ df<-data.frame(learningTaskId=character(0), condition=character(0), trial=intege
                pred=character(0), n=integer(0), freq=numeric(0))
 for (i in 1:6) {
   for (s in c('near', 'far')) {
-    df<-rbind(df, get_sim(i, s, 100))
+    df<-rbind(df, get_sim(i, s, 1000))
   }
 }
 
@@ -135,8 +135,83 @@ save(df.sim, file='sim.Rdata')
 #   scale_y_continuous(trans="reverse", breaks=unique(x$trial)) +
 #   scale_fill_viridis(option="E", direction=-1) 
 
+#### Plots and stats for discussion ###################################
+sim<-df.sim%>%mutate(cond=if_else(condition=='near', "model_near", "model_far"),
+                    learn=paste0("L", substr(learningTaskId, 7,7)))%>%
+  select(learningTaskId=learn, condition=cond, trial, selection=pred, freq)
+ppt<-df.sels%>%filter(!(sequence=='combined'))%>%
+  mutate(cond=if_else(sequence=='default', 'ppt_near', 'ppt_far'),
+         learn=paste0("L", substr(learningTaskId, 7,7)))%>%
+  select(learningTaskId=learn, condition=cond, trial, selection, freq)
 
-### Not used ##########################################################
+## Heatmap ####
+df<-rbind(sim, ppt)
+df$condition<-factor(df$condition, levels=c("ppt_near", "model_near", "ppt_far", "model_far"))
+ggplot(df, aes(x=selection, y=trial, fill=freq)) + geom_tile() +
+  scale_y_continuous(trans="reverse", breaks=unique(df$trial)) +
+  scale_fill_viridis(option="E", direction=-1) +
+  facet_grid(condition~learningTaskId)
+
+## Linear regression ####
+df<-(ppt%>%mutate(condition=substr(condition, 5, 8)))%>%
+  left_join(sim%>%mutate(condition=substr(condition, 7, 11))%>%rename(prob=freq), 
+            by=c('learningTaskId', 'condition', 'trial', 'selection'))
+df$condition<-factor(df$condition, levels=c('near', 'far'))
+  
+ggplot(df, aes(x=prob, y=freq)) +
+  geom_point(shape=3, size=1) +
+  geom_smooth(method=lm , color="red", fill="#69b3a2", se=TRUE) +
+  facet_grid(condition~learningTaskId)
+
+ggplot(df, aes(x=prob, y=freq, color=learningTaskId)) +
+  geom_point(size=1) +
+  geom_smooth(method=lm , color="red", fill="#69b3a2", se=TRUE)
+
+summary(lm(data=df, freq~prob))$r.squared
+
+
+#### Fitting #############################################################
+ppt_data<-df.sels%>%filter(!(sequence=='combined'))%>%
+  mutate(condition=if_else(sequence=='default', 'near', 'far'))%>%
+  select(learningTaskId, condition, trial, pred=selection, ppt=n)
+  
+
+sim<-function(par, data) {
+  df<-data.frame(learningTaskId=character(0), condition=character(0), trial=integer(0),
+                 pred=character(0), n=integer(0), freq=numeric(0))
+  for (i in 1:6) {
+    for (s in c('near', 'far')) {
+      df<-rbind(df, get_sim(i, s, 100, par[1], par[2], par[3]))
+    }
+  }
+  df<-df%>%mutate(condition=as.character(condition), pred=as.character(pred))%>%
+    left_join(data, by=c('learningTaskId', 'condition', 'trial', 'pred'))%>%
+    mutate(prob=if_else(freq==0, eps, freq))
+  
+  return(-sum(log(df$prob)*df$ppt))
+} 
+x<-sim(c(3,0.1,0.1), ppt_data)
+out=optim(par=c(10, 0.1, 0.1), fn=sim, data=ppt_data)
+
+
+model<-function(beta, fa, ca) {
+  df<-data.frame(learningTaskId=character(0), condition=character(0), trial=integer(0),
+                 pred=character(0), n=integer(0), freq=numeric(0))
+  for (i in 1:6) {
+    for (s in c('near', 'far')) {
+      df<-rbind(df, get_sim(i, s, 100, beta, fa, ca))
+    }
+  }
+  df<-df%>%mutate(condition=as.character(condition), pred=as.character(pred))%>%
+    left_join(ppt_data, by=c('learningTaskId', 'condition', 'trial', 'pred'))%>%
+    mutate(prob=if_else(freq==0, eps, freq))
+  
+  return(-sum(log(df$prob)*df$ppt))
+} 
+library(stats4)
+mled=mle(model, start=list(beta=3,fa=0.1, ca=0.1))
+
+#### Not used ##########################################################
 # Returns average categories per n simulations
 #   @n {integer} n runs
 #   @seq {string} "near", "far"
