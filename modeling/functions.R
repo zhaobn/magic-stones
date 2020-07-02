@@ -83,6 +83,12 @@ all_tasks<-function(ld, seq) {
   tasks<-get_trials(ld)$task
   if (seq=='near') return(tasks) else return(rev(tasks))
 }
+# Read tasks from a dataframe
+tasks_from_df<-function(lid, seq='near', src=df.gen_trials) {
+ taskdf<-src%>%filter(learningTaskId==paste0('learn0',lid))%>%
+   mutate(task=paste0(agent,',',recipient))
+ if (seq=='near') return(taskdf$task) else return(rev(taskdf$task))
+}
 # Returns the list version of a task
 #   @task_str {string} string version of a task, separated by comma
 read_task<-function(task_str) {

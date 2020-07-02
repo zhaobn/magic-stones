@@ -6,7 +6,7 @@ source("./functions.R")
 #### Helper functions #################################################
 # Returns hypothesis stats
 #   @ld {list}, @beta {numeric}
-prep_hypos<-function(ld, beta=10) {
+prep_hypos<-function(ld, beta=3.8) {
   all_hypo<-get_all_hypos(features)
   
   df<-data.frame(hypo=all_hypo)%>%mutate(hypo=as.character(hypo))
@@ -98,7 +98,8 @@ get_sim<-function(lid, seq, n=1000, beta=10,
                   ld_src=df.learn_tasks) {
   ld<-as.list(ld_src[lid,c(2:4)])
   
-  tasks<-all_tasks(ld, seq)
+  #tasks<-all_tasks(ld, seq)
+  tasks<-tasks_from_df(lid, seq)
   df<-prep_hypos(ld, beta)
   
   results<-init_results(seq)%>%mutate(learningTaskId=paste0('learn0', lid))%>%
@@ -112,6 +113,7 @@ get_sim<-function(lid, seq, n=1000, beta=10,
   results$freq<-results$n/n_runs
   return(results)
 } 
+
 
 #### Run sims #########################################################
 df<-data.frame(learningTaskId=character(0), condition=character(0), trial=integer(0),
@@ -131,9 +133,9 @@ df.sim<-df
 save(df.sim, file='sim.Rdata')
 
 # x<-get_sim(1, 'near', 100)
-# ggplot(x, aes(x=pred, y=trial, fill=freq)) + geom_tile() + 
+# ggplot(x, aes(x=pred, y=trial, fill=freq)) + geom_tile() +
 #   scale_y_continuous(trans="reverse", breaks=unique(x$trial)) +
-#   scale_fill_viridis(option="E", direction=-1) 
+#   scale_fill_viridis(option="E", direction=-1)
 
 #### Plots and stats for discussion ###################################
 sim<-df.sim%>%mutate(cond=if_else(condition=='near', "model_near", "model_far"),
