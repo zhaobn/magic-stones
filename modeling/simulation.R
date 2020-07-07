@@ -93,7 +93,7 @@ init_results<-function(seq='near', n_tasks=15) {
 #   @beta, feat_alpha, crp_alpha {numeric} see functions.R
 #   @grouping {string} "A", "AR", see functions.R
 #   @ld_src {dataframe} use df.learn_src from './data/tasks.Rdata'
-get_sim<-function(lid, seq, n=1000, beta=10,
+get_sim<-function(lid, seq, n=1000, beta=3.8,
                   feat_alpha=0.1, crp_alpha=0.1, grouping='A', 
                   ld_src=df.learn_tasks) {
   ld<-as.list(ld_src[lid,c(2:4)])
@@ -113,7 +113,6 @@ get_sim<-function(lid, seq, n=1000, beta=10,
   results$freq<-results$n/n_runs
   return(results)
 } 
-
 
 #### Run sims #########################################################
 df<-data.frame(learningTaskId=character(0), condition=character(0), trial=integer(0),
@@ -137,53 +136,18 @@ save(df.sim, file='sim.Rdata')
 #   scale_y_continuous(trans="reverse", breaks=unique(x$trial)) +
 #   scale_fill_viridis(option="E", direction=-1)
 
-#### Plots and stats for discussion ###################################
-sim<-df.sim%>%mutate(cond=if_else(condition=='near', "model_near", "model_far"),
-                    learn=paste0("L", substr(learningTaskId, 7,7)))%>%
-  select(learningTaskId=learn, condition=cond, trial, selection=pred, freq)
-ppt<-df.sels%>%filter(!(sequence=='combined'))%>%
-  mutate(cond=if_else(sequence=='default', 'ppt_near', 'ppt_far'),
-         learn=paste0("L", substr(learningTaskId, 7,7)))%>%
-  select(learningTaskId=learn, condition=cond, trial, selection, freq)
-
-## Heatmap ####
-df<-rbind(sim, ppt)
-df$condition<-factor(df$condition, levels=c("ppt_near", "model_near", "ppt_far", "model_far"))
-ggplot(df, aes(x=selection, y=trial, fill=freq)) + geom_tile() +
-  scale_y_continuous(trans="reverse", breaks=unique(df$trial)) +
-  scale_fill_viridis(option="E", direction=-1) +
-  facet_grid(condition~learningTaskId)
-
-## Linear regression ####
-df<-(ppt%>%mutate(condition=substr(condition, 5, 8)))%>%
-  left_join(sim%>%mutate(condition=substr(condition, 7, 11))%>%rename(prob=freq), 
-            by=c('learningTaskId', 'condition', 'trial', 'selection'))
-df$condition<-factor(df$condition, levels=c('near', 'far'))
-  
-ggplot(df, aes(x=prob, y=freq)) +
-  geom_point(shape=3, size=1) +
-  geom_smooth(method=lm , color="red", fill="#69b3a2", se=TRUE) +
-  facet_grid(condition~learningTaskId)
-
-ggplot(df, aes(x=prob, y=freq, color=learningTaskId)) +
-  geom_point(size=1) +
-  geom_smooth(method=lm , color="red", fill="#69b3a2", se=TRUE)
-
-summary(lm(data=df, freq~prob))$r.squared
-
-
-#### Fitting #############################################################
+#### Fit parameters #####################################################
 ppt_data<-df.sels%>%filter(!(sequence=='combined'))%>%
   mutate(condition=if_else(sequence=='default', 'near', 'far'))%>%
   select(learningTaskId, condition, trial, pred=selection, ppt=n)
-  
 
 sim<-function(par, data) {
+  set.seed(6)
   df<-data.frame(learningTaskId=character(0), condition=character(0), trial=integer(0),
                  pred=character(0), n=integer(0), freq=numeric(0))
   for (i in 1:6) {
     for (s in c('near', 'far')) {
-      df<-rbind(df, get_sim(i, s, 100, par[1], par[2], par[3]))
+      df<-rbind(df, get_sim(i, s, 100, 3.8, par[1], par[2]))
     }
   }
   df<-df%>%mutate(condition=as.character(condition), pred=as.character(pred))%>%
@@ -192,26 +156,102 @@ sim<-function(par, data) {
   
   return(-sum(log(df$prob)*df$ppt))
 } 
-x<-sim(c(3,0.1,0.1), ppt_data)
-out=optim(par=c(10, 0.1, 0.1), fn=sim, data=ppt_data)
 
+#x<-sim(c(0.1,0.1), ppt_data); x
+#out=optim(par=c(0.1, 0.1), fn=sim, data=ppt_data)
+# out$par 0.08905396 0.10702393
+# out$value 3146.072
 
-model<-function(beta, fa, ca) {
-  df<-data.frame(learningTaskId=character(0), condition=character(0), trial=integer(0),
-                 pred=character(0), n=integer(0), freq=numeric(0))
-  for (i in 1:6) {
-    for (s in c('near', 'far')) {
-      df<-rbind(df, get_sim(i, s, 100, beta, fa, ca))
-    }
+#refit=optim(par=c(1, 1), fn=sim, data=ppt_data)
+# refit$par 1.107895 1.055760
+# refit$value 2955.638
+# sim(c(1.1,1), ppt_data) 3184.891 => refit result makes no sense
+
+# Grid search result is better
+sim(c(0.2,0.08), ppt_data) # 3002.539
+sim(c(eps,eps), ppt_data) # 3885.358
+
+# Plot >1 params?
+df<-data.frame(learningTaskId=character(0), condition=character(0), trial=integer(0),
+               pred=character(0), n=integer(0), freq=numeric(0))
+for (i in 1:6) {
+  for (s in c('near', 'far')) {
+    df<-rbind(df, get_sim(i, s, 100, 3.8, 1.11, 1.06))
   }
-  df<-df%>%mutate(condition=as.character(condition), pred=as.character(pred))%>%
-    left_join(ppt_data, by=c('learningTaskId', 'condition', 'trial', 'pred'))%>%
-    mutate(prob=if_else(freq==0, eps, freq))
-  
-  return(-sum(log(df$prob)*df$ppt))
-} 
-library(stats4)
-mled=mle(model, start=list(beta=3,fa=0.1, ca=0.1))
+}
+
+ggplot(df, aes(x=pred, y=trial, fill=freq)) + geom_tile() +
+  scale_y_continuous(trans="reverse", breaks=unique(df$trial)) +
+  scale_fill_viridis(option="E", direction=-1) +
+  facet_grid(condition~learningTaskId)
+
+df.sim.loose<-df
+
+df<-data.frame(learningTaskId=character(0), condition=character(0), trial=integer(0),
+               pred=character(0), n=integer(0), freq=numeric(0))
+for (i in 1:6) {
+  for (s in c('near', 'far')) {
+    df<-rbind(df, get_sim(i, s, 100, 10, 0.1, 0.1))
+  }
+}
+
+ggplot(df, aes(x=pred, y=trial, fill=freq)) + geom_tile() +
+  scale_y_continuous(trans="reverse", breaks=unique(df$trial)) +
+  scale_fill_viridis(option="E", direction=-1) +
+  facet_grid(condition~learningTaskId)
+
+df.sim.loose<-df
+df.sim.tight<-df
+df.sim.me<-df
+save(df.sim, df.sim.tight, df.sim.loose, df.sim.me, file='./data/sim.Rdata')
+
+
+#### Analyse Eddie fitting results #####################################
+# Run on Eddie ####
+x<-c(seq(0.01,0.1,by=0.01), seq(0.2,1,by=0.1))
+y<-c(seq(0.01,0.1,by=0.01), seq(0.2,1,by=0.1))
+m<-matrix(nrow=length(x), ncol=length(y))
+for (xi in 1:length(x)) {
+  for (yi in 1:length(y)) {
+    m[xi,yi]<-sim(c(x[xi],y[yi]), ppt_data)
+  }
+}
+
+write.table(m, file=paste0(path,'output.txt'))
+
+# Plot sensitivity ####
+library(plotly)
+library(htmlwidgets)
+
+m<-matrix(unlist(read.table('data/output.txt')), ncol=length(y))
+p<-plot_ly(x=y, y=x, z=m, type = "surface")%>% 
+  layout(
+    title = "Sensitivity analysis",
+    scene = list(
+      xaxis = list(title = "crp_concentration"),
+      yaxis = list(title = "feature_prior"),
+      zaxis = list(title = "Loglikelihood")
+    ))
+p
+saveWidget(p, file="sensitivity_analysis.html")
+
+library(GA)
+par(mfrow=c(1,2))
+persp3D(x, y, m, theta=-30, phi=15, expand=1, col.palette=topo.colors,
+        xlab="feature_prior", ylab="crp_concentration", zlab="")
+persp3D(x, y, m, theta=120, phi=15, expand=1, col.palette=topo.colors,
+        xlab="feature_prior", ylab="crp_concentration", zlab="")
+
+
+# persp(x2,y2,m2, shade=0.4,col="cyan",
+#         theta=-40, phi=-0,
+#         nticks=10, ticktype="detailed",
+#         xlab="feature_prior", ylab="crp_concentration", zlab="log_likelihood", main="Sensitivity analysis")
+# 
+# persp(x2,y2,m2, shade=0.4, col="cyan",
+#       theta=140, phi=-0,
+#       nticks=10, ticktype="detailed",
+#       xlab="feature_prior", ylab="crp_concentration", zlab="log_likelihood", main="Sensitivity analysis")
 
 #### Not used ##########################################################
 # Returns average categories per n simulations
@@ -256,10 +296,6 @@ ggplot(df.cat.flat, aes(x=grouping, y=avg_cats, fill=condition))+
   facet_grid(crp_alpha~feature_alpha)
 
 #######################################################################
-
-
-
-
 
 
 
