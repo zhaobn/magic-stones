@@ -253,6 +253,30 @@ persp3D(x, y, m, theta=120, phi=15, expand=1, col.palette=topo.colors,
 #       nticks=10, ticktype="detailed",
 #       xlab="feature_prior", ylab="crp_concentration", zlab="log_likelihood", main="Sensitivity analysis")
 
+
+# Run with fitted parameters ####
+df<-data.frame(learningTaskId=character(0), condition=character(0), trial=integer(0),
+               pred=character(0), n=integer(0), freq=numeric(0))
+for (i in 1:6) {
+  for (s in c('near', 'far')) {
+    df<-rbind(df, get_sim(i, s, 1000, 3.8, 0.2, 0.08))
+  }
+}
+df.sim<-df
+save(df.sim, file='./data/sim.Rdata')
+
+# Try new values
+df<-data.frame(learningTaskId=character(0), condition=character(0), trial=integer(0),
+               pred=character(0), n=integer(0), freq=numeric(0))
+for (i in 1:6) {
+  for (s in c('near', 'far')) {
+    df<-rbind(df, get_sim(i, s, 1000, 3.8, 0.06, 0.08))
+  }
+}
+df.sim<-df
+save(df.sim, file='./data/sim.Rdata')
+
+
 #### Not used ##########################################################
 # Returns average categories per n simulations
 #   @n {integer} n runs

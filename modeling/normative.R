@@ -72,7 +72,56 @@ out=optim(par=10, fn=fit_me, data=ppt_data, method='Brent', lower=1, upper=50)
 # out$par = 3.828173
 # out$value = 2598.681
 
+# Save normative sims with fitted parameter ####
+dh<-data.frame(hypo=get_all_hypos(features))%>%mutate(hypo=as.character(hypo))
+dh$prior<-normalize(mapply(get_hypo_prior, dh$hypo, 3.8))
+
+df<-get_cond_pred(1, dh, 3.8)
+for (i in 2:6) df<-rbind(df, get_cond_pred(i, dh, 3.8))
+
+df.norm<-df
+save(df.norm, file='data/normative.Rdata')
+
 #######################################################################
+
+# % match ####
+task_match<-function(lid, tid) {
+  ppt<-df.sels%>%
+    filter(sequence=='combined'&learningTaskId==paste0('learn0',lid)&trial==tid)
+  ppt_most<-(ppt%>%filter(n==max(n)))$selection
+          
+  mod<-df.norm%>%mutate(pred=as.character(pred))%>%
+    filter(learningTaskId==paste0('learn0',lid)&trial==tid)%>%arrange(-prob)
+  mod_most<-(mod%>%filter(prob==max(prob)))$pred
+  
+  predicted<-FALSE
+  for (p in ppt_most) {
+    predicted<-predicted|(p %in% mod_most)
+  }
+  return(predicted)
+}
+matched<-0
+for (i in 1:6) {
+  for (j in 1:15) {
+    matched<-matched+task_match(i,j)
+  }
+}
+66/90
+
+df<-data.frame(learningTaskId=paste0('learn0',1),trial=1,matched=1)
+for (i in 1:6) {
+  for (j in 1:15) {
+    if (!(i==1&j==1)) df<-rbind(df,
+                                data.frame(learningTaskId=paste0('learn0',i),trial=j,
+                                           matched=task_match(i,j)))
+  }
+}
+
+
+#######################################################################
+
+
+
 
 
 
