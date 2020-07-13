@@ -301,6 +301,36 @@ get_hypo_preds<-function(td, hypo) {
   return(predicted)
 }
 
+# Returns a dataframe with all hypotheses, prior and posterior
+#   @ld {list} learning data point
+prep_hypos<-function(ld, beta=3.8, temp=0) {
+  all_hypo<-get_all_hypos(features)
+  
+  df<-data.frame(hypo=all_hypo)%>%mutate(hypo=as.character(hypo))
+  n<-nrow(df)
+  
+  df$prior<-normalize(mapply(get_hypo_prior, df$hypo, rep(beta,n)))
+  df$posterior<-normalize(
+    df$prior * mapply(data_given_hypo, rep(flatten(ld),n), df$hypo, rep(beta,n))
+  )
+  if (temp!=0) df$posterior<-softmax(df$posterior, temp)
+  return(df)
+}
+
+
+# Returns a dataframe to hold simulation results
+#   @seq {string} "near", "far"
+#   @n_tasks {integer} length(tasks)
+init_results<-function(seq='near', n_tasks=15) {
+  df<-expand.grid(trial=seq(n_tasks), condition=seq, pred=all_objs, n=0)%>%
+    arrange(trial, pred)
+}
+init_all<-function(seq='near', n_tasks=15) {
+  df<-expand.grid(learningTaskId=paste0('learn0', seq(6)),
+    trial=seq(n_tasks), condition=seq, pred=all_objs, n=0)%>%
+    arrange(learningTaskId, trial, pred)
+}
+
 
 #######################################################################
 
