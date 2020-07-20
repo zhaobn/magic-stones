@@ -299,7 +299,26 @@ init_all<-function(seq='near', n_tasks=15) {
     arrange(learningTaskId, trial, pred)
 }
 
-
+#### Shared stats functions ####
+# Note that this required a systematic input data formt
+# This function prepares ppt data
+fmt_ppt<-function(src=df.sels) {
+  ppt_near<-src%>%filter(sequence=='default')%>%
+    mutate(condition='near', learn_cond=paste0('L', substr(learningTaskId,7,7)))%>%
+    select(learn_cond, condition, trial, selection, n)
+  ppt_far<-src%>%filter(sequence=='reverse')%>%
+    mutate(condition='far', learn_cond=paste0('L', substr(learningTaskId,7,7)))%>%
+    select(learn_cond, condition, trial, selection, n)
+  return(rbind(ppt_near, ppt_far))
+}
+# This function formats model_predictions
+fmt_results<-function(df) {
+  df<-df%>%mutate(learn_cond=paste0('L', substr(learningTaskId,7,7)),
+                  pred=as.character(pred),
+                  condition=as.character(condition))%>%
+    select(learn_cond, condition, trial, selection=pred, prob)
+  return(df)
+}
 #######################################################################
 
 
