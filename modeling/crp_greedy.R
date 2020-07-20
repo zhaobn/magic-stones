@@ -1,8 +1,8 @@
 
 # Load library and functions
 source("./functions.R")
-load("data/tasks.Rdata")
-load("data/aggregated.Rdata")
+load("../behavioral_data/tasks.Rdata")
+load("../behavioral_data/aggregated.Rdata")
 
 # Get greedy simulations ##############################################
 sim_preds<-function(preds, ld, seq, tasks, hypos, feat_alpha, crp_alpha, count_type) {
@@ -62,8 +62,7 @@ get_sim<-function(lid, seq, n=1000, beta=3.8, temp=0,
                   feat_alpha=0.1, crp_alpha=0.1, grouping='A', 
                   ld_src=df.learn_tasks) {
   ld<-as.list(ld_src[lid,c(2:4)])
-  
-  #tasks<-all_tasks(ld, seq)
+
   tasks<-tasks_from_df(lid, seq)
   df<-prep_hypos(ld, beta, temp)
   

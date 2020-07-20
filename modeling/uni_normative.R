@@ -1,17 +1,17 @@
 
 # Load library and functions
 source("./functions.R")
-load("data/tasks.Rdata")
-load("data/aggregated.Rdata")
+load("../behavioral_data/tasks.Rdata")
+load("../behavioral_data/aggregated.Rdata")
 
 #######################################################################
 # Get normative predictions ####
-get_cond_pred<-function(lid, dh, par=3, temp=1) {
-  get_trial_pred<-function(tid) {
+get_cond_pred<-function(lid, par=3, temp=1) {
+  get_trial_pred<-function(tid, par, temp) {
     prediction<-list(); for(obj in all_objs) prediction[[obj]]<-0
     td<-as.list(tasks[tid, c(3:4)])
     for (i in 1:nrow(dh)) {
-      hp<-dh$hypo[i]; posterior<-dh$post[i]
+      hp<-dh$hypo[i]; posterior<-dh$posterior[i]
       predicted<-get_hypo_preds(td, hp)
       for (pt in predicted) {
         size<-if (length(predicted)>1) par-1 else 1
@@ -21,16 +21,14 @@ get_cond_pred<-function(lid, dh, par=3, temp=1) {
     
     p<-data.frame(matrix(unlist(prediction), nrow=length(prediction), byrow=T))
     colnames(p)<-c('prob')
-    p$prob<-normalize(p$prob)
+    p$prob<-if (temp==0) normalize(p$prob) else softmax(p$prob, temp)
     
     return(cbind(data.frame(learningTaskId=paste0('learn0',lid), trial=tid, pred=all_objs), p))
   }
   # Prep data
   ld<-as.list(df.learn_tasks[lid,c(2:4)])
   tasks<-df.gen_trials%>%filter(learningTaskId==paste0('learn0',lid))
-  # Calc posterior with softmax
-  dh$post<-normalize(dh$prior*mapply(data_given_hypo, flatten(ld), dh$hypo, par))
-  if (temp!=0) dh$post<-softmax(dh$post, temp)
+  dh<-prep_hypos(ld, par)
   
   # Make prediction
   df<-get_trial_pred(1)  

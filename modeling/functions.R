@@ -51,38 +51,7 @@ get_all_objs<-function(features) {
 }
 # Configure all possible objects
 all_objs<-get_all_objs(features)
-# Returns a vector of tasks, ordered by near/far condition
-#   @ld {list} learning data-point
-#   @seq {string} "near": near-first transfer sequence, "far": far-first
-all_tasks<-function(ld, seq) {
-  # Reused from earlier code
-  get_trials<-function(data) {
-    diff_fval<-function(feature, v1, v2) {
-      return(setdiff(features[[feature]], c(v1, v2)))
-    }
-    af<-read_f(names(features)[1], data[['agent']])
-    ag<-read_f(names(features)[2], data[['agent']])
-    rf<-read_f(names(features)[1], data[['recipient']])
-    rg<-read_f(names(features)[2], data[['recipient']])
-    df<-sample(diff_fval(names(features)[1], af, rf), 1)
-    dg<-sample(diff_fval(names(features)[2], ag, rg), 1)
-    
-    ta_f<-c(rep(af,3),rep(df,4),rep(af,4),rep(df,4))
-    ta_g<-c(rep(ag,3),rep(ag,4),rep(dg,4),rep(dg,4))
-    tr_f<-c(df, rep(c(rf,df),7))
-    tr_g<-c(rg,dg,dg,rep(c(rg,rg,dg,dg),3))
-    
-    df<-data.frame(trial=seq(15), ta_f, ta_g, tr_f, tr_g)
-    df<-df%>%
-      mutate(agent=paste0(ta_f,obj_sep,ta_g), recipient=paste0(tr_f,obj_sep,tr_g))%>%
-      mutate(task=paste0(agent, ',', recipient))%>%
-      select(trial, task, agent, recipient)
-    return(df)
-  }
-  
-  tasks<-get_trials(ld)$task
-  if (seq=='near') return(tasks) else return(rev(tasks))
-}
+
 # Read tasks from a dataframe
 tasks_from_df<-function(lid, seq='near', src=df.gen_trials) {
  taskdf<-src%>%filter(learningTaskId==paste0('learn0',lid))%>%
@@ -303,7 +272,7 @@ get_hypo_preds<-function(td, hypo) {
 
 # Returns a dataframe with all hypotheses, prior and posterior
 #   @ld {list} learning data point
-prep_hypos<-function(ld, beta=3.8, temp=0) {
+prep_hypos<-function(ld, beta=10) {
   all_hypo<-get_all_hypos(features)
   
   df<-data.frame(hypo=all_hypo)%>%mutate(hypo=as.character(hypo))
@@ -313,11 +282,10 @@ prep_hypos<-function(ld, beta=3.8, temp=0) {
   df$posterior<-normalize(
     df$prior * mapply(data_given_hypo, rep(flatten(ld),n), df$hypo, rep(beta,n))
   )
-  if (temp!=0) df$posterior<-softmax(df$posterior, temp)
   return(df)
 }
 
-
+#### Re: simulation scripts ####
 # Returns a dataframe to hold simulation results
 #   @seq {string} "near", "far"
 #   @n_tasks {integer} length(tasks)
