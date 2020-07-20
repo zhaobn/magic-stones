@@ -5,64 +5,7 @@ load("../behavioral_data/tasks.Rdata")
 load("../behavioral_data/aggregated.Rdata")
 
 #######################################################################
-# Do it in the sampling way ####
-get_sim<-function(n=100, mu=0.1, alpha=0.1, beta=3.8, temp=0) {
-  # Get simulation per condition
-  sim_cond<-function(n, lid, seq) {
-    ld<-as.list(df.learn_tasks[lid,c(2:4)]) # read learning data point
-    dh<-prep_hypos(ld, beta) # hypotheses prior and posterior
-    cat<-init_cat(mu)+count_feats(ld, 'A') # learning's category
-    cats<-list(); cats[[1]]<-cat
-    tasks<-tasks_from_df(lid) # all tasks for this learning condition
-    df<-init_results(seq, length(tasks)) # prep results dataframe
-    # Get simulation results per trial
-    sim_trial<-function(results, tid){
-      # Preps
-      tid<-if (seq=='near') tid else length(tasks)+1-tid
-      td<-read_task(tasks[tid])
-      # Decide if task stones belong to the same category as learning stones
-      p_cat<-stone_likeli(td, cat, 'A')*cat_prior(cat, cats, mu, alpha, 'A', F)
-      p_new<-stone_likeli(td, init_cat(mu), 'A')*cat_prior(init_cat(mu), cats, mu, alpha, 'A', T)
-      p_yes<-p_cat/(p_cat+p_new)
-      # If so, sample from posterior
-      # If not, sample from prior
-      if (runif(1)<p_yes) {
-        func<-sample(dh$hypo, 1, prob=dh$posterior)
-      } else {
-        func<-sample(dh$hypo, 1, prob=dh$prior)
-      }
-      predicted<-sample(get_hypo_preds(td, func), 1)
-      results<-results%>%mutate(n=if_else(trial==tid&pred==predicted, n+1, n))
-      return(results)
-    }
-    # Run simulation
-    iter=n;
-    while (iter>0) {
-      for (i in 1:length(tasks)) df<-sim_trial(df, i)
-      iter<-iter-1
-    }
-    df<-df%>%mutate(learningTaskId=paste0('learn0',lid))%>%select(learningTaskId, condition, trial, pred, n)
-    return(df)
-  }
-  # Run simulations
-  df<-data.frame(learningTaskId=character(0), condition=character(0), 
-                 trial=numeric(0), pred=character(0), n=numeric(0))
-  for (i in 1:6) {
-    for (s in c('near', 'far')) {
-      df<-rbind(df, sim_cond(n, i, s))
-    }
-  }
-  return(df)
-}
-
-df<-get_sim(10000, 0.2, 0.08, 3.8, 0)
-df$prob<-df$n/10000
-df.sim.10k<-df
-df.sim.10k<-df.sim.10k%>%mutate(condition=as.character(condition), pred=as.character(pred))
-#save(df.sim.10k, file='data/sim.Rdata')
-#####
-
-# Do it analytically ####
+# get predictions per condition
 get_crp_norm_cond_preds<-function(lid, seq, mu=0.1, alpha=0.1, beta=10, temp=0) {
   # prep data
   ld<-as.list(df.learn_tasks[lid,c(2:4)]) # read learning data point
@@ -120,15 +63,17 @@ get_crp_norm_pred<-function(mu=0.1, alpha=0.1, beta=10, temp=0) {
   df<-get_crp_norm_cond_preds(1, 'near', mu, alpha, beta, temp)
   for (i in 1:6) {
     for (s in c('near', 'far')) {
-      if (!(i==1&seq=='near')) df<-rbind(df, get_crp_norm_cond_preds(i, s, mu, alpha, beta, temp))
+      if (!(i==1&seq=='near')) {
+        df<-rbind(df, get_crp_norm_cond_preds(i, s, mu, alpha, beta, temp))
+      } 
     }
   }
   return(df)
 }
 
-df.sim.analytical<-get_crp_norm_pred(0.2, 0.08, 3.8, 0)
-df.sim.analytical<-df.sim.analytical%>%mutate(pred=as.character(pred))
-save(df.sim.10k, df.sim.analytical, file='data/sim.Rdata')
+# get cro-normative model results
+df.crp<-get_crp_norm_pred(0.2, 0.08, 3.8, 0)%>%mutate(pred=as.character(pred))
+save(df.crp, file='data/sim.Rdata')
 
 # Calculate likelihoods
 ppt_data<-df.sels%>%filter(!(sequence=='combined'))%>%

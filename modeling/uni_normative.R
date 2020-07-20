@@ -31,15 +31,15 @@ get_cond_pred<-function(lid, par=3, temp=1) {
   dh<-prep_hypos(ld, par)
   
   # Make prediction
-  df<-get_trial_pred(1)  
-  for (i in 2:15) df<-rbind(df, get_trial_pred(i))
+  df<-get_trial_pred(1, par, temp)  
+  for (i in 2:15) df<-rbind(df, get_trial_pred(i, par, temp))
   return(df)
 }
 
 dh<-data.frame(hypo=get_all_hypos(features))%>%mutate(hypo=as.character(hypo))
 dh$prior<-normalize(mapply(get_hypo_prior, dh$hypo, 3))
 
-df<-get_cond_pred(1, dh, 3, 0)
+df<-get_cond_pred(1, 3, 0)
 for (i in 2:6) df<-rbind(df, get_cond_pred(i, dh, 3, 0))
 
 ggplot(df, aes(x=pred, y=trial, fill=prob)) + geom_tile() +
