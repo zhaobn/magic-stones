@@ -70,6 +70,7 @@ read_task<-function(task_str) {
 normalize<-function(vec) {
   sum<-sum(vec); norm<-vec/sum; return(norm)
 }
+
 # Returns a softmaxed vector
 #   @base {int} reverse softmax temperature parameter, higher the tighter
 softmax<-function(vec, base=1, type='') {
@@ -79,6 +80,16 @@ softmax<-function(vec, base=1, type='') {
     v_exp<-exp(log(vec)*base); sum<-sum(v_exp)
   }
   return(v_exp/sum)
+}
+# Returns a softmaxed vector of trials
+softmax_trials<-function(vec, base, type) {
+  t<-c()
+  for (i in seq(1,length(vec),length(all_objs))) {
+    to_softmax<-probs[c(i:(i+length(all_objs)-1))]
+    results<-softmax(to_softmax, base, type)
+    t<-c(t, results)
+  }
+  return(t)
 }
 # Stringify a data-point list
 flatten<-function(list, sep=',') {
@@ -276,16 +287,20 @@ get_hypo_preds<-function(td, hypo) {
 
 # Returns a dataframe with all hypotheses, prior and posterior
 #   @ld {list} learning data point
-prep_hypos<-function(ld, beta=10) {
+prep_hypos<-function(ld, beta=10, temp=5, type='') {
   all_hypo<-get_all_hypos(features)
   
   df<-data.frame(hypo=all_hypo)%>%mutate(hypo=as.character(hypo))
   n<-nrow(df)
   
   df$prior<-normalize(mapply(get_hypo_prior, df$hypo, rep(beta,n)))
-  df$posterior<-normalize(
-    df$prior * mapply(data_given_hypo, rep(flatten(ld),n), df$hypo, rep(beta,n))
-  )
+  df$posterior<-(df$prior*mapply(data_given_hypo, rep(flatten(ld),n), df$hypo, rep(beta,n)))
+  
+  if (type=='log') {
+    df$posterior<-softmax(df$posterior, temp, 'log')
+  } else {
+    df$posterior<-if (temp==0) normalize(df$posterior) else softmax(df$posterior, temp, '')
+  }
   return(df)
 }
 
