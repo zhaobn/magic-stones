@@ -72,8 +72,12 @@ normalize<-function(vec) {
 }
 # Returns a softmaxed vector
 #   @base {int} reverse softmax temperature parameter, higher the tighter
-softmax<-function(vec, base=1) {
-  v_exp<-exp(vec*base); sum<-sum(v_exp)
+softmax<-function(vec, base=1, type='') {
+  if (type!='log') {
+    v_exp<-exp(vec*base); sum<-sum(v_exp)
+  } else {
+    v_exp<-exp(log(vec)*base); sum<-sum(v_exp)
+  }
   return(v_exp/sum)
 }
 # Stringify a data-point list
@@ -302,21 +306,34 @@ init_all<-function(seq='near', n_tasks=15) {
 #### Shared stats functions ####
 # Note that this required a systematic input data formt
 # This function prepares ppt data
-fmt_ppt<-function(src=df.sels) {
-  ppt_near<-src%>%filter(sequence=='default')%>%
-    mutate(condition='near', learn_cond=paste0('L', substr(learningTaskId,7,7)))%>%
-    select(learn_cond, condition, trial, selection, n)
-  ppt_far<-src%>%filter(sequence=='reverse')%>%
-    mutate(condition='far', learn_cond=paste0('L', substr(learningTaskId,7,7)))%>%
-    select(learn_cond, condition, trial, selection, n)
-  return(rbind(ppt_near, ppt_far))
+fmt_ppt<-function(src=df.sels, type='seq') {
+  if (type=='seq') {
+    ppt_near<-src%>%filter(sequence=='default')%>%
+      mutate(condition='near', learn_cond=paste0('L', substr(learningTaskId,7,7)))%>%
+      select(learn_cond, condition, trial, selection, n)
+    ppt_far<-src%>%filter(sequence=='reverse')%>%
+      mutate(condition='far', learn_cond=paste0('L', substr(learningTaskId,7,7)))%>%
+      select(learn_cond, condition, trial, selection, n)
+    return(rbind(ppt_near, ppt_far))
+  } else {
+    ppt<-src%>%filter(sequence=='combined')%>%
+      mutate(learn_cond=paste0('L', substr(learningTaskId,7,7)))%>%
+      select(learn_cond, trial, selection, n)
+    return(ppt)
+  }
 }
 # This function formats model_predictions
-fmt_results<-function(df) {
-  df<-df%>%mutate(learn_cond=paste0('L', substr(learningTaskId,7,7)),
-                  pred=as.character(pred),
-                  condition=as.character(condition))%>%
-    select(learn_cond, condition, trial, selection=pred, prob)
+fmt_results<-function(df, type='seq') {
+  if (type=='seq') {
+    df<-df%>%mutate(learn_cond=paste0('L', substr(learningTaskId,7,7)),
+                    pred=as.character(pred),
+                    condition=as.character(condition))%>%
+      select(learn_cond, condition, trial, selection=pred, prob)
+  } else {
+    df<-df%>%mutate(learn_cond=paste0('L', substr(learningTaskId,7,7)),
+                    pred=as.character(pred))%>%
+      select(learn_cond, trial, selection=pred, prob)
+  }
   return(df)
 }
 #######################################################################
