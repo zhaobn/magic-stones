@@ -73,7 +73,7 @@ normalize<-function(vec) {
 
 # Returns a softmaxed vector
 #   @base {int} reverse softmax temperature parameter, higher the tighter
-softmax<-function(vec, base=1, type='') {
+softmax<-function(vec, base=0, type='') {
   if (type!='log') {
     v_exp<-exp(vec*base); sum<-sum(v_exp)
   } else {
@@ -85,7 +85,7 @@ softmax<-function(vec, base=1, type='') {
 softmax_trials<-function(vec, base, type) {
   t<-c()
   for (i in seq(1,length(vec),length(all_objs))) {
-    to_softmax<-probs[c(i:(i+length(all_objs)-1))]
+    to_softmax<-vec[c(i:(i+length(all_objs)-1))]
     results<-softmax(to_softmax, base, type)
     t<-c(t, results)
   }
@@ -287,7 +287,7 @@ get_hypo_preds<-function(td, hypo) {
 
 # Returns a dataframe with all hypotheses, prior and posterior
 #   @ld {list} learning data point
-prep_hypos<-function(ld, beta=10, temp=5, type='') {
+prep_hypos<-function(ld, beta=10, temp=0, type='') {
   all_hypo<-get_all_hypos(features)
   
   df<-data.frame(hypo=all_hypo)%>%mutate(hypo=as.character(hypo))
