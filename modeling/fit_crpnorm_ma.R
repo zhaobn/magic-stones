@@ -87,10 +87,14 @@ for (m in mus) {
 save(fits, file='out.Rdata')
 
 
-
-
 # Fit current optimal with log-softmax
-
+fit_log_softmax<-function(par, df, ppt) {
+  df$fit<-softmax_trials(df$prob, par, 'log')
+  return(-sum(log(df$fit)*ppt_data$n))
+}
+#fit_log_softmax(1, df, ppt_data)
+out=optim(par=1, fn=fit_log_softmax, df=df, ppt=ppt_data, method='Brent', lower=0, upper=10)
+# par=1.000706, l=2571.911
 
 
 

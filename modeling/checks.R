@@ -115,6 +115,30 @@ ggplot(df, aes(x=trial, y=p_yes, shape=params, color=params)) +
   scale_x_discrete(limits=seq(15)) +
   theme(legend.position="bottom")
 
+# Fix a very large mu, how does P_yes change with alpha?
+ld<-as.list(df.learn_tasks[1,c(2:4)])
+td<-read_task(tasks_from_df(1)[1])
+mu<-10000
+cat<-init_cat(mu)+count_feats(ld, 'A') # learning's category
+cats<-list(); cats[[1]]<-cat
+
+get_p_yes_per_alpha<-function(alpha) {
+  p_cat<-stone_likeli(td, cat, 'A')*cat_prior(cat, cats, mu, alpha, 'A', F)
+  p_new<-stone_likeli(td, init_cat(mu), 'A')*cat_prior(init_cat(mu), cats, mu, alpha, 'A', T)
+  p_yes<-p_cat/(p_cat+p_new)
+  return(data.frame(alpha=alpha, p_yes=p_yes))
+}
+
+alphas<-seq(0.01, 1, by=0.01)
+df<-get_p_yes_per_alpha(alphas[1])
+for (i in 2:length(alphas)) df<-rbind(df, get_p_yes_per_alpha(alphas[i]))
+ggplot(df, aes(x=alpha,y=p_yes))+geom_line() + theme_bw() + ylab('P(same category)')
+
+
+
+
+
+
 
 
 
