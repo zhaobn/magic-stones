@@ -60,11 +60,12 @@ sim_preds<-function(preds, ld, seq, tasks, hypos, feat_alpha, crp_alpha, count_t
   }
   return(preds)
 }
+# Run sim_preds() n times
 get_sim<-function(lid, seq, n=1000, beta=3.8,
                   feat_alpha=0.1, crp_alpha=0.1, grouping='A', 
                   ld_src=df.learn_tasks) {
   ld<-as.list(ld_src[lid,c(2:4)])
-
+  
   tasks<-tasks_from_df(lid, seq)
   df<-prep_hypos(ld, beta)
   
@@ -79,6 +80,7 @@ get_sim<-function(lid, seq, n=1000, beta=3.8,
   results$prob<-results$n/n_runs
   return(results)
 } 
+# Get sim results for all learning conditions
 sim_results<-function(n=200, beta=5, alpha=0.1, mu=10) {
   set.seed(123)
   df<-get_sim(1, 'near', n, beta, mu, alpha)
@@ -94,10 +96,30 @@ sim_results<-function(n=200, beta=5, alpha=0.1, mu=10) {
 }
 
 # Take a look at log-likelihood
-df<-sim_results(5000, 6.7, 0.2, 0.06)
+df<-sim_results(5000, 7, 0.01, 0.05)
 x<-df%>%left_join(ppt_data, by=c('learningTaskId', 'condition', 'trial', 'selection'))%>%filter(n>0)
 sum(log(x$prob)*x$n) #-2548.891
 y<-x%>%filter(n>0&prob==0); View(y)
+save(df, file='sim.Rdata')
+ggplot(df, aes(x=selection, y=trial, fill=prob)) + geom_tile() +
+  scale_y_continuous(trans="reverse", breaks=unique(df$trial)) +
+  scale_fill_viridis(option="E", direction=-1) +
+  facet_grid(condition~learningTaskId)
+
+##########
+# Fit a log-softmax
+fit<-function(par, data, ppt) {
+  data$x<-softmax_trials(data$prob, par, 'log')
+  data<-data%>%
+    left_join(ppt, by=c('learningTaskId', 'condition', 'trial','selection'))%>%
+    filter(n>0)
+  likeli<-sum(log(data$x)*data$n)
+  return(-likeli)
+}
+fit(1, df, ppt_data)
+out=optim(par=1, fn=fit, data=df, ppt=ppt_data,  method='Brent', lower=0.1, upper=10)
+# par = 0.8907976, l=2542.592
+
 
 
 
