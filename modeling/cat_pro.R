@@ -10,19 +10,39 @@ ppt_data<-rbind(
   (df.sels%>%filter(sequence=='reverse')%>%mutate(condition='far')%>%select(learningTaskId, condition, trial, selection, n))
 )
 
+# Optimize: prep hypo prediction data #################################
+all_preds<-data.frame(hypo=get_all_hypos(features))%>%mutate(hypo=as.character(hypo))
+append_preds<-function(lid, tid, df=preds) {
+  td<-as.list(df.gen_trials%>%filter(learningTaskId==paste0('learn0',lid)&trial==tid)%>%select(agent, recipient))
+  pds<-c(); for (h in df$hypo) pds<-c(pds, paste0(get_hypo_preds(td, h), collapse=','))
+  pcol<-paste0(lid,'-',tid); df[,pcol]<-pds
+  return(df)
+}
+for (i in 1:6) {
+  for (j in 1:15) {
+    all_preds<-append_preds(i,j,all_preds)
+  }
+}
+
+#####
+
 # Get greedy simulations ##############################################
-sim_preds<-function(preds, ld, seq, tasks, hypos, feat_alpha, crp_alpha, count_type) {
+sim_preds<-function(preds, lid, seq, tasks, hypos, feat_alpha, crp_alpha, count_type) {
   cats<-list(); cat_funcs<-list()
-  
+  ld<-as.list(df.learn_tasks[lid,c(2:4)])
+  l_preds<-all_preds%>%select(hypo, starts_with(as.character(lid)))
   # Assign ld to first cat
   cats[[1]]<-init_cat(feat_alpha)+count_feats(ld, count_type)
   # Sample a function for it from posterior
   cat_funcs[[1]]<-sample(hypos$hypo, 1, prob=hypos$posterior)
   hypos<-hypos%>%filter(!(hypo==cat_funcs[[1]]))
+  # check duplicate functions
   
   # Greedily assign categories
   for (i in 1:length(tasks)) {
     td<-read_task(tasks[i])
+    trial_id<-if (seq=='near') i else (length(tasks)+1-i)
+    t_preds<-l_preds[,c(1,trial_id+1)]
     # Check the probability of belonging to each existing category
     unnorm_probs<-vector()
     for (ci in (1:length(cats))) {
@@ -48,14 +68,17 @@ sim_preds<-function(preds, ld, seq, tasks, hypos, feat_alpha, crp_alpha, count_t
       cat_funcs[[assigned_ci]]<-func
       hypos<-hypos%>%filter(!(hypo==func))
       # Get predictions
-      predicted<-sample(get_hypo_preds(td, func), 1)
+      options<-(t_preds%>%filter(hypo==func))[,2]
+      predicted<-sample(strsplit(options,',')[[1]],1)
+      #predicted<-sample(get_hypo_preds(td, func), 1)
     } else {
       cats[[assigned_ci]]<-cats[[assigned_ci]]+count_feats(td, count_type)
       # Get prediction
-      predicted<-sample(get_hypo_preds(td, cat_funcs[[assigned_ci]]), 1)
+      options<-(t_preds%>%filter(hypo==cat_funcs[[assigned_ci]]))[,2]
+      predicted<-sample(strsplit(options,',')[[1]],1)
+      #predicted<-sample(get_hypo_preds(td, ), 1)
     }
     # Add prediction to results
-    trial_id<-if (seq=='near') i else (length(tasks)+1-i)
     preds<-preds%>%mutate(n=if_else(trial==trial_id&pred==predicted, n+1, n))
   }
   return(preds)
@@ -64,8 +87,7 @@ sim_preds<-function(preds, ld, seq, tasks, hypos, feat_alpha, crp_alpha, count_t
 get_sim<-function(lid, seq, n=1000, beta=3.8,
                   feat_alpha=0.1, crp_alpha=0.1, grouping='A', 
                   ld_src=df.learn_tasks) {
-  ld<-as.list(ld_src[lid,c(2:4)])
-  
+  #ld<-as.list(ld_src[lid,c(2:4)])
   tasks<-tasks_from_df(lid, seq)
   df<-prep_hypos(ld, beta)
   
@@ -74,7 +96,7 @@ get_sim<-function(lid, seq, n=1000, beta=3.8,
   
   n_runs<-n
   while (n>0) {
-    results<-sim_preds(results, ld, seq, tasks, df, feat_alpha, crp_alpha, grouping)
+    results<-sim_preds(results, lid, seq, tasks, df, feat_alpha, crp_alpha, grouping)
     n<-n-1
   }
   results$prob<-results$n/n_runs
@@ -96,7 +118,7 @@ sim_results<-function(n=200, beta=5, alpha=0.1, mu=10) {
 }
 
 # Take a look at log-likelihood
-df<-sim_results(5000, 7, 0.01, 0.05)
+df<-sim_results(200, 7, 0.01, 0.05)
 x<-df%>%left_join(ppt_data, by=c('learningTaskId', 'condition', 'trial', 'selection'))%>%filter(n>0)
 sum(log(x$prob)*x$n) #-2548.891
 y<-x%>%filter(n>0&prob==0); View(y)
