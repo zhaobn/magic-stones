@@ -4,13 +4,14 @@ source("./functions.R")
 load("../behavioral_data/tasks.Rdata")
 load("../behavioral_data/aggregated.Rdata")
 
-# Prep ppt data #######################################################
+# Preps ###############################################################
+# Prep ppt data 
 ppt_data<-rbind(
   (df.sels%>%filter(sequence=='default')%>%mutate(condition='near')%>%select(learningTaskId, condition, trial, selection, n)),
   (df.sels%>%filter(sequence=='reverse')%>%mutate(condition='far')%>%select(learningTaskId, condition, trial, selection, n))
 )
 
-# Optimize: prep hypo prediction data #################################
+# Optimize: prep hypo prediction data
 all_preds<-data.frame(hypo=get_all_hypos(features))%>%mutate(hypo=as.character(hypo))
 append_preds<-function(lid, tid, df=preds) {
   td<-as.list(df.gen_trials%>%filter(learningTaskId==paste0('learn0',lid)&trial==tid)%>%select(agent, recipient))
@@ -23,10 +24,9 @@ for (i in 1:6) {
     all_preds<-append_preds(i,j,all_preds)
   }
 }
+save(all_preds, file='all_preds.Rdata')
 
-#####
-
-# Get greedy simulations ##############################################
+# Get greedy simulations 
 sim_preds<-function(preds, lid, seq, tasks, hypos, feat_alpha, crp_alpha, count_type) {
   cats<-list(); cat_funcs<-list()
   ld<-as.list(df.learn_tasks[lid,c(2:4)])
@@ -36,7 +36,6 @@ sim_preds<-function(preds, lid, seq, tasks, hypos, feat_alpha, crp_alpha, count_
   # Sample a function for it from posterior
   cat_funcs[[1]]<-sample(hypos$hypo, 1, prob=hypos$posterior)
   hypos<-hypos%>%filter(!(hypo==cat_funcs[[1]]))
-  # check duplicate functions
   
   # Greedily assign categories
   for (i in 1:length(tasks)) {
@@ -87,7 +86,7 @@ sim_preds<-function(preds, lid, seq, tasks, hypos, feat_alpha, crp_alpha, count_
 get_sim<-function(lid, seq, n=1000, beta=3.8,
                   feat_alpha=0.1, crp_alpha=0.1, grouping='A', 
                   ld_src=df.learn_tasks) {
-  #ld<-as.list(ld_src[lid,c(2:4)])
+  ld<-as.list(ld_src[lid,c(2:4)])
   tasks<-tasks_from_df(lid, seq)
   df<-prep_hypos(ld, beta)
   
@@ -104,7 +103,6 @@ get_sim<-function(lid, seq, n=1000, beta=3.8,
 } 
 # Get sim results for all learning conditions
 sim_results<-function(n=200, beta=5, alpha=0.1, mu=10) {
-  set.seed(123)
   df<-get_sim(1, 'near', n, beta, mu, alpha)
   df<-rbind(df, get_sim(1, 'far', n, beta, mu, alpha))
   for (i in 2:6) {
@@ -117,8 +115,10 @@ sim_results<-function(n=200, beta=5, alpha=0.1, mu=10) {
   return(df)
 }
 
+#####
+
 # Take a look at log-likelihood
-df<-sim_results(200, 7, 0.01, 0.05)
+df<-sim_results(3000, 10, 0.01, 0.01)
 x<-df%>%left_join(ppt_data, by=c('learningTaskId', 'condition', 'trial', 'selection'))%>%filter(n>0)
 sum(log(x$prob)*x$n) #-2548.891
 y<-x%>%filter(n>0&prob==0); View(y)
@@ -129,6 +129,23 @@ ggplot(df, aes(x=selection, y=trial, fill=prob)) + geom_tile() +
   facet_grid(condition~learningTaskId)
 
 ##########
+# Fits par = beta, alpha, mu, temp
+set.seed(123)
+model<-function(par, ppt) {
+  restricted_feature_par=exp(par[1])+1
+  restricted_alpha=exp(par[2])
+  restricted_mu=exp(par[3])
+  df<-sim_results(5000, restricted_feature_par, restricted_alpha, restricted_mu)
+  df$z<-softmax_trials(df$prob, par[4], 'log')
+  x<-df%>%left_join(ppt, by=c('learningTaskId', 'condition', 'trial', 'selection'))%>%filter(n>0)
+  return(-sum(log(x$z)*x$n))
+}
+
+model(c(1, 3, 1, 1), ppt_data)
+
+out=optim(par=c(1, 3, 1, 1), fn=model, ppt=ppt_data)
+
+
 # Fit a log-softmax
 fit<-function(par, data, ppt) {
   data$x<-softmax_trials(data$prob, par, 'log')
