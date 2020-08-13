@@ -133,13 +133,27 @@ alphas<-seq(0.01, 1, by=0.01)
 df<-get_p_yes_per_alpha(alphas[1])
 for (i in 2:length(alphas)) df<-rbind(df, get_p_yes_per_alpha(alphas[i]))
 ggplot(df, aes(x=alpha,y=p_yes))+geom_line() + theme_bw() + ylab('P(same category)')
+########
 
 
+# 2020-08-04: compare cat models for Learn_01 ####
+norm<-get_crp_norm_cond_preds(1, 'near', 10000, 0.02, 6.96)
+norm<-rbind(norm, get_crp_norm_cond_preds(1, 'far', 10000, 0.02, 6.96))
+norm$prob<-softmax_trials(norm$prob, 0.66, 'log')
 
+proc<-rbind(get_sim(1, 'near', 5000, 7, 0.8, 0.11),
+            get_sim(1, 'far', 5000, 7, 0.8, 0.11))
+proc<-proc%>%select(learningTaskId, condition, trial, selection=pred, prob)
 
+ppt<-ppt_data%>%filter(learningTaskId=='learn01')
 
+sum(log(norm$prob)*ppt$n) #-256.1763
 
+proc<-proc%>%left_join(ppt, by=c('learningTaskId', 'condition', 'trial', 'selection'))
+proc<-proc%>%filter(n>0)
+sum(log(proc$prob)*proc$n) #-252.3
 
+########
 
 
 
