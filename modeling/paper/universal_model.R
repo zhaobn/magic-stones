@@ -3,9 +3,11 @@ library(tidyverse)
 
 rm(list=ls())
 load('paper/hypos.Rdata')
-load('../behavioral_data/tasks')
+load('../behavioral_data/tasks.Rdata')
 load('../behavioral_data/aggregated.Rdata')
 df.sels<-df.sels %>% filter(sequence=='combined')
+
+source('paper/shared.R')
 
 # Get hypos
 single_feat_hypos<-function(feat) {
@@ -59,34 +61,44 @@ df.hypos<-df.hypos %>%
 #save(df.hypos, file='paper/hypos.Rdata')
 
 
-# Gen predictions
-get_genpred<-function(lid, tid) {
-  cond<-paste0('learn0', lid)
-  post_col<-paste0('post_l',lid)
-  task_data<-tasks %>% 
-    filter(phase=='gen', learningTaskId==cond, trial==tid) %>%
-    select(agent, recipient) %>%
-    paste0(., collapse=',')
-  preds<-lapply(1:nrow(df.hypos), function(x) {
-    Map('*', causal_mechanism(df.hypos$hypo[x], task_data), df.hypos[x,post_col])
-  }) %>%
-    reduce(function(a,b) Map('+', a, b))
-  preds.data<-data.frame(object=names(preds), prob=unlist(preds)) %>%
-    mutate(learningTaskId=cond, trial=tid) %>%
-    select(learningTaskId, trial, object, prob)
-  return(preds.data)
-}
-
-
-model.uni<-data.frame(
-  learningTaskId=character(0),
-  trial=numeric(0),
-  object=character(0),
-  prob=numeric(0)
-)
+# Predictions likelihoods
+likelis<-list()
 for (i in seq(6)) {
+  cond<-paste0('learn0', i)
+  likelis[[cond]]<-list()
   for (j in seq(15)) {
-    model.uni<-rbind(model.uni, get_genpred(i,j))
+    task_data<-tasks %>% 
+      filter(phase=='gen', learningTaskId==cond, trial==j) %>%
+      select(agent, recipient) %>% paste0(., collapse=',')
+    preds<-lapply(1:nrow(df.hypos), function(x) {
+      causal_mechanism(df.hypos$hypo[x], task_data)
+    })
+    likelis[[cond]][[j]]<-preds
+  }
+}
+#save(df.hypos, likelis, file='hypos.Rdata')
+
+
+# Posterior predictives
+model.uni<-data.frame(
+  learningTaskId=character(0), trial=numeric(0),
+  object=character(0), prob=numeric(0)
+)
+
+
+for (i in seq(6)) {
+  cond<-paste0('learn0', i)
+  post_col<-paste0('post_l',i)
+  for (j in seq(15)) {
+    ll<-likelis[[cond]][[j]]
+    preds<-lapply(1:nrow(df.hypos), function(x) {
+      Map('*', ll[[x]], df.hypos[x,post_col])
+    }) %>%
+      reduce(function(a,b) Map('+', a, b))
+    preds.data<-data.frame(object=names(preds), prob=unlist(preds)) %>%
+      mutate(learningTaskId=cond, trial=j) %>%
+      select(learningTaskId, trial, object, prob)
+    model.uni<-rbind(model.uni, preds.data)
   }
 }
 

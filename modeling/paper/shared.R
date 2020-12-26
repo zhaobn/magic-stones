@@ -99,38 +99,38 @@ causal_mechanism<-function(hypo, data) {
 }
  
 
- # # for category resemblance
-# init_feat_dist<-function(beta=0) {
-#   feat_dist<-list()
-#   for (e in feature_setting[['edges']]) feat_dist[[paste0('e',e)]]<-beta
-#   for (s in feature_setting[['shades']]) feat_dist[[paste0('s',s)]]<-beta
-#   return(feat_dist)
-# }
-# 
-# read_feature<-function(data, type='A') {
-#   if (typeof(data)!='list') data<-listify_data(data)
-#   feat_dist<-init_feat_dist(0)
-#   if (type=='A') data<-data[c('agent')] else
-#     if (type=='AR') data<-data[c('agent', 'recipient')] else
-#       if (type=='R') data<-data[c('recipient')]
-#   # read obs feature value
-#   for (i in 1:length(data)) {
-#     edge_val<-paste0('e',edges(data[[i]]))
-#     feat_dist[[edge_val]]<-feat_dist[[edge_val]]+1
-#     
-#     shade_val<-paste0('s',shades(data[[i]]))
-#     feat_dist[[shade_val]]<-feat_dist[[shade_val]]+1
-#   }
-#   return(feat_dist)
-# }
-# 
-# # Gamma is constraint to 0 to 1
-# # Use sigmoid function if fit this to unconstrained values
-# read_data_feature<-function(data, gamma) {
-#   feat_a<-lapply(read_feature(data, 'A'), function(x) x * gamma)
-#   feat_r<-lapply(read_feature(data, 'R'), function(x) x * (1-gamma))
-#   return(mapply(sum, feat_a, feat_r, SIMPLIFY=F))
-# }
+# for category resemblance
+init_feat_dist<-function(beta=0) {
+  feat_dist<-list()
+  for (e in feature_setting[['color']]) feat_dist[[paste0('c',e)]]<-beta
+  for (s in feature_setting[['shape']]) feat_dist[[paste0('s',s)]]<-beta
+  return(feat_dist)
+}
+
+read_feature<-function(data, type='A') {
+  if (typeof(data)!='list') data<-listify_data(data)
+  feat_dist<-init_feat_dist(0)
+  if (type=='A') data<-data[c('agent')] else
+    if (type=='AR') data<-data[c('agent', 'recipient')] else
+      if (type=='R') data<-data[c('recipient')]
+  # read obs feature value
+  for (i in 1:length(data)) {
+    color_val<-paste0('c',color(data[[i]]))
+    feat_dist[[color_val]]<-feat_dist[[color_val]]+1
+
+    shape_val<-paste0('s',shape(data[[i]]))
+    feat_dist[[shape_val]]<-feat_dist[[shape_val]]+1
+  }
+  return(feat_dist)
+}
+
+# Gamma is constraint to 0 to 1
+# Use sigmoid function if fit this to unconstrained values
+read_data_feature<-function(data, gamma) {
+  feat_a<-lapply(read_feature(data, 'A'), function(x) x * gamma)
+  feat_r<-lapply(read_feature(data, 'R'), function(x) x * (1-gamma))
+  return(mapply(sum, feat_a, feat_r, SIMPLIFY=F))
+}
 
 
 
