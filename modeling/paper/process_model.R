@@ -14,10 +14,7 @@ ppt_data<-rbind(
 load('hypos.Rdata')
 df.hypos$hid<-seq(1:nrow(df.hypos))
 
-
 N=10000
-# Debug saves
-model.proc.normbest<-model.proc
 
 # Build up the process
 sim_preds<-function(lid, seq, alpha, beta, gamma) {
@@ -178,13 +175,24 @@ for (i in 1:nrow(grid.fits)) {
   write.csv(as.data.frame(log), file='_process')
 }
 
+model.proc<-grid.preds[[24]]
+model.proc<-mdata %>% select(-n)
+save(model.uni, model.cat, model.proc, file='models.Rdata')
 
+# Try plot
+grid_fits_1<-rbind(
+  grid_fits_01, grid_fits_02, grid_fits_03, grid_fits_04, grid_fits_05,
+  grid_fits_06, grid_fits_07, grid_fits_08, grid_fits_09, grid_fits_10)
+save(grid_fits_1, file='grid_fits.Rdata')
 
-
-
-
-
-
+preds<-grid_preds_01[[15]]
+preds %>% 
+  mutate(prob=sim/10000) %>%
+  ggplot(aes(x=object, y=trial, fill=prob)) +
+  geom_tile() +
+  scale_y_continuous(trans="reverse", breaks=1:15) + 
+  scale_fill_gradient(low='white', high='#293352') +
+  facet_grid(sequence~learningTaskId)
 
 
 

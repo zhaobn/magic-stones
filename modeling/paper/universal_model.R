@@ -107,7 +107,7 @@ ggplot(model.uni, aes(x=object, y=trial, fill=prob)) +
   facet_wrap(~learningTaskId) +
   scale_y_continuous(trans="reverse", breaks=1:15) + 
   scale_fill_gradient(low='white', high='#293352')
-# save(model.uni, file='paper/models_uni.Rdata')
+save(model.uni, file='paper/models.Rdata')
 
 # Fit softmax
 fit_softmax<-function(par) {
@@ -139,8 +139,8 @@ out<-optim(par=0, fn=fit_softmax, method='Brent', lower=0, upper=100)
 # par = 6.96
 # ll = 2760.672
 
-
-
+# model.uni<-softed
+# save(model.uni, model.cat, model.proc, file='models.Rdata')
 
 
 

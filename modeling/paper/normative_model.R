@@ -10,6 +10,11 @@ df.sels<-df.sels %>% filter(sequence=='combined')
 source('paper/shared.R')
 
 # Causal categories
+alpha=2.41
+beta=938.81
+gamma=0.5
+t=9.44
+
 get_model_preds<-function(alpha, beta, t='', gamma) {
   model.cat<-data.frame(
     learningTaskId=character(0), trial=numeric(0),
@@ -54,6 +59,7 @@ get_model_preds<-function(alpha, beta, t='', gamma) {
   }
   return(model.cat)
 }
+# save(model.uni, model.cat, file='models.Rdata')
 
 ggplot(model.cat, aes(x=object, y=trial, fill=prob)) +
   geom_tile() +
