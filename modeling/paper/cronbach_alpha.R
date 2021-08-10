@@ -29,6 +29,7 @@ for (i in 1:nrow(consistency)) {
            trial==consistency[i,'trial']) %>%
     pull(n)
   consistency[i,'kr21']<-KR21(counts)
+  consistency[i,'cond']<-paste0('L',substr(consistency[i,'learningTaskId'],7,7))
 }
 
 
@@ -160,6 +161,90 @@ d<-agg_con %>%
 
 ggarrange(d,ggarrange(b,c,ncol=2,labels=c('B', 'C')),
           nrow=2,heights=c(1.5,1),labels=c('A',''))
+
+
+# Fisher's exact test
+tests = df.trials %>%
+  select(ix, condition=learningTaskId, order, trial, result=selection) %>%
+  mutate(condition=as.factor(condition), order=as.factor(order), trial=as.factor(trial), result=as.factor(result))
+
+fisher.test(table(tests$trial, tests$result), simulate.p.value=TRUE)
+
+
+# For slides
+a<-df.sels %>% filter(sequence=='default') %>% select(learningTaskId, trial, selection, default=n)
+b<-df.sels %>% filter(sequence=='reverse') %>% select(learningTaskId, trial, selection, reverse=n)
+c<-a %>% left_join(b, by=c('learningTaskId', 'trial', 'selection'))
+c<-c %>% mutate(n=default + reverse)
+
+consistency_overall<-df.sels %>%
+  select(learningTaskId, trial) %>%
+  distinct()
+
+for (i in 1:nrow(consistency_overall)) {
+  counts<-c %>%
+    filter(learningTaskId==consistency[i,'learningTaskId'],
+           trial==consistency[i,'trial']) %>%
+    pull(n)
+  consistency_overall[i,'kr21']<-KR21(counts)
+  consistency_overall[i,'cond']<-paste0('L',substr(consistency_overall[i,'learningTaskId'],7,7))
+}
+
+
+consistency %>%
+  filter(sequence=='combined') %>%
+  ggplot(aes(x=cond,y=kr21)) +
+  geom_boxplot(fill="#293352", color='#A4A4A4') +
+  coord_flip() + 
+  scale_x_discrete(limits = rev) +
+  ylim(0,1) +
+  labs(y='', x='') +
+  theme_classic() +
+  theme(strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))
+
+  
+consistency %>%
+  filter(sequence!='combined') %>%
+  mutate(transfer=ifelse(sequence=='default','near-first','far-first')) %>%
+  ggplot(aes(x=cond,y=kr21,fill=transfer)) +
+  geom_boxplot() +
+  scale_fill_manual(values=c("#ef5fa7", "#27a2ff")) +
+  coord_flip() + 
+  scale_x_discrete(limits = rev) +
+  ylim(0,1) +
+  labs(y='', x='') +
+  theme_classic() +
+  theme(strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        legend.position="none")
+
+# New ones
+
+consistency$sequence = factor(consistency$sequence, levels=c('default', 'reverse', 'combined'))
+
+consistency %>%
+  filter(sequence=='combined') %>%
+  ggplot(aes(x=cond,y=kr21)) +
+  geom_boxplot(fill="#293352", color='#A4A4A4') +
+  ylim(0,1) +
+  labs(y='', x='') +
+  theme_classic() +
+  theme(strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))
+
+
+consistency %>%
+  filter(sequence!='combined') %>%
+  ggplot(aes(x=cond,y=kr21,fill=sequence)) +
+  geom_boxplot() +
+  scale_fill_manual(values=c("#A4A4A4", "white")) +
+  ylim(0,1) +
+  labs(y='', x='') +
+  theme_classic() +
+  theme(strip.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1),
+        legend.position="none")
 
 
 
