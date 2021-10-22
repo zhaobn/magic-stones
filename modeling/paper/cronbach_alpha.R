@@ -82,7 +82,7 @@ b<-c.data %>%
   mutate(effect=ifelse(learningTaskId %in% c('learn01', 'learn03', 'learn05'), 'match', 'new')) %>%
   ggplot(aes(x=kr21, fill=effect)) +
   geom_density(alpha=0.8) +
-  labs(x='Cronbach alpha', y='', fill='') +
+  labs(x="Cronbach's alpha", y='', fill='') +
   scale_fill_brewer(palette='Paired') +
   theme_classic()
 
@@ -98,7 +98,7 @@ c<-c.data %>%
   mutate(feat=ifelse(learningTaskId %in% c('learn01', 'learn02'), 'shape', 'color')) %>%
   ggplot(aes(x=kr21, fill=feat)) +
   geom_density(alpha=0.8) +
-  labs(x='Cronbach alpha', y='', fill='') +
+  labs(x="Cronbach's alpha", y='', fill='') +
   scale_fill_brewer(palette='Paired') +
   theme_classic()
 
